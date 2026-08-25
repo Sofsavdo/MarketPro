@@ -1,0 +1,156 @@
+{
+  "brand": {
+    "name": "IZDOSH",
+    "fullName": "IZDOSH Academy",
+    "tagline": "Learn in-demand skills"
+  },
+  "nav": {
+    "courses": "Courses",
+    "pricing": "Pricing",
+    "about": "About",
+    "login": "Log in",
+    "register": "Sign up",
+    "dashboard": "Dashboard",
+    "logout": "Log out"
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "Uzbekistan's academy for practical digital skills",
+      "title": "Learn in-demand skills",
+      "subtitle": "Courses on marketplace selling and AI-powered product building, based on real expert experience. Not theory — action and results.",
+      "ctaPrimary": "Browse courses",
+      "ctaSecondary": "See subscription pricing",
+      "stat1Value": "500M sum",
+      "stat1Label": "Founder's monthly turnover experience",
+      "stat2Value": "7+",
+      "stat2Label": "Tracks",
+      "stat3Value": "3 years",
+      "stat3Label": "Hands-on marketplace experience"
+    },
+    "features": {
+      "title": "Why IZDOSH Academy",
+      "f1Title": "Real expert experience",
+      "f1Desc": "Not a theorist — a mentor with 3 years of marketplace selling and 1+ year of hands-on AI development.",
+      "f2Title": "Sequential lesson unlocking",
+      "f2Desc": "Each topic unlocks after you finish the previous one and pass its quiz — focused, structured learning.",
+      "f3Title": "Guarantee policy",
+      "f3Desc": "Don't like it after the first 2 lessons? Get a 100% refund, no questions asked.",
+      "f4Title": "Taught in 3 languages",
+      "f4Desc": "Uzbek, Russian, and English — learn in the language you're most comfortable with."
+    },
+    "coursesSection": {
+      "title": "The most in-demand skills",
+      "subtitle": "The most sought-after skills in today's market",
+      "viewAll": "View all courses",
+      "badgePopular": "Popular",
+      "badgeNew": "New",
+      "badgeComingSoon": "Coming soon",
+      "from": "from",
+      "months": "mo",
+      "viewCourse": "View course"
+    },
+    "pricingTeaser": {
+      "title": "A single course or a full subscription",
+      "subtitle": "Go deep on one track, or unlock every course with a subscription",
+      "cta": "See pricing"
+    },
+    "guarantee": {
+      "title": "The risk is ours, not yours",
+      "desc": "Don't like it after the first 2 live lessons? 100% refund, no questions asked. Complete every assignment and still see no result? We'll refund you in full.",
+      "cta": "See the full terms"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "q1": "Do I need to sign up before buying a course?",
+      "a1": "Yes. You need a free account before you can purchase a course and start learning.",
+      "q2": "Can I take the lessons out of order?",
+      "a2": "No. Each topic unlocks only after you complete the previous topic and pass its quiz — this ensures deep, systematic learning.",
+      "q3": "What's the difference between a subscription and buying a single course?",
+      "a3": "A single course gives access to just that one track. A subscription gives access to every course at once, and is far more cost-effective long-term.",
+      "q4": "How do I pay?",
+      "a4": "You can pay online via Click or Payme. The course unlocks immediately once payment is confirmed.",
+      "q5": "Where do I watch the video lessons?",
+      "a5": "All video lessons play directly on our site through the built-in player."
+    }
+  },
+  "pricing": {
+    "title": "Pricing",
+    "subtitle": "Choose the format that fits you",
+    "tabCourses": "Individual courses",
+    "tabSubscription": "Subscription",
+    "tierStart": "Start",
+    "tierStandard": "Standard",
+    "tierPro": "Pro",
+    "tierStartDesc": "Video lessons + mentor support in a private chat",
+    "tierStandardDesc": "Video lessons + group Zoom sessions twice a week + feedback on assignments",
+    "tierProDesc": "Small group (15 people) + 3 live sessions a week + personal audit by the founder",
+    "choosePlan": "Choose",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "yearlyDiscount": "2 months free",
+    "subscriptionTitle": "Full access to every course",
+    "subscriptionDesc": "One subscription unlocks unlimited access to all 7 tracks. New courses included at no extra cost.",
+    "subscriptionCta": "Subscribe",
+    "mostPopular": "Most popular",
+    "guaranteeNote": "On every plan: 100% refund guarantee after the first 2 lessons"
+  },
+  "auth": {
+    "loginTitle": "Log in",
+    "loginSubtitle": "Enter your details to access your dashboard",
+    "registerTitle": "Sign up",
+    "registerSubtitle": "Create a free account to start learning",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Full name",
+    "phone": "Phone number",
+    "loginButton": "Log in",
+    "registerButton": "Sign up",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "createOne": "Sign up",
+    "signIn": "Log in"
+  },
+  "course": {
+    "curriculum": "Curriculum",
+    "modules": "modules",
+    "lessons": "lessons",
+    "duration": "Duration",
+    "outcome": "Outcome",
+    "startPrice": "Start",
+    "standardPrice": "Standard",
+    "proPrice": "Pro",
+    "buyNow": "Buy now",
+    "loginToBuy": "Log in to buy",
+    "freePreview": "Free preview",
+    "locked": "Locked",
+    "completed": "Completed",
+    "continueLesson": "Continue",
+    "startLesson": "Start"
+  },
+  "lesson": {
+    "completeButton": "Complete lesson",
+    "nextLesson": "Next lesson",
+    "locked": "This lesson is locked",
+    "lockedDesc": "Finish the previous lesson and its quiz to unlock it.",
+    "backToCourse": "Back to course",
+    "quizTitle": "Knowledge check",
+    "quizSubmit": "Submit quiz",
+    "quizPassed": "Quiz passed!",
+    "quizFailed": "Quiz not passed. Try again.",
+    "quizRequired": "Pass the quiz to move on to the next lesson"
+  },
+  "dashboard": {
+    "title": "My courses",
+    "subtitle": "Track your learning progress",
+    "noCourses": "You haven't purchased a course yet",
+    "browseCourses": "Browse courses",
+    "progress": "Progress",
+    "subscriptionActive": "Active subscription",
+    "subscriptionNone": "No subscription"
+  },
+  "footer": {
+    "rights": "All rights reserved.",
+    "company": "SellerCloudX LLC",
+    "contact": "Contact"
+  }
+}

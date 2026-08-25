@@ -1,0 +1,156 @@
+{
+  "brand": {
+    "name": "IZDOSH",
+    "fullName": "IZDOSH Academy",
+    "tagline": "Amaliy kasblarni o'rganing"
+  },
+  "nav": {
+    "courses": "Kurslar",
+    "pricing": "Narxlar",
+    "about": "Biz haqimizda",
+    "login": "Kirish",
+    "register": "Ro'yxatdan o'tish",
+    "dashboard": "Kabinetim",
+    "logout": "Chiqish"
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "O'zbekistondagi amaliy raqamli ko'nikmalar akademiyasi",
+      "title": "Amaliy kasblarni o'rganing",
+      "subtitle": "Marketplace savdosi va AI yordamida mahsulot yaratish bo'yicha real ekspert tajribasiga asoslangan kurslar. Nazariya emas — harakat va natija.",
+      "ctaPrimary": "Kurslarni ko'rish",
+      "ctaSecondary": "Obuna narxlari",
+      "stat1Value": "500 mln so'm",
+      "stat1Label": "Founder oylik aylanma tajribasi",
+      "stat2Value": "7+",
+      "stat2Label": "Yo'nalish",
+      "stat3Value": "3 yil",
+      "stat3Label": "Marketplace amaliy tajriba"
+    },
+    "features": {
+      "title": "Nega IZDOSH Academy",
+      "f1Title": "Real ekspert tajribasi",
+      "f1Desc": "Nazariyotchi emas — 3 yillik marketplace va 1+ yillik AI-development amaliy tajribaga ega mentor.",
+      "f2Title": "Ketma-ket ochiladigan dars tizimi",
+      "f2Desc": "Har bir mavzu avvalgisini tugatib, testdan o'tgach ochiladi — chalg'imasdan, tizimli o'rganasiz.",
+      "f3Title": "Kafolat siyosati",
+      "f3Desc": "Birinchi 2 ta darsdan keyin yoqmasa — pulingizni 100% qaytarib beramiz.",
+      "f4Title": "3 tilda ta'lim",
+      "f4Desc": "O'zbek, rus va ingliz tillarida — qulay tilda o'rganing."
+    },
+    "coursesSection": {
+      "title": "Eng zamonaviy kasblar",
+      "subtitle": "Bugungi bozorda eng talab qilinadigan ko'nikmalar",
+      "viewAll": "Barcha kurslarni ko'rish",
+      "badgePopular": "Mashhur",
+      "badgeNew": "Yangi",
+      "badgeComingSoon": "Tez orada",
+      "from": "dan boshlab",
+      "months": "oy",
+      "viewCourse": "Kursni ko'rish"
+    },
+    "pricingTeaser": {
+      "title": "Alohida kurs yoki to'liq obuna",
+      "subtitle": "Bitta yo'nalishni chuqur o'rganing yoki obuna orqali barcha kurslarga kirish huquqini oling",
+      "cta": "Narxlarni ko'rish"
+    },
+    "guarantee": {
+      "title": "Risk sizda emas, bizda",
+      "desc": "Birinchi 2 ta live darsdan keyin yoqmasa — savolsiz, 100% pul qaytarish. Agar barcha topshiriqlarni bajarsangiz-u, natija bo'lmasa — pulingizni to'liq qaytaramiz.",
+      "cta": "Batafsil shartlar"
+    },
+    "faq": {
+      "title": "Ko'p so'raladigan savollar",
+      "q1": "Kursni sotib olish uchun ro'yxatdan o'tishim shartmi?",
+      "a1": "Ha. Kursni xarid qilish va darslarni boshlash uchun avval bepul akkaunt yaratishingiz kerak.",
+      "q2": "Darslarni tartibsiz o'tsa bo'ladimi?",
+      "a2": "Yo'q. Har bir mavzu avvalgi mavzuni tugatib, oraliq testdan o'tgandan so'ng ochiladi — bu chuqur va tizimli o'zlashtirishni ta'minlaydi.",
+      "q3": "Obuna va alohida kurs narxi orasidagi farq nima?",
+      "a3": "Alohida kurs — faqat bitta yo'nalishga kirish huquqi beradi. Obuna esa barcha kurslarga bir vaqtning o'zida kirish imkonini beradi va uzoq muddatda ancha tejamli.",
+      "q4": "To'lovni qanday amalga oshiraman?",
+      "a4": "Click va Payme orqali onlayn to'lov qilishingiz mumkin. To'lov tasdiqlangach, kurs darhol ochiladi.",
+      "q5": "Video darslarni qayerda ko'raman?",
+      "a5": "Barcha video darslar to'g'ridan-to'g'ri saytimizda, ichki pleer orqali ko'rsatiladi."
+    }
+  },
+  "pricing": {
+    "title": "Narxlar",
+    "subtitle": "O'zingizga mos formatni tanlang",
+    "tabCourses": "Alohida kurslar",
+    "tabSubscription": "Obuna",
+    "tierStart": "Start",
+    "tierStandard": "Standard",
+    "tierPro": "Pro",
+    "tierStartDesc": "Video darslar + mentor bilan yopiq chat orqali qo'llab-quvvatlov",
+    "tierStandardDesc": "Video darslar + haftasiga 2 marta guruh Zoom darsi + amaliy topshiriq feedback",
+    "tierProDesc": "Kichik guruh (15 kishi) + haftasiga 3 marta live sessiya + founder shaxsiy audit",
+    "choosePlan": "Tanlash",
+    "monthly": "Oylik",
+    "yearly": "Yillik",
+    "yearlyDiscount": "2 oy bepul",
+    "subscriptionTitle": "Barcha kurslarga to'liq kirish",
+    "subscriptionDesc": "Bitta obuna bilan barcha 7 yo'nalishga cheklovsiz kirish huquqiga ega bo'ling. Yangi kurslar chiqqanda ham qo'shimcha to'lovsiz.",
+    "subscriptionCta": "Obuna bo'lish",
+    "mostPopular": "Eng ko'p tanlanadigan",
+    "guaranteeNote": "Barcha tariflarda: birinchi 2 darsdan keyin 100% pul qaytarish kafolati"
+  },
+  "auth": {
+    "loginTitle": "Kirish",
+    "loginSubtitle": "Kabinetingizga kirish uchun ma'lumotlaringizni kiriting",
+    "registerTitle": "Ro'yxatdan o'tish",
+    "registerSubtitle": "Kurslarni boshlash uchun bepul akkaunt yarating",
+    "email": "Email",
+    "password": "Parol",
+    "fullName": "To'liq ism",
+    "phone": "Telefon raqam",
+    "loginButton": "Kirish",
+    "registerButton": "Ro'yxatdan o'tish",
+    "noAccount": "Akkountingiz yo'qmi?",
+    "haveAccount": "Akkountingiz bormi?",
+    "createOne": "Ro'yxatdan o'ting",
+    "signIn": "Kiring"
+  },
+  "course": {
+    "curriculum": "O'quv dasturi",
+    "modules": "modul",
+    "lessons": "dars",
+    "duration": "Muddat",
+    "outcome": "Natija",
+    "startPrice": "Start",
+    "standardPrice": "Standard",
+    "proPrice": "Pro",
+    "buyNow": "Sotib olish",
+    "loginToBuy": "Sotib olish uchun kiring",
+    "freePreview": "Bepul ko'rish",
+    "locked": "Qulflangan",
+    "completed": "Tugallangan",
+    "continueLesson": "Davom etish",
+    "startLesson": "Boshlash"
+  },
+  "lesson": {
+    "completeButton": "Mavzuni yakunlash",
+    "nextLesson": "Keyingi mavzu",
+    "locked": "Bu mavzu qulflangan",
+    "lockedDesc": "Ochish uchun avvalgi mavzuni va uning testini tugating.",
+    "backToCourse": "Kursga qaytish",
+    "quizTitle": "Bilimni tekshirish testi",
+    "quizSubmit": "Testni yakunlash",
+    "quizPassed": "Test muvaffaqiyatli topshirildi!",
+    "quizFailed": "Test topshirilmadi. Qayta urinib ko'ring.",
+    "quizRequired": "Keyingi mavzuga o'tish uchun testni muvaffaqiyatli topshiring"
+  },
+  "dashboard": {
+    "title": "Mening kurslarim",
+    "subtitle": "O'quv jarayoningizni kuzatib boring",
+    "noCourses": "Hali kurs sotib olmadingiz",
+    "browseCourses": "Kurslarni ko'rish",
+    "progress": "O'zlashtirish",
+    "subscriptionActive": "Faol obuna",
+    "subscriptionNone": "Obuna yo'q"
+  },
+  "footer": {
+    "rights": "Barcha huquqlar himoyalangan.",
+    "company": "SellerCloudX MChJ",
+    "contact": "Aloqa"
+  }
+}
