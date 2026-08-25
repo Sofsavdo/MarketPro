@@ -81,7 +81,6 @@ export default async function LessonPage({
             question: localizedField(q, "question", locale),
             options: (q[`options_${locale}` as keyof typeof q] ??
               q.options_uz) as string[],
-            correctIndex: q.correct_index,
           }))}
           alreadyCompleted={!!progress?.completed}
           quizAlreadyPassed={!!progress?.quiz_passed}

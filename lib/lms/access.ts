@@ -42,6 +42,9 @@ export async function getLessonAccess(
     .maybeSingle();
 
   if (enrollment) {
+    if (await hasOverdueInstallment(userId, courseId)) {
+      return { hasCourseAccess: false, tier: enrollment.tier as PlanTier, source: "none" };
+    }
     return {
       hasCourseAccess: true,
       tier: enrollment.tier as PlanTier,
@@ -50,6 +53,33 @@ export async function getLessonAccess(
   }
 
   return { hasCourseAccess: false, tier: null, source: "none" };
+}
+
+/**
+ * Business plan §9.7 (Cash Flow Himoyasi): if a student is on an
+ * installment plan and misses a due date, access is suspended until they
+ * catch up — checked live against `due_date`, no cron needed.
+ */
+async function hasOverdueInstallment(userId: string, courseId: string): Promise<boolean> {
+  const supabase = await createClient();
+
+  const { data: plan } = await supabase
+    .from("installment_plans")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("course_id", courseId)
+    .maybeSingle();
+
+  if (!plan) return false;
+
+  const { count } = await supabase
+    .from("installment_payments")
+    .select("id", { count: "exact", head: true })
+    .eq("plan_id", plan.id)
+    .eq("status", "pending")
+    .lt("due_date", new Date().toISOString());
+
+  return !!count && count > 0;
 }
 
 /**
@@ -105,14 +135,32 @@ export async function isLessonLocked(
 /**
  * Marks a lesson complete for the user and returns the id of the next
  * lesson in the course (if any), so the UI can navigate/unlock it.
+ *
+ * Does NOT take a `quizPassed` flag from the caller — a client could send
+ * whatever value it likes. Instead it reads whatever
+ * POST /api/lessons/quiz/submit already recorded server-side for this
+ * lesson, and refuses to complete a lesson whose quiz hasn't actually been
+ * passed yet.
  */
-export async function completeLesson(
-  userId: string,
-  courseId: string,
-  lessonId: string,
-  quizPassed: boolean | null,
-) {
+export async function completeLesson(userId: string, courseId: string, lessonId: string) {
   const supabase = await createClient();
+
+  const { count: questionCount } = await supabase
+    .from("quiz_questions")
+    .select("id", { count: "exact", head: true })
+    .eq("lesson_id", lessonId);
+
+  const { data: existingProgress } = await supabase
+    .from("user_progress")
+    .select("quiz_passed")
+    .eq("user_id", userId)
+    .eq("lesson_id", lessonId)
+    .maybeSingle();
+
+  const hasQuiz = !!questionCount && questionCount > 0;
+  if (hasQuiz && !existingProgress?.quiz_passed) {
+    throw new Error("quiz_not_passed");
+  }
 
   await supabase.from("user_progress").upsert(
     {
@@ -120,7 +168,7 @@ export async function completeLesson(
       course_id: courseId,
       lesson_id: lessonId,
       completed: true,
-      quiz_passed: quizPassed,
+      quiz_passed: hasQuiz ? true : null,
       completed_at: new Date().toISOString(),
     },
     { onConflict: "user_id,lesson_id" },

@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import type { PlanTier } from "@/lib/supabase/types";
+import { markInstallmentPaid } from "@/lib/payments/installments";
 
 /**
  * Called from the Click/Payme webhook handlers once a payment is confirmed
@@ -17,6 +18,10 @@ export async function grantAccessForPayment(paymentId: string) {
     .single();
 
   if (!payment || payment.status !== "paid") return;
+
+  if (payment.installment_payment_id) {
+    await markInstallmentPaid(payment.installment_payment_id);
+  }
 
   if (payment.subscription_plan) {
     const periodDays = payment.subscription_plan === "yearly" ? 365 : 30;

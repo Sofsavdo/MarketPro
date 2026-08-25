@@ -104,7 +104,33 @@ jadvaliga yoziladi).
 
 ## Xavfsizlik: to'lov summasi
 
-To'lov summasi hech qachon frontend'dan ishonch bilan qabul qilinmaydi — `resolvePaymentAmount`
+To'lov summasi hech qachon frontend'dan ishonch bilan qabul qilinmaydi — `resolvePurchase`
 (`lib/payments/resolve-amount.ts`) uni har doim serverda, `courses` jadvalidagi haqiqiy narx
 yoki `SUBSCRIPTION_PRICE` konstantasi asosida qayta hisoblaydi. Bu devtools orqali narxni
 o'zgartirib yuborish imkoniyatini yopadi.
+
+## Xavfsizlik: test javoblari
+
+Ilgari `quiz_questions.correct_index` RLS orqali hammaga ochiq edi va to'g'ri javob
+brauzerga to'g'ridan-to'g'ri yuborilardi — istalgan foydalanuvchi buni ko'ra olardi.
+Endi: (1) RLS `has_quiz_access()` funksiyasi orqali faqat kursga kirish huquqi bor
+foydalanuvchiga ochiq, (2) `correct_index` hech qachon brauzerga yuborilmaydi — baholash
+`POST /api/lessons/quiz/submit`da serverda amalga oshadi va natija `user_progress`ga
+yoziladi, `completeLesson` esa mijozdan kelgan bayroqqa emas, shu saqlangan natijaga
+ishonadi.
+
+## Muddatli to'lov (installment)
+
+Biznes-rejaning 11.3/9.7-bo'limlariga muvofiq — "2 bo'lakka" (50%+50%, barcha tariflarda)
+va "3 bo'lakka" (40% boshlang'ich + qolgani, faqat Standard/Pro):
+
+1. Xaridda foydalanuvchi rejani tanlaydi → `createInstallmentPlan`
+   (`lib/payments/installments.ts`) `installment_plans` + to'liq `installment_payments`
+   jadvalini oldindan yaratadi (har biri o'z summasi va muddati bilan, 30 kunlik oraliqda).
+2. Birinchi to'lov (boshlang'ich) darhol Click/Payme orqali to'lanadi va kursga kirish
+   ochiladi (odatdagi xaridga o'xshab).
+3. Keyingi to'lovlar — `/dashboard`da "Keyingi to'lov" kartochkasi orqali, xuddi shunday
+   Click/Payme checkout bilan.
+4. Agar muddat o'tib ketsa-yu to'lov qilinmasa, `getLessonAccess` (`lib/lms/access.ts`)
+   kursni avtomatik bloklaydi — cron kerak emas, tekshiruv har safar `due_date`ni real
+   vaqtda solishtiradi.

@@ -131,7 +131,10 @@
     "waitlistDesc": "O'quv dasturi tayyor bo'lgach, birinchilardan bo'lib xabardor bo'lish uchun ro'yxatdan o'ting.",
     "waitlistJoin": "Ro'yxatga yozilish",
     "waitlistDone": "Rahmat! Kurs ochilganda sizga xabar beramiz.",
-    "instructorLabel": "Ustoz"
+    "instructorLabel": "Ustoz",
+    "planFull": "To'liq",
+    "planTwoPart": "2 bo'lak",
+    "planThreePart": "3 bo'lak"
   },
   "lesson": {
     "completeButton": "Mavzuni yakunlash",
@@ -153,7 +156,8 @@
     "progress": "O'zlashtirish",
     "subscriptionActive": "Faol obuna",
     "subscriptionNone": "Obuna yo'q",
-    "profile": "Profil"
+    "profile": "Profil",
+    "nextInstallment": "Keyingi to'lov"
   },
   "footer": {
     "rights": "Barcha huquqlar himoyalangan.",

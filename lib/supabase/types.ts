@@ -151,6 +151,7 @@ export interface Database {
           course_id: string | null;
           tier: PlanTier | null;
           subscription_plan: "monthly" | "yearly" | null;
+          installment_payment_id: string | null;
           created_at: string;
         },
         {
@@ -162,7 +163,45 @@ export interface Database {
           course_id?: string | null;
           tier?: PlanTier | null;
           subscription_plan?: "monthly" | "yearly" | null;
+          installment_payment_id?: string | null;
         }
+      >;
+      installment_plans: Table<
+        {
+          id: string;
+          user_id: string;
+          course_id: string;
+          tier: PlanTier;
+          total_amount: number;
+          installments_count: 2 | 3;
+          created_at: string;
+        },
+        {
+          user_id: string;
+          course_id: string;
+          tier: PlanTier;
+          total_amount: number;
+          installments_count: 2 | 3;
+        }
+      >;
+      installment_payments: Table<
+        {
+          id: string;
+          plan_id: string;
+          sequence_number: number;
+          amount: number;
+          due_date: string;
+          status: "pending" | "paid";
+          paid_at: string | null;
+        },
+        {
+          plan_id: string;
+          sequence_number: number;
+          amount: number;
+          due_date: string;
+          status?: "pending" | "paid";
+        },
+        { status?: "pending" | "paid"; paid_at?: string | null }
       >;
       referrals: Table<
         {

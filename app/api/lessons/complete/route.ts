@@ -11,12 +11,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const { courseId, lessonId, quizPassed } = (await request.json()) as {
+  const { courseId, lessonId } = (await request.json()) as {
     courseId: string;
     lessonId: string;
-    quizPassed: boolean | null;
   };
 
-  const nextLessonId = await completeLesson(user.id, courseId, lessonId, quizPassed);
-  return NextResponse.json({ nextLessonId });
+  try {
+    const nextLessonId = await completeLesson(user.id, courseId, lessonId);
+    return NextResponse.json({ nextLessonId });
+  } catch {
+    return NextResponse.json({ error: "quiz_not_passed" }, { status: 400 });
+  }
 }

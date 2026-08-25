@@ -14,7 +14,6 @@ interface Question {
   id: string;
   question: string;
   options: string[];
-  correctIndex: number;
 }
 
 export function LessonPlayer({
@@ -44,15 +43,26 @@ export function LessonPlayer({
   const [quizResult, setQuizResult] = useState<"passed" | "failed" | null>(
     quizAlreadyPassed ? "passed" : null,
   );
+  const [grading, setGrading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const hasQuiz = questions.length > 0;
   const quizComplete = answers && Object.keys(answers).length === questions.length;
   const canComplete = videoWatched && (!hasQuiz || quizResult === "passed") && !alreadyCompleted;
 
-  function submitQuiz() {
-    const correct = questions.every((q) => answers[q.id] === q.correctIndex);
-    setQuizResult(correct ? "passed" : "failed");
+  async function submitQuiz() {
+    setGrading(true);
+    try {
+      const res = await fetch("/api/lessons/quiz/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lessonId, answers }),
+      });
+      const data = await res.json();
+      setQuizResult(data.passed ? "passed" : "failed");
+    } finally {
+      setGrading(false);
+    }
   }
 
   async function completeLesson() {
@@ -61,11 +71,7 @@ export function LessonPlayer({
       const res = await fetch("/api/lessons/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          courseId,
-          lessonId,
-          quizPassed: hasQuiz ? quizResult === "passed" : null,
-        }),
+        body: JSON.stringify({ courseId, lessonId }),
       });
       const data = await res.json();
       router.refresh();
@@ -136,8 +142,8 @@ export function LessonPlayer({
             ))}
           </div>
 
-          <Button className="mt-6" disabled={!quizComplete} onClick={submitQuiz}>
-            {t("quizSubmit")}
+          <Button className="mt-6" disabled={!quizComplete || grading} onClick={submitQuiz}>
+            {grading ? "..." : t("quizSubmit")}
           </Button>
 
           {quizResult && (

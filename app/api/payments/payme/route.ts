@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { buildPaymeCheckoutUrl } from "@/lib/payments/payme";
-import { resolvePaymentAmount } from "@/lib/payments/resolve-amount";
+import { resolvePurchase } from "@/lib/payments/resolve-amount";
 
 // POST /api/payments/payme — called by the buy button to start a checkout.
 // The Payme JSON-RPC callback lives separately at /api/payments/payme/webhook.
@@ -15,14 +15,23 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { courseId, tier, subscriptionPlan } = body as {
+  const { courseId, tier, subscriptionPlan, installmentsCount, installmentPaymentId } = body as {
     courseId?: string;
     tier?: "start" | "standard" | "pro";
     subscriptionPlan?: "monthly" | "yearly";
+    installmentsCount?: 2 | 3;
+    installmentPaymentId?: string;
   };
 
-  const amount = await resolvePaymentAmount({ courseId, tier, subscriptionPlan });
-  if (amount === null) {
+  const resolved = await resolvePurchase({
+    userId: user.id,
+    courseId,
+    tier,
+    subscriptionPlan,
+    installmentsCount,
+    installmentPaymentId,
+  });
+  if (resolved === null) {
     return NextResponse.json({ error: "invalid_purchase" }, { status: 400 });
   }
 
@@ -32,11 +41,12 @@ export async function POST(request: NextRequest) {
     .insert({
       user_id: user.id,
       provider: "payme",
-      amount,
+      amount: resolved.amount,
       status: "pending",
       course_id: courseId ?? null,
       tier: tier ?? null,
       subscription_plan: subscriptionPlan ?? null,
+      installment_payment_id: resolved.installmentPaymentId,
     })
     .select("id")
     .single();
@@ -45,6 +55,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "could_not_create_payment" }, { status: 500 });
   }
 
-  const checkoutUrl = buildPaymeCheckoutUrl({ orderId: payment.id, amount });
+  const checkoutUrl = buildPaymeCheckoutUrl({ orderId: payment.id, amount: resolved.amount });
   return NextResponse.json({ checkoutUrl });
 }

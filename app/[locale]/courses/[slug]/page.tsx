@@ -99,7 +99,11 @@ export default async function CourseDetailPage({
                 </CardHeader>
                 <CardContent className="pt-0">
                   {user ? (
-                    <PurchaseButtons courseId={course.id} tier={tier.key} />
+                    <PurchaseButtons
+                      courseId={course.id}
+                      tier={tier.key}
+                      allowThreePart={tier.key !== "start"}
+                    />
                   ) : (
                     <Button asChild className="w-full">
                       <Link href="/login">{t("course.loginToBuy")}</Link>

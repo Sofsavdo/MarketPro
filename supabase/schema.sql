@@ -130,6 +130,38 @@ create table if not exists public.user_progress (
 );
 
 -- ============================================================
+-- installment_plans / installment_payments — "2 bo'lakka" / "3 bo'lakka"
+-- payment plans (business plan §11.3, §9.7). The down payment (50% for a
+-- 2-part plan, 40% for a 3-part plan) is paid immediately via Click/Payme
+-- and grants course access right away; later installments are paid the
+-- same way against their own scheduled row. If an installment's due_date
+-- passes while it's still 'pending', getLessonAccess treats the course as
+-- locked again until it's paid — see lib/lms/access.ts.
+-- ============================================================
+create table if not exists public.installment_plans (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  course_id uuid not null references public.courses (id) on delete cascade,
+  tier text not null check (tier in ('start', 'standard', 'pro')),
+  total_amount int not null,
+  installments_count int not null check (installments_count in (2, 3)),
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.installment_payments (
+  id uuid primary key default gen_random_uuid(),
+  plan_id uuid not null references public.installment_plans (id) on delete cascade,
+  sequence_number int not null,
+  amount int not null,
+  due_date timestamptz not null,
+  status text not null default 'pending' check (status in ('pending', 'paid')),
+  paid_at timestamptz,
+  unique (plan_id, sequence_number)
+);
+
+create index if not exists idx_installment_payments_plan on public.installment_payments (plan_id);
+
+-- ============================================================
 -- payments — Click / Payme transaction log + webhook target
 -- ============================================================
 create table if not exists public.payments (
@@ -142,6 +174,7 @@ create table if not exists public.payments (
   course_id uuid references public.courses (id),
   tier text check (tier in ('start', 'standard', 'pro')),
   subscription_plan text check (subscription_plan in ('monthly', 'yearly')),
+  installment_payment_id uuid references public.installment_payments (id),
   created_at timestamptz not null default now()
 );
 
@@ -218,9 +251,21 @@ alter table public.subscriptions enable row level security;
 alter table public.user_progress enable row level security;
 alter table public.payments enable row level security;
 alter table public.referrals enable row level security;
+alter table public.installment_plans enable row level security;
+alter table public.installment_payments enable row level security;
 
 create policy "Users see their own referrals" on public.referrals
   for select using (auth.uid() = referrer_id);
+
+create policy "Users see their own installment plans" on public.installment_plans
+  for select using (auth.uid() = user_id);
+create policy "Users see their own installment payments" on public.installment_payments
+  for select using (
+    exists (
+      select 1 from public.installment_plans p
+      where p.id = plan_id and p.user_id = auth.uid()
+    )
+  );
 
 create policy "Profiles are self-readable" on public.profiles
   for select using (auth.uid() = id);
@@ -237,8 +282,47 @@ create policy "Modules of published courses are public" on public.modules
   for select using (exists (select 1 from public.courses c where c.id = course_id and c.is_published));
 create policy "Lesson metadata is public, video/content gated in app layer" on public.lessons
   for select using (exists (select 1 from public.courses c where c.id = course_id and c.is_published));
-create policy "Quiz visible to lesson viewers" on public.quiz_questions
-  for select using (true);
+
+-- Quiz *answers* (correct_index) are only fetchable by someone who actually
+-- has access to the course — this used to be `using (true)`, which meant
+-- anyone holding the public anon key could read every quiz's correct
+-- answers directly from Postgrest, regardless of purchase state.
+create or replace function public.has_course_access(p_course_id uuid)
+returns boolean as $$
+begin
+  if exists (
+    select 1 from public.subscriptions s
+    where s.user_id = auth.uid() and s.status = 'active' and s.current_period_end > now()
+  ) then
+    return true;
+  end if;
+
+  return exists (
+    select 1 from public.enrollments e
+    where e.user_id = auth.uid() and e.course_id = p_course_id
+  );
+end;
+$$ language plpgsql security definer set search_path = public;
+
+create or replace function public.has_quiz_access(p_lesson_id uuid)
+returns boolean as $$
+declare
+  v_course_id uuid;
+  v_is_free_preview boolean;
+begin
+  select course_id, is_free_preview into v_course_id, v_is_free_preview
+  from public.lessons where id = p_lesson_id;
+
+  if v_course_id is null then
+    return false;
+  end if;
+
+  return v_is_free_preview or public.has_course_access(v_course_id);
+end;
+$$ language plpgsql security definer set search_path = public;
+
+create policy "Quiz answers require course access" on public.quiz_questions
+  for select using (public.has_quiz_access(lesson_id));
 
 create policy "Users see their own enrollments" on public.enrollments
   for select using (auth.uid() = user_id);
@@ -306,7 +390,8 @@ create policy "Users can post questions on accessible sessions" on public.sessio
 alter publication supabase_realtime add table public.session_questions;
 
 -- Writes to courses/modules/lessons/quiz_questions/enrollments/subscriptions/payments/
--- live_sessions, instructor answers on session_questions, and all admin reads
--- (including unpublished courses and the waitlist) are performed server-side with
--- the service-role key (admin client), bypassing RLS — see
--- lib/supabase/server.ts#createAdminClient, app/[locale]/admin/*, and app/api/payments/*.
+-- installment_plans/installment_payments/live_sessions, instructor answers on
+-- session_questions, and all admin reads (including unpublished courses and the
+-- waitlist) are performed server-side with the service-role key (admin client),
+-- bypassing RLS — see lib/supabase/server.ts#createAdminClient, app/[locale]/admin/*,
+-- and app/api/payments/*.

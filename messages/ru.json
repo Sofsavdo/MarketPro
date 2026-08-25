@@ -131,7 +131,10 @@
     "waitlistDesc": "Оставьте контакты, чтобы узнать первыми, когда программа будет готова.",
     "waitlistJoin": "Записаться",
     "waitlistDone": "Спасибо! Мы сообщим вам, когда курс откроется.",
-    "instructorLabel": "Преподаватель"
+    "instructorLabel": "Преподаватель",
+    "planFull": "Полностью",
+    "planTwoPart": "2 части",
+    "planThreePart": "3 части"
   },
   "lesson": {
     "completeButton": "Завершить тему",
@@ -153,7 +156,8 @@
     "progress": "Прогресс",
     "subscriptionActive": "Активная подписка",
     "subscriptionNone": "Нет подписки",
-    "profile": "Профиль"
+    "profile": "Профиль",
+    "nextInstallment": "Следующий платёж"
   },
   "footer": {
     "rights": "Все права защищены.",

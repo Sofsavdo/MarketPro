@@ -131,7 +131,10 @@
     "waitlistDesc": "Leave your contact info to be the first to know when the curriculum is ready.",
     "waitlistJoin": "Join waitlist",
     "waitlistDone": "Thanks! We'll let you know when the course opens.",
-    "instructorLabel": "Instructor"
+    "instructorLabel": "Instructor",
+    "planFull": "Full",
+    "planTwoPart": "2 parts",
+    "planThreePart": "3 parts"
   },
   "lesson": {
     "completeButton": "Complete lesson",
@@ -153,7 +156,8 @@
     "progress": "Progress",
     "subscriptionActive": "Active subscription",
     "subscriptionNone": "No subscription",
-    "profile": "Profile"
+    "profile": "Profile",
+    "nextInstallment": "Next payment"
   },
   "footer": {
     "rights": "All rights reserved.",
