@@ -141,6 +141,17 @@ create table if not exists public.payments (
   created_at timestamptz not null default now()
 );
 
+-- ============================================================
+-- waitlist — email/phone capture for not-yet-published courses
+-- ============================================================
+create table if not exists public.waitlist (
+  id uuid primary key default gen_random_uuid(),
+  course_id uuid not null references public.courses (id) on delete cascade,
+  email text not null,
+  phone text,
+  created_at timestamptz not null default now()
+);
+
 create index if not exists idx_lessons_course on public.lessons (course_id, order_index);
 create index if not exists idx_modules_course on public.modules (course_id, order_index);
 create index if not exists idx_progress_user_course on public.user_progress (user_id, course_id);
@@ -164,8 +175,12 @@ create policy "Profiles are self-readable" on public.profiles
 create policy "Profiles are self-updatable" on public.profiles
   for update using (auth.uid() = id);
 
-create policy "Published courses are public" on public.courses
-  for select using (is_published = true);
+-- Course metadata (title, price, is_published) has no sensitive data, so it's
+-- readable regardless of publish state — unpublished rows power the "coming
+-- soon" catalog cards and waitlist pages. Modules/lessons/quiz content stay
+-- gated to published courses, since that's the actual curriculum.
+create policy "Course metadata is public" on public.courses
+  for select using (true);
 create policy "Modules of published courses are public" on public.modules
   for select using (exists (select 1 from public.courses c where c.id = course_id and c.is_published));
 create policy "Lesson metadata is public, video/content gated in app layer" on public.lessons
@@ -186,6 +201,11 @@ create policy "Users can update their own progress" on public.user_progress
 create policy "Users see their own payments" on public.payments
   for select using (auth.uid() = user_id);
 
--- Writes to courses/modules/lessons/quiz_questions/enrollments/subscriptions/payments
--- are performed server-side with the service-role key (admin client), bypassing RLS —
--- see lib/supabase/server.ts#createAdminClient and app/api/payments/*.
+alter table public.waitlist enable row level security;
+create policy "Anyone can join the waitlist" on public.waitlist
+  for insert with check (true);
+
+-- Writes to courses/modules/lessons/quiz_questions/enrollments/subscriptions/payments,
+-- and all admin reads (including unpublished courses and the waitlist), are performed
+-- server-side with the service-role key (admin client), bypassing RLS — see
+-- lib/supabase/server.ts#createAdminClient, app/[locale]/admin/*, and app/api/payments/*.

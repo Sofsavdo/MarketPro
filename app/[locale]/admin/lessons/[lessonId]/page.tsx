@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ export default async function AdminLessonEditPage({
   params: Promise<{ lessonId: string }>;
 }) {
   const { lessonId } = await params;
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { data: lesson } = await supabase
     .from("lessons")
     .select("*")

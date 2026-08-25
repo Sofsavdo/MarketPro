@@ -159,6 +159,16 @@ export interface Database {
           subscription_plan?: "monthly" | "yearly" | null;
         }
       >;
+      waitlist: Table<
+        {
+          id: string;
+          course_id: string;
+          email: string;
+          phone: string | null;
+          created_at: string;
+        },
+        { course_id: string; email: string; phone?: string | null }
+      >;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

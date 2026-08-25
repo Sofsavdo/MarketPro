@@ -125,7 +125,11 @@
     "locked": "Qulflangan",
     "completed": "Tugallangan",
     "continueLesson": "Davom etish",
-    "startLesson": "Boshlash"
+    "startLesson": "Boshlash",
+    "waitlistTitle": "Bu yo'nalish tez orada ochiladi",
+    "waitlistDesc": "O'quv dasturi tayyor bo'lgach, birinchilardan bo'lib xabardor bo'lish uchun ro'yxatdan o'ting.",
+    "waitlistJoin": "Ro'yxatga yozilish",
+    "waitlistDone": "Rahmat! Kurs ochilganda sizga xabar beramiz."
   },
   "lesson": {
     "completeButton": "Mavzuni yakunlash",
@@ -191,6 +195,19 @@
       "telegram": "Telegram",
       "instagram": "Instagram",
       "email": "Email"
+    },
+    "about": {
+      "title": "Founder haqida",
+      "intro": "IZDOSH Academy — nazariyotchi emas, real amaliyotchi tomonidan qurilgan.",
+      "bio1Title": "3 yillik marketplace tajribasi",
+      "bio1Body": "Uzum Market va boshqa marketplacelarda mustaqil savdo bilan shug'ullanib, oylik aylanmani 500 mln so'mgacha olib chiqish tajribasiga ega.",
+      "bio2Title": "AI yordamida dasturlash",
+      "bio2Body": "1 yildan ortiq amaliy tajriba — website, Telegram bot va Web App'larni AI vositalari (Claude, Cursor) yordamida noldan yaratish.",
+      "bio3Title": "Premium ta'limda shaxsan o'qigan",
+      "bio3Body": "Marketplace bo'yicha premium benchmark dasturda shaxsan ta'lim olib, sifatli ta'lim standartlarini ichidan o'rgangan.",
+      "philosophyTitle": "Falsafamiz",
+      "philosophyBody": "Nazariya emas amaliyot, video emas real loyiha. Har bir dastur founderning o'z tajribasi asosida original ishlab chiqiladi — boshqa manbalardan ko'chirilmaydi.",
+      "cta": "Kurslarni ko'rish"
     }
   }
 }

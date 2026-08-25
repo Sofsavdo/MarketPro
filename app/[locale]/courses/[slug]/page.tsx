@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatSom, cn } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
 import { PurchaseButtons } from "@/components/course/purchase-buttons";
+import { WaitlistForm } from "@/components/course/waitlist-form";
 
 export default async function CourseDetailPage({
   params,
@@ -28,7 +29,7 @@ export default async function CourseDetailPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  const modules = await getCourseModulesWithLessons(course.id);
+  const modules = course.is_published ? await getCourseModulesWithLessons(course.id) : [];
   const access = await getLessonAccess(user?.id ?? null, course.id);
 
   const allLessons = modules.flatMap((m) => m.lessons);
@@ -57,78 +58,92 @@ export default async function CourseDetailPage({
         {localizedField(course, "description", locale)}
       </p>
 
-      <div className="mt-6 flex flex-wrap gap-4 text-sm text-slate-400">
-        <span>
-          {t("course.duration")}: {course.duration_months} {t("home.coursesSection.months")}
-        </span>
-        <span>
-          {modules.length} {t("course.modules")} · {allLessons.length} {t("course.lessons")}
-        </span>
-      </div>
-
-      {!access.hasCourseAccess && (
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          {tiers.map((tier) => (
-            <Card key={tier.key}>
-              <CardHeader>
-                <CardTitle className="text-base">{tier.label}</CardTitle>
-                <p className="text-2xl font-bold text-amber-500">{formatSom(tier.price)}</p>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {user ? (
-                  <PurchaseButtons courseId={course.id} tier={tier.key} amount={tier.price} />
-                ) : (
-                  <Button asChild className="w-full">
-                    <Link href="/login">{t("course.loginToBuy")}</Link>
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+      {course.is_published && (
+        <div className="mt-6 flex flex-wrap gap-4 text-sm text-slate-400">
+          <span>
+            {t("course.duration")}: {course.duration_months} {t("home.coursesSection.months")}
+          </span>
+          <span>
+            {modules.length} {t("course.modules")} · {allLessons.length} {t("course.lessons")}
+          </span>
         </div>
       )}
 
-      <h2 className="mt-14 text-2xl font-bold text-white">{t("course.curriculum")}</h2>
-      <div className="mt-6 space-y-6">
-        {modules.map((mod, mi) => (
-          <div key={mod.id}>
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-              {mi + 1}. {localizedField(mod, "title", locale)}
-            </h3>
-            <div className="mt-3 space-y-2">
-              {mod.lessons.map((lesson) => {
-                const locked = access.hasCourseAccess
-                  ? lockMap.get(lesson.id)
-                  : !lesson.is_free_preview;
-                return (
-                  <Link
-                    key={lesson.id}
-                    href={
-                      locked ? "#" : `/courses/${course.slug}/lessons/${lesson.id}`
-                    }
-                    className={cn(
-                      "flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm transition-colors",
-                      locked ? "cursor-not-allowed opacity-60" : "hover:border-amber-500/50",
-                    )}
-                  >
-                    <span className="flex items-center gap-3 text-slate-200">
-                      {locked ? (
-                        <Lock className="h-4 w-4 text-slate-500" />
-                      ) : (
-                        <PlayCircle className="h-4 w-4 text-amber-500" />
-                      )}
-                      {localizedField(lesson, "title", locale)}
-                    </span>
-                    {lesson.is_free_preview && (
-                      <Badge variant="outline">{t("course.freePreview")}</Badge>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
+      {!course.is_published ? (
+        <div className="mt-8 max-w-xl rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+          <h2 className="text-lg font-semibold text-white">{t("course.waitlistTitle")}</h2>
+          <p className="mt-1 text-sm text-slate-400">{t("course.waitlistDesc")}</p>
+          <div className="mt-4">
+            <WaitlistForm courseId={course.id} />
           </div>
-        ))}
-      </div>
+        </div>
+      ) : (
+        !access.hasCourseAccess && (
+          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            {tiers.map((tier) => (
+              <Card key={tier.key}>
+                <CardHeader>
+                  <CardTitle className="text-base">{tier.label}</CardTitle>
+                  <p className="text-2xl font-bold text-amber-500">{formatSom(tier.price)}</p>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  {user ? (
+                    <PurchaseButtons courseId={course.id} tier={tier.key} amount={tier.price} />
+                  ) : (
+                    <Button asChild className="w-full">
+                      <Link href="/login">{t("course.loginToBuy")}</Link>
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )
+      )}
+
+      {course.is_published && (
+        <>
+          <h2 className="mt-14 text-2xl font-bold text-white">{t("course.curriculum")}</h2>
+          <div className="mt-6 space-y-6">
+            {modules.map((mod, mi) => (
+              <div key={mod.id}>
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                  {mi + 1}. {localizedField(mod, "title", locale)}
+                </h3>
+                <div className="mt-3 space-y-2">
+                  {mod.lessons.map((lesson) => {
+                    const locked = access.hasCourseAccess
+                      ? lockMap.get(lesson.id)
+                      : !lesson.is_free_preview;
+                    return (
+                      <Link
+                        key={lesson.id}
+                        href={locked ? "#" : `/courses/${course.slug}/lessons/${lesson.id}`}
+                        className={cn(
+                          "flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm transition-colors",
+                          locked ? "cursor-not-allowed opacity-60" : "hover:border-amber-500/50",
+                        )}
+                      >
+                        <span className="flex items-center gap-3 text-slate-200">
+                          {locked ? (
+                            <Lock className="h-4 w-4 text-slate-500" />
+                          ) : (
+                            <PlayCircle className="h-4 w-4 text-amber-500" />
+                          )}
+                          {localizedField(lesson, "title", locale)}
+                        </span>
+                        {lesson.is_free_preview && (
+                          <Badge variant="outline">{t("course.freePreview")}</Badge>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -1,11 +1,11 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
 import { PublishToggle } from "@/components/admin/publish-toggle";
 import { formatSom } from "@/lib/utils";
 
 export default async function AdminCoursesPage() {
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { data: courses } = await supabase
     .from("courses")
     .select("*")

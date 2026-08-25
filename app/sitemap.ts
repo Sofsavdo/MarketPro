@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://izdosh.uz";
-  const staticPaths = ["", "/courses", "/pricing", "/terms", "/refund-policy", "/contact"];
+  const staticPaths = ["", "/courses", "/pricing", "/about", "/terms", "/refund-policy", "/contact"];
 
   const entries: MetadataRoute.Sitemap = routing.locales.flatMap((locale) =>
     staticPaths.map((path) => ({

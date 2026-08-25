@@ -1,11 +1,10 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateCourse } from "@/lib/lms/admin-actions";
-import { getCourseModulesWithLessons } from "@/lib/courses";
 
 export default async function AdminCourseEditPage({
   params,
@@ -13,7 +12,7 @@ export default async function AdminCourseEditPage({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = await params;
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { data: course } = await supabase
     .from("courses")
     .select("*")
@@ -21,7 +20,22 @@ export default async function AdminCourseEditPage({
     .maybeSingle();
   if (!course) notFound();
 
-  const modules = await getCourseModulesWithLessons(course.id);
+  const { data: moduleRows } = await supabase
+    .from("modules")
+    .select("*")
+    .eq("course_id", course.id)
+    .order("order_index", { ascending: true });
+  const { data: lessonRows } = await supabase
+    .from("lessons")
+    .select("*")
+    .eq("course_id", course.id)
+    .order("order_index", { ascending: true });
+
+  const modules = (moduleRows ?? []).map((mod) => ({
+    ...mod,
+    lessons: (lessonRows ?? []).filter((l) => l.module_id === mod.id),
+  }));
+
   const updateCourseWithId = updateCourse.bind(null, course.id);
 
   return (

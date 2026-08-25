@@ -13,6 +13,7 @@ export async function Header() {
   const navLinks = [
     { href: "/courses" as const, label: t("nav.courses") },
     { href: "/pricing" as const, label: t("nav.pricing") },
+    { href: "/about" as const, label: t("nav.about") },
   ];
 
   return (

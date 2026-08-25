@@ -125,7 +125,11 @@
     "locked": "Locked",
     "completed": "Completed",
     "continueLesson": "Continue",
-    "startLesson": "Start"
+    "startLesson": "Start",
+    "waitlistTitle": "This track is launching soon",
+    "waitlistDesc": "Leave your contact info to be the first to know when the curriculum is ready.",
+    "waitlistJoin": "Join waitlist",
+    "waitlistDone": "Thanks! We'll let you know when the course opens."
   },
   "lesson": {
     "completeButton": "Complete lesson",
@@ -191,6 +195,19 @@
       "telegram": "Telegram",
       "instagram": "Instagram",
       "email": "Email"
+    },
+    "about": {
+      "title": "About the founder",
+      "intro": "IZDOSH Academy is built by a practitioner, not a theorist.",
+      "bio1Title": "3 years of marketplace experience",
+      "bio1Body": "Independently sold on Uzum Market and other marketplaces, scaling monthly turnover up to 500M sum.",
+      "bio2Title": "AI-powered development",
+      "bio2Body": "1+ year of hands-on experience building websites, Telegram bots, and web apps from scratch with AI tools (Claude, Cursor).",
+      "bio3Title": "Personally trained in a premium program",
+      "bio3Body": "Personally completed a premium marketplace program, learning quality education standards from the inside.",
+      "philosophyTitle": "Our philosophy",
+      "philosophyBody": "Not theory — action. Not video — a real project. Every curriculum is built from the founder's own experience, never copied from third-party materials.",
+      "cta": "Browse courses"
     }
   }
 }

@@ -12,7 +12,7 @@ export function MobileNav({
   isAdmin,
   labels,
 }: {
-  navLinks: { href: "/courses" | "/pricing"; label: string }[];
+  navLinks: { href: "/courses" | "/pricing" | "/about"; label: string }[];
   isLoggedIn: boolean;
   isAdmin: boolean;
   labels: { dashboard: string; login: string; register: string; logout: string };
