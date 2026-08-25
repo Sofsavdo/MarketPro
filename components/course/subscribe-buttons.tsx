@@ -6,11 +6,9 @@ import { useRouter } from "@/i18n/navigation";
 
 export function SubscribeButtons({
   plan,
-  amount,
   isLoggedIn,
 }: {
   plan: "monthly" | "yearly";
-  amount: number;
   isLoggedIn: boolean;
 }) {
   const router = useRouter();
@@ -26,7 +24,7 @@ export function SubscribeButtons({
       const res = await fetch(`/api/payments/${provider}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount, subscriptionPlan: plan }),
+        body: JSON.stringify({ subscriptionPlan: plan }),
       });
       const data = await res.json();
       if (data.checkoutUrl) window.location.href = data.checkoutUrl;

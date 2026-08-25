@@ -8,11 +8,9 @@ import type { PlanTier } from "@/lib/supabase/types";
 export function PurchaseButtons({
   courseId,
   tier,
-  amount,
 }: {
   courseId: string;
   tier: PlanTier;
-  amount: number;
 }) {
   const t = useTranslations("course");
   const [loading, setLoading] = useState<"click" | "payme" | null>(null);
@@ -23,7 +21,7 @@ export function PurchaseButtons({
       const res = await fetch(`/api/payments/${provider}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ courseId, tier, amount }),
+        body: JSON.stringify({ courseId, tier }),
       });
       const data = await res.json();
       if (data.checkoutUrl) {

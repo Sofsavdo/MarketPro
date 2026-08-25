@@ -1,16 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "@/i18n/navigation";
+import { redeemReferral } from "@/lib/lms/referral-actions";
 
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const t = useTranslations("auth");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const [email, setEmail] = useState("");
@@ -33,6 +36,8 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       });
       if (error) setError(error.message);
       else {
+        const ref = searchParams.get("ref");
+        if (ref) await redeemReferral(ref);
         router.refresh();
         router.push("/dashboard");
       }

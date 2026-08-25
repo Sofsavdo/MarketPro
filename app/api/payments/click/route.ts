@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { buildClickCheckoutUrl } from "@/lib/payments/click";
+import { resolvePaymentAmount } from "@/lib/payments/resolve-amount";
 
 // POST /api/payments/click — called by the buy button to start a checkout.
 // The Click callback (Prepare/Complete) lives separately at
@@ -15,12 +16,16 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { courseId, tier, amount, subscriptionPlan } = body as {
+  const { courseId, tier, subscriptionPlan } = body as {
     courseId?: string;
     tier?: "start" | "standard" | "pro";
-    amount: number;
     subscriptionPlan?: "monthly" | "yearly";
   };
+
+  const amount = await resolvePaymentAmount({ courseId, tier, subscriptionPlan });
+  if (amount === null) {
+    return NextResponse.json({ error: "invalid_purchase" }, { status: 400 });
+  }
 
   const admin = await createAdminClient();
   const { data: payment, error } = await admin

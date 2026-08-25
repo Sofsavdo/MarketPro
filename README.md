@@ -92,3 +92,19 @@ platforma ichida joylashgan:
 Google Meet havolasini avtomatik yaratish (Google Calendar API orqali) keyingi bosqichda
 qo'shilishi mumkin — hozircha admin havolani qo'lda joylaydi, bu ko'pchilik kichik
 platformalar uchun yetarli va OAuth sozlamalarini talab qilmaydi.
+
+## Referal dasturi
+
+Ustoz.ai'dagi "Targ'ibotchilar" dasturiga o'xshash: har bir foydalanuvchi o'z referal
+havolasiga ega (`/register?ref=CODE`), profil sahifasida ko'rsatiladi. Do'st shu havola
+orqali ro'yxatdan o'tsa, `redeemReferral` (`lib/lms/referral-actions.ts`) chaqiriladi va
+`referrals` jadvaliga yozuv qo'shiladi. Mukofot bosqichlari: **10 do'st → 1 oy**, **50 do'st
+→ 6 oy**, **100 do'st → 1 yil** bepul Premium obuna (avtomatik ravishda `subscriptions`
+jadvaliga yoziladi).
+
+## Xavfsizlik: to'lov summasi
+
+To'lov summasi hech qachon frontend'dan ishonch bilan qabul qilinmaydi — `resolvePaymentAmount`
+(`lib/payments/resolve-amount.ts`) uni har doim serverda, `courses` jadvalidagi haqiqiy narx
+yoki `SUBSCRIPTION_PRICE` konstantasi asosida qayta hisoblaydi. Bu devtools orqali narxni
+o'zgartirib yuborish imkoniyatini yopadi.

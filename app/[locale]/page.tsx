@@ -13,6 +13,7 @@ import { ShieldCheck, Sparkles, Layers, Languages, ArrowRight } from "lucide-rea
 import { getPublishedCourses, localizedField } from "@/lib/courses";
 import { formatSom } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
+import { InstructorBadge } from "@/components/course/instructor-badge";
 
 export default async function HomePage() {
   const t = await getTranslations();
@@ -121,6 +122,13 @@ export default async function HomePage() {
                   <CardDescription className="line-clamp-2">
                     {localizedField(course, "description", locale)}
                   </CardDescription>
+                  {course.instructor_name && (
+                    <InstructorBadge
+                      name={course.instructor_name}
+                      avatarUrl={course.instructor_avatar_url}
+                      label={t("course.instructorLabel")}
+                    />
+                  )}
                 </CardHeader>
                 <CardContent className="flex items-center justify-between pt-0">
                   <p className="text-sm text-slate-400">

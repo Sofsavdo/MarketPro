@@ -67,7 +67,7 @@ export default async function PricingPage() {
                 {formatSom(SUBSCRIPTION_PRICE.monthly)}
               </p>
               <div className="mt-4">
-                <SubscribeButtons plan="monthly" amount={SUBSCRIPTION_PRICE.monthly} isLoggedIn={!!user} />
+                <SubscribeButtons plan="monthly" isLoggedIn={!!user} />
               </div>
             </div>
             <div className="rounded-xl border border-amber-500/40 p-5">
@@ -78,7 +78,7 @@ export default async function PricingPage() {
                 {formatSom(SUBSCRIPTION_PRICE.yearly)}
               </p>
               <div className="mt-4">
-                <SubscribeButtons plan="yearly" amount={SUBSCRIPTION_PRICE.yearly} isLoggedIn={!!user} />
+                <SubscribeButtons plan="yearly" isLoggedIn={!!user} />
               </div>
             </div>
           </CardContent>

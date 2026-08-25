@@ -21,9 +21,12 @@ export interface Database {
           phone: string | null;
           avatar_url: string | null;
           role: "student" | "instructor" | "admin";
+          referral_code: string | null;
+          referred_by: string | null;
           created_at: string;
         },
-        { id: string; full_name?: string | null; phone?: string | null; role?: string }
+        { id: string; full_name?: string | null; phone?: string | null; role?: string },
+        { full_name?: string | null; phone?: string | null; referred_by?: string | null }
       >;
       courses: Table<
         {
@@ -36,6 +39,8 @@ export interface Database {
           description_ru: string;
           description_en: string;
           cover_url: string | null;
+          instructor_name: string | null;
+          instructor_avatar_url: string | null;
           duration_months: number;
           price_start: number;
           price_standard: number;
@@ -158,6 +163,15 @@ export interface Database {
           tier?: PlanTier | null;
           subscription_plan?: "monthly" | "yearly" | null;
         }
+      >;
+      referrals: Table<
+        {
+          id: string;
+          referrer_id: string;
+          referred_id: string;
+          created_at: string;
+        },
+        { referrer_id: string; referred_id: string }
       >;
       waitlist: Table<
         {

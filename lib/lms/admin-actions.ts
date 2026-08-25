@@ -39,6 +39,8 @@ export async function updateCourse(courseId: string, formData: FormData) {
       description_uz: String(formData.get("description_uz") ?? ""),
       description_ru: String(formData.get("description_ru") ?? ""),
       description_en: String(formData.get("description_en") ?? ""),
+      instructor_name: String(formData.get("instructor_name") ?? "") || null,
+      instructor_avatar_url: String(formData.get("instructor_avatar_url") ?? "") || null,
       duration_months: Number(formData.get("duration_months") ?? 1),
       price_start: Number(formData.get("price_start") ?? 0),
       price_standard: Number(formData.get("price_standard") ?? 0),

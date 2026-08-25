@@ -130,7 +130,8 @@
     "waitlistTitle": "This track is launching soon",
     "waitlistDesc": "Leave your contact info to be the first to know when the curriculum is ready.",
     "waitlistJoin": "Join waitlist",
-    "waitlistDone": "Thanks! We'll let you know when the course opens."
+    "waitlistDone": "Thanks! We'll let you know when the course opens.",
+    "instructorLabel": "Instructor"
   },
   "lesson": {
     "completeButton": "Complete lesson",
@@ -225,5 +226,11 @@
     "askButton": "Send",
     "waitingAnswer": "Waiting for an answer...",
     "noAccess": "You don't have access to this class — buy the course at the right plan or subscribe."
+  },
+  "referral": {
+    "title": "Invite friends",
+    "desc": "Every friend who signs up through your link counts. 10 friends = 1 month, 50 = 6 months, 100 = 1 year of free Premium!",
+    "invited": "Invited",
+    "nextReward": "Next reward: {count} friends → {months} mo free"
   }
 }

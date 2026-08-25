@@ -68,6 +68,18 @@ export default async function AdminCourseEditPage({
             textarea
           />
         </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            label="Ustoz ismi (ixtiyoriy)"
+            name="instructor_name"
+            defaultValue={course.instructor_name ?? ""}
+          />
+          <Field
+            label="Ustoz avatar URL (ixtiyoriy)"
+            name="instructor_avatar_url"
+            defaultValue={course.instructor_avatar_url ?? ""}
+          />
+        </div>
         <div className="grid gap-4 sm:grid-cols-4">
           <Field
             label="Muddat (oy)"

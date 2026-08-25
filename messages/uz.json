@@ -130,7 +130,8 @@
     "waitlistTitle": "Bu yo'nalish tez orada ochiladi",
     "waitlistDesc": "O'quv dasturi tayyor bo'lgach, birinchilardan bo'lib xabardor bo'lish uchun ro'yxatdan o'ting.",
     "waitlistJoin": "Ro'yxatga yozilish",
-    "waitlistDone": "Rahmat! Kurs ochilganda sizga xabar beramiz."
+    "waitlistDone": "Rahmat! Kurs ochilganda sizga xabar beramiz.",
+    "instructorLabel": "Ustoz"
   },
   "lesson": {
     "completeButton": "Mavzuni yakunlash",
@@ -225,5 +226,11 @@
     "askButton": "Yuborish",
     "waitingAnswer": "Javob kutilmoqda...",
     "noAccess": "Bu darsga kirish huquqingiz yo'q — kursni tegishli tarifda sotib oling yoki obuna bo'ling."
+  },
+  "referral": {
+    "title": "Do'stlarni taklif qiling",
+    "desc": "Havolangiz orqali ro'yxatdan o'tgan har bir do'stingiz hisoblanadi. 10 ta do'st = 1 oy, 50 ta = 6 oy, 100 ta = 1 yil bepul Premium obuna!",
+    "invited": "Taklif qilinganlar",
+    "nextReward": "Keyingi mukofot: {count} ta do'st → {months} oy bepul"
   }
 }

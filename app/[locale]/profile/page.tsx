@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { updateProfile } from "@/lib/lms/profile-actions";
+import { getMyReferralStats } from "@/lib/lms/referral-actions";
+import { ReferralCard } from "@/components/profile/referral-card";
 
 export default async function ProfilePage() {
   const t = await getTranslations("auth");
@@ -20,6 +22,8 @@ export default async function ProfilePage() {
     .select("*")
     .eq("id", user.id)
     .maybeSingle();
+
+  const referralStats = await getMyReferralStats();
 
   return (
     <div className="mx-auto max-w-md px-4 py-16">
@@ -47,6 +51,16 @@ export default async function ProfilePage() {
           </form>
         </CardContent>
       </Card>
+
+      {referralStats.code && (
+        <ReferralCard
+          code={referralStats.code}
+          count={referralStats.count}
+          nextTierCount={referralStats.nextTier?.count ?? null}
+          nextTierMonths={referralStats.nextTier?.months ?? null}
+          siteUrl={process.env.NEXT_PUBLIC_SITE_URL ?? "https://izdosh.uz"}
+        />
+      )}
     </div>
   );
 }

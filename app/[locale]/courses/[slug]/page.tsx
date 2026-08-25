@@ -12,6 +12,7 @@ import { formatSom, cn } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
 import { PurchaseButtons } from "@/components/course/purchase-buttons";
 import { WaitlistForm } from "@/components/course/waitlist-form";
+import { InstructorBadge } from "@/components/course/instructor-badge";
 
 export default async function CourseDetailPage({
   params,
@@ -58,6 +59,16 @@ export default async function CourseDetailPage({
         {localizedField(course, "description", locale)}
       </p>
 
+      {course.instructor_name && (
+        <div className="mt-3">
+          <InstructorBadge
+            name={course.instructor_name}
+            avatarUrl={course.instructor_avatar_url}
+            label={t("course.instructorLabel")}
+          />
+        </div>
+      )}
+
       {course.is_published && (
         <div className="mt-6 flex flex-wrap gap-4 text-sm text-slate-400">
           <span>
@@ -88,7 +99,7 @@ export default async function CourseDetailPage({
                 </CardHeader>
                 <CardContent className="pt-0">
                   {user ? (
-                    <PurchaseButtons courseId={course.id} tier={tier.key} amount={tier.price} />
+                    <PurchaseButtons courseId={course.id} tier={tier.key} />
                   ) : (
                     <Button asChild className="w-full">
                       <Link href="/login">{t("course.loginToBuy")}</Link>

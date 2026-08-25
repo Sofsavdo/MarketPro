@@ -12,14 +12,16 @@ create table if not exists public.profiles (
   phone text,
   avatar_url text,
   role text not null default 'student' check (role in ('student', 'instructor', 'admin')),
+  referral_code text unique,
+  referred_by uuid references public.profiles (id) on delete set null,
   created_at timestamptz not null default now()
 );
 
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, full_name)
-  values (new.id, new.raw_user_meta_data ->> 'full_name');
+  insert into public.profiles (id, full_name, referral_code)
+  values (new.id, new.raw_user_meta_data ->> 'full_name', substr(replace(gen_random_uuid()::text, '-', ''), 1, 8));
   return new;
 end;
 $$ language plpgsql security definer set search_path = public;
@@ -42,6 +44,8 @@ create table if not exists public.courses (
   description_ru text not null default '',
   description_en text not null default '',
   cover_url text,
+  instructor_name text,
+  instructor_avatar_url text,
   duration_months int not null default 1,
   price_start int not null default 0,
   price_standard int not null default 0,
@@ -153,6 +157,22 @@ create table if not exists public.waitlist (
 );
 
 -- ============================================================
+-- referrals — one row per successfully invited friend. Reward tiers
+-- (10/50/100 referrals → 1/6/12 months of Premium) are applied in
+-- lib/lms/referral-actions.ts#grantReferralRewards, mirroring the
+-- "Targ'ibotchilar" program on comparable platforms.
+-- ============================================================
+create table if not exists public.referrals (
+  id uuid primary key default gen_random_uuid(),
+  referrer_id uuid not null references public.profiles (id) on delete cascade,
+  referred_id uuid not null references public.profiles (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  unique (referred_id)
+);
+
+create index if not exists idx_referrals_referrer on public.referrals (referrer_id);
+
+-- ============================================================
 -- live_sessions — scheduled Standard/Pro group classes (Google Meet)
 -- session_questions — live Q&A thread attached to each session
 -- ============================================================
@@ -197,6 +217,10 @@ alter table public.enrollments enable row level security;
 alter table public.subscriptions enable row level security;
 alter table public.user_progress enable row level security;
 alter table public.payments enable row level security;
+alter table public.referrals enable row level security;
+
+create policy "Users see their own referrals" on public.referrals
+  for select using (auth.uid() = referrer_id);
 
 create policy "Profiles are self-readable" on public.profiles
   for select using (auth.uid() = id);

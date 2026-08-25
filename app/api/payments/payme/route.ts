@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { buildPaymeCheckoutUrl } from "@/lib/payments/payme";
+import { resolvePaymentAmount } from "@/lib/payments/resolve-amount";
 
 // POST /api/payments/payme — called by the buy button to start a checkout.
 // The Payme JSON-RPC callback lives separately at /api/payments/payme/webhook.
@@ -14,12 +15,16 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { courseId, tier, amount, subscriptionPlan } = body as {
+  const { courseId, tier, subscriptionPlan } = body as {
     courseId?: string;
     tier?: "start" | "standard" | "pro";
-    amount: number;
     subscriptionPlan?: "monthly" | "yearly";
   };
+
+  const amount = await resolvePaymentAmount({ courseId, tier, subscriptionPlan });
+  if (amount === null) {
+    return NextResponse.json({ error: "invalid_purchase" }, { status: 400 });
+  }
 
   const admin = await createAdminClient();
   const { data: payment, error } = await admin
