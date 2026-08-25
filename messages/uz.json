@@ -146,11 +146,51 @@
     "browseCourses": "Kurslarni ko'rish",
     "progress": "O'zlashtirish",
     "subscriptionActive": "Faol obuna",
-    "subscriptionNone": "Obuna yo'q"
+    "subscriptionNone": "Obuna yo'q",
+    "profile": "Profil"
   },
   "footer": {
     "rights": "Barcha huquqlar himoyalangan.",
     "company": "SellerCloudX MChJ",
-    "contact": "Aloqa"
+    "contact": "Aloqa",
+    "terms": "Oferta shartnomasi",
+    "refundPolicy": "Qaytarish siyosati"
+  },
+  "legal": {
+    "terms": {
+      "title": "Ommaviy oferta shartnomasi",
+      "updated": "Oxirgi yangilanish",
+      "s1Title": "1. Umumiy qoidalar",
+      "s1Body": "Ushbu hujjat SellerCloudX MChJ (\"IZDOSH Academy\", \"Biz\") tomonidan taqdim etiladigan onlayn kurslarni sotib olish shartlarini belgilaydi. Kursni sotib olish orqali foydalanuvchi (\"Student\") ushbu shartlarga rozilik bildiradi.",
+      "s2Title": "2. Kursga kirish huquqi",
+      "s2Body": "To'lov tasdiqlangandan so'ng, Student tanlangan tarif (Start/Standard/Pro) doirasida kurs materiallariga kirish huquqiga ega bo'ladi. Obuna xaridida — barcha faol kurslarga, obuna amal qilish muddati davomida kirish huquqi beriladi.",
+      "s3Title": "3. Darslarning ketma-ketligi",
+      "s3Body": "Kurs mavzulari ketma-ket ochiladi: keyingi mavzuga o'tish uchun joriy mavzu va (mavjud bo'lsa) uning bilim tekshirish testi muvaffaqiyatli yakunlanishi shart.",
+      "s4Title": "4. To'lov va muddatli to'lov",
+      "s4Body": "To'lov Click yoki Payme orqali amalga oshiriladi. Muddatli to'lov (installment) tanlanganda, boshlang'ich to'lov umumiy summaning kamida 40%ini tashkil qiladi. Belgilangan jadval bo'yicha to'lov kechiktirilsa, kursga kirish shartnoma asosida vaqtincha bloklanishi mumkin.",
+      "s5Title": "5. Qaytarish va bekor qilish",
+      "s5Body": "Qaytarish shartlari alohida \"Qaytarish siyosati\" hujjatida keltirilgan — quyidagi havolaga qarang.",
+      "s6Title": "6. Aloqa",
+      "s6Body": "Savollar yuzasidan biz bilan \"Aloqa\" sahifasi orqali bog'lanishingiz mumkin."
+    },
+    "refund": {
+      "title": "Qaytarish siyosati",
+      "intro": "Biz talabalarimiz oldida to'liq javobgarmiz — shuning uchun risk kafolati ikki bosqichli.",
+      "coolingTitle": "Cooling-off kafolati",
+      "coolingBody": "Har qanday tarifda — birinchi 2 ta live dars/mavzudan keyin kurs sizga yoqmasa, savolsiz, 100% pul qaytarib beriladi.",
+      "actionTitle": "Standard va Pro tariflar uchun harakat-asosli kafolat",
+      "actionBody": "Agar barcha darslarni o'zlashtirib, barcha amaliy topshiriqlarni to'liq bajarsangiz-u, natijaga erisha olmasangiz — pulingizni 100% qaytarib beramiz.",
+      "howTitle": "Qaytarishni qanday so'rayman?",
+      "howBody": "\"Aloqa\" sahifasi orqali murojaat qiling yoki shartnomangizda ko'rsatilgan operator/administratorga yozing. Qaytarish so'rovlari 5 ish kuni ichida ko'rib chiqiladi.",
+      "note": "Muddatli to'lov (installment) bo'yicha kechiktirilgan to'lovlar mavjud bo'lsa, qaytarish summasi shartnoma shartlariga muvofiq hisoblanadi."
+    },
+    "contact": {
+      "title": "Aloqa",
+      "subtitle": "Savollaringiz bormi? Biz bilan bog'laning.",
+      "company": "SellerCloudX MChJ",
+      "telegram": "Telegram",
+      "instagram": "Instagram",
+      "email": "Email"
+    }
   }
 }

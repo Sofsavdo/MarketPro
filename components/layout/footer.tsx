@@ -11,12 +11,21 @@ export async function Footer() {
           © {new Date().getFullYear()} {t("brand.fullName")} — {t("footer.company")}.{" "}
           {t("footer.rights")}
         </p>
-        <div className="flex gap-6">
+        <div className="flex flex-wrap justify-center gap-6">
           <Link href="/courses" className="hover:text-slate-300">
             {t("nav.courses")}
           </Link>
           <Link href="/pricing" className="hover:text-slate-300">
             {t("nav.pricing")}
+          </Link>
+          <Link href="/terms" className="hover:text-slate-300">
+            {t("footer.terms")}
+          </Link>
+          <Link href="/refund-policy" className="hover:text-slate-300">
+            {t("footer.refundPolicy")}
+          </Link>
+          <Link href="/contact" className="hover:text-slate-300">
+            {t("footer.contact")}
           </Link>
         </div>
       </div>

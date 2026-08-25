@@ -62,9 +62,14 @@ export default async function DashboardPage() {
           <h1 className="text-3xl font-bold text-white">{t("dashboard.title")}</h1>
           <p className="mt-1 text-slate-400">{t("dashboard.subtitle")}</p>
         </div>
-        <Badge variant={subscription ? "default" : "outline"}>
-          {subscription ? t("dashboard.subscriptionActive") : t("dashboard.subscriptionNone")}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Badge variant={subscription ? "default" : "outline"}>
+            {subscription ? t("dashboard.subscriptionActive") : t("dashboard.subscriptionNone")}
+          </Badge>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/profile">{t("dashboard.profile")}</Link>
+          </Button>
+        </div>
       </div>
 
       {!enrollments?.length ? (

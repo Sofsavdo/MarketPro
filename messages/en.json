@@ -146,11 +146,51 @@
     "browseCourses": "Browse courses",
     "progress": "Progress",
     "subscriptionActive": "Active subscription",
-    "subscriptionNone": "No subscription"
+    "subscriptionNone": "No subscription",
+    "profile": "Profile"
   },
   "footer": {
     "rights": "All rights reserved.",
     "company": "SellerCloudX LLC",
-    "contact": "Contact"
+    "contact": "Contact",
+    "terms": "Terms of service",
+    "refundPolicy": "Refund policy"
+  },
+  "legal": {
+    "terms": {
+      "title": "Public offer agreement",
+      "updated": "Last updated",
+      "s1Title": "1. General provisions",
+      "s1Body": "This document sets out the terms for purchasing the online courses provided by SellerCloudX LLC (\"IZDOSH Academy\", \"We\"). By purchasing a course, the user (\"Student\") agrees to these terms.",
+      "s2Title": "2. Course access",
+      "s2Body": "Once payment is confirmed, the Student gets access to the course materials under the chosen plan (Start/Standard/Pro). With a subscription, access covers every active course for the subscription's duration.",
+      "s3Title": "3. Lesson sequence",
+      "s3Body": "Course topics unlock sequentially: moving to the next topic requires finishing the current one and, where applicable, passing its quiz.",
+      "s4Title": "4. Payment and installments",
+      "s4Body": "Payment is made via Click or Payme. When choosing installments, the initial payment must be at least 40% of the total. If the payment schedule is missed, course access may be temporarily suspended per the agreement.",
+      "s5Title": "5. Refunds and cancellation",
+      "s5Body": "Refund terms are set out in a separate \"Refund policy\" document — see the link below.",
+      "s6Title": "6. Contact",
+      "s6Body": "For any questions, reach us through the \"Contact\" page."
+    },
+    "refund": {
+      "title": "Refund policy",
+      "intro": "We take full responsibility to our students — that's why our risk guarantee has two layers.",
+      "coolingTitle": "Cooling-off guarantee",
+      "coolingBody": "On any plan — if you don't like the course after the first 2 live lessons/topics, we'll refund 100%, no questions asked.",
+      "actionTitle": "Action-based guarantee for Standard and Pro plans",
+      "actionBody": "If you complete every lesson and fully submit every assignment but still see no result, we'll refund you in full.",
+      "howTitle": "How do I request a refund?",
+      "howBody": "Reach out via the \"Contact\" page or message the operator/administrator named in your agreement. Refund requests are reviewed within 5 business days.",
+      "note": "If there are overdue installment payments, the refund amount is calculated according to the agreement's terms."
+    },
+    "contact": {
+      "title": "Contact",
+      "subtitle": "Got questions? Reach out.",
+      "company": "SellerCloudX LLC",
+      "telegram": "Telegram",
+      "instagram": "Instagram",
+      "email": "Email"
+    }
   }
 }
