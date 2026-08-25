@@ -71,3 +71,24 @@ supabase/seed.sql            — Namunaviy kurs katalogi
 Ishlab chiqarishga chiqarishdan oldin `.env.local`'ga haqiqiy Click/Payme merchant
 ma'lumotlarini kiriting (`CLICK_SERVICE_ID`, `CLICK_MERCHANT_ID`, `CLICK_SECRET_KEY`,
 `PAYME_MERCHANT_ID`, `PAYME_SECRET_KEY`).
+
+## Jonli darslar (Google Meet)
+
+Standard/Pro tariflar haftalik jonli guruh darsiga ega — bu tashqi Zoom emas, balki
+platforma ichida joylashgan:
+
+1. Admin `/admin/live-sessions`'da kurs + tarif (Standard/Pro) + sana/vaqt bo'yicha dars
+   yaratadi va Google Meet havolasini ([meet.google.com/new](https://meet.google.com/new)
+   orqali qo'lda yaratilgan) joylaydi.
+2. Talaba `/live`'da o'ziga tegishli (sotib olingan tarifi yoki obunasi qamrab oladigan)
+   darslar jadvalini ko'radi va "Darsga kirish" tugmasi orqali Meet'ga o'tadi.
+3. Har bir dars sahifasida jonli Savol-Javob taxtasi bor (`components/live/session-qa.tsx`)
+   — talaba istalgan vaqt savol yozadi, admin `/admin/live-sessions/[id]`'da javob beradi,
+   ikkala tomon ham Supabase Realtime orqali sahifani yangilamasdan ko'radi.
+4. Kirish huquqi `has_live_session_access` SQL funksiyasi orqali RLS darajasida
+   tekshiriladi: Pro xarid/obuna — Standard va Pro darslarga, Standard xarid — faqat
+   Standard darslarga kirish beradi.
+
+Google Meet havolasini avtomatik yaratish (Google Calendar API orqali) keyingi bosqichda
+qo'shilishi mumkin — hozircha admin havolani qo'lda joylaydi, bu ko'pchilik kichik
+platformalar uchun yetarli va OAuth sozlamalarini talab qilmaydi.

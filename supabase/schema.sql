@@ -152,6 +152,34 @@ create table if not exists public.waitlist (
   created_at timestamptz not null default now()
 );
 
+-- ============================================================
+-- live_sessions — scheduled Standard/Pro group classes (Google Meet)
+-- session_questions — live Q&A thread attached to each session
+-- ============================================================
+create table if not exists public.live_sessions (
+  id uuid primary key default gen_random_uuid(),
+  course_id uuid not null references public.courses (id) on delete cascade,
+  tier text not null check (tier in ('standard', 'pro')),
+  title text not null,
+  meet_url text not null,
+  scheduled_at timestamptz not null,
+  duration_minutes int not null default 60,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.session_questions (
+  id uuid primary key default gen_random_uuid(),
+  session_id uuid not null references public.live_sessions (id) on delete cascade,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  question text not null,
+  answer text,
+  answered_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_live_sessions_course on public.live_sessions (course_id, scheduled_at);
+create index if not exists idx_session_questions_session on public.session_questions (session_id, created_at);
+
 create index if not exists idx_lessons_course on public.lessons (course_id, order_index);
 create index if not exists idx_modules_course on public.modules (course_id, order_index);
 create index if not exists idx_progress_user_course on public.user_progress (user_id, course_id);
@@ -205,7 +233,56 @@ alter table public.waitlist enable row level security;
 create policy "Anyone can join the waitlist" on public.waitlist
   for insert with check (true);
 
--- Writes to courses/modules/lessons/quiz_questions/enrollments/subscriptions/payments,
--- and all admin reads (including unpublished courses and the waitlist), are performed
--- server-side with the service-role key (admin client), bypassing RLS — see
+-- ============================================================
+-- Live session access — Pro enrollment/subscription unlocks both Standard
+-- and Pro sessions; Standard enrollment unlocks only Standard sessions.
+-- ============================================================
+create or replace function public.has_live_session_access(p_session_id uuid)
+returns boolean as $$
+declare
+  v_course_id uuid;
+  v_tier text;
+begin
+  select course_id, tier into v_course_id, v_tier
+  from public.live_sessions where id = p_session_id;
+
+  if v_course_id is null then
+    return false;
+  end if;
+
+  if exists (
+    select 1 from public.subscriptions s
+    where s.user_id = auth.uid() and s.status = 'active' and s.current_period_end > now()
+  ) then
+    return true;
+  end if;
+
+  return exists (
+    select 1 from public.enrollments e
+    where e.user_id = auth.uid() and e.course_id = v_course_id
+      and (e.tier = 'pro' or (e.tier = 'standard' and v_tier = 'standard'))
+  );
+end;
+$$ language plpgsql security definer set search_path = public;
+
+alter table public.live_sessions enable row level security;
+alter table public.session_questions enable row level security;
+
+create policy "Users can view sessions they have access to" on public.live_sessions
+  for select using (public.has_live_session_access(id));
+
+create policy "Users can view questions for accessible sessions" on public.session_questions
+  for select using (public.has_live_session_access(session_id));
+create policy "Users can post questions on accessible sessions" on public.session_questions
+  for insert with check (auth.uid() = user_id and public.has_live_session_access(session_id));
+
+-- Required for the live Q&A board (components/live/session-qa.tsx) to receive
+-- new questions and instructor answers via supabase-js .channel(...).on("postgres_changes", ...)
+-- without the student having to refresh the page.
+alter publication supabase_realtime add table public.session_questions;
+
+-- Writes to courses/modules/lessons/quiz_questions/enrollments/subscriptions/payments/
+-- live_sessions, instructor answers on session_questions, and all admin reads
+-- (including unpublished courses and the waitlist) are performed server-side with
+-- the service-role key (admin client), bypassing RLS — see
 -- lib/supabase/server.ts#createAdminClient, app/[locale]/admin/*, and app/api/payments/*.

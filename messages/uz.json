@@ -11,7 +11,8 @@
     "login": "Kirish",
     "register": "Ro'yxatdan o'tish",
     "dashboard": "Kabinetim",
-    "logout": "Chiqish"
+    "logout": "Chiqish",
+    "live": "Jonli darslar"
   },
   "home": {
     "hero": {
@@ -81,9 +82,9 @@
     "tierStart": "Start",
     "tierStandard": "Standard",
     "tierPro": "Pro",
-    "tierStartDesc": "Video darslar + mentor bilan yopiq chat orqali qo'llab-quvvatlov",
-    "tierStandardDesc": "Video darslar + haftasiga 2 marta guruh Zoom darsi + amaliy topshiriq feedback",
-    "tierProDesc": "Kichik guruh (15 kishi) + haftasiga 3 marta live sessiya + founder shaxsiy audit",
+    "tierStartDesc": "Video darslar + mentor bilan yopiq community (Telegram) orqali qo'llab-quvvatlov",
+    "tierStandardDesc": "Video darslar + haftasiga 2 marta jonli guruh darsi (platforma ichida, Google Meet) + amaliy topshiriq feedback",
+    "tierProDesc": "Kichik guruh (15 kishi) + haftasiga 3 marta jonli sessiya (platforma ichida, Google Meet) + founder shaxsiy audit",
     "choosePlan": "Tanlash",
     "monthly": "Oylik",
     "yearly": "Yillik",
@@ -209,5 +210,20 @@
       "philosophyBody": "Nazariya emas amaliyot, video emas real loyiha. Har bir dastur founderning o'z tajribasi asosida original ishlab chiqiladi — boshqa manbalardan ko'chirilmaydi.",
       "cta": "Kurslarni ko'rish"
     }
+  },
+  "live": {
+    "title": "Jonli darslar",
+    "subtitle": "Standard va Pro tarif — haftalik jonli Zoom/Meet darslar jadvali",
+    "none": "Hozircha rejalashtirilgan jonli dars yo'q",
+    "join": "Darsga kirish (Google Meet)",
+    "starts": "Boshlanish",
+    "duration": "daqiqa",
+    "backToList": "Jonli darslarga qaytish",
+    "qaTitle": "Savol-javob",
+    "qaDesc": "Dars davomida yoki undan oldin savolingizni yozing — o'qituvchi javob beradi.",
+    "askPlaceholder": "Savolingizni yozing...",
+    "askButton": "Yuborish",
+    "waitingAnswer": "Javob kutilmoqda...",
+    "noAccess": "Bu darsga kirish huquqingiz yo'q — kursni tegishli tarifda sotib oling yoki obuna bo'ling."
   }
 }

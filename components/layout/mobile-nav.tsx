@@ -11,11 +11,13 @@ export function MobileNav({
   isLoggedIn,
   isAdmin,
   labels,
+  liveLabel,
 }: {
   navLinks: { href: "/courses" | "/pricing" | "/about"; label: string }[];
   isLoggedIn: boolean;
   isAdmin: boolean;
   labels: { dashboard: string; login: string; register: string; logout: string };
+  liveLabel: string;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -37,6 +39,11 @@ export function MobileNav({
                 {link.label}
               </Link>
             ))}
+            {isLoggedIn && (
+              <Link href="/live" onClick={() => setOpen(false)}>
+                {liveLabel}
+              </Link>
+            )}
             {isAdmin && (
               <Link href="/admin" onClick={() => setOpen(false)}>
                 Admin

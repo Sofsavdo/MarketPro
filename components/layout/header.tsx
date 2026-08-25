@@ -30,6 +30,11 @@ export async function Header() {
               {link.label}
             </Link>
           ))}
+          {user && (
+            <Link href="/live" className="hover:text-white">
+              {t("nav.live")}
+            </Link>
+          )}
           {profile?.role === "admin" && (
             <Link href="/admin" className="hover:text-white">
               Admin
@@ -64,6 +69,7 @@ export async function Header() {
             navLinks={navLinks}
             isLoggedIn={!!user}
             isAdmin={profile?.role === "admin"}
+            liveLabel={t("nav.live")}
             labels={{
               dashboard: t("nav.dashboard"),
               login: t("nav.login"),

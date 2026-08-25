@@ -67,6 +67,9 @@ export default async function DashboardPage() {
             {subscription ? t("dashboard.subscriptionActive") : t("dashboard.subscriptionNone")}
           </Badge>
           <Button asChild variant="outline" size="sm">
+            <Link href="/live">{t("nav.live")}</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
             <Link href="/profile">{t("dashboard.profile")}</Link>
           </Button>
         </div>

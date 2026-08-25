@@ -169,6 +169,39 @@ export interface Database {
         },
         { course_id: string; email: string; phone?: string | null }
       >;
+      live_sessions: Table<
+        {
+          id: string;
+          course_id: string;
+          tier: "standard" | "pro";
+          title: string;
+          meet_url: string;
+          scheduled_at: string;
+          duration_minutes: number;
+          created_at: string;
+        },
+        {
+          course_id: string;
+          tier: "standard" | "pro";
+          title: string;
+          meet_url: string;
+          scheduled_at: string;
+          duration_minutes?: number;
+        }
+      >;
+      session_questions: Table<
+        {
+          id: string;
+          session_id: string;
+          user_id: string;
+          question: string;
+          answer: string | null;
+          answered_at: string | null;
+          created_at: string;
+        },
+        { session_id: string; user_id: string; question: string },
+        { answer?: string | null; answered_at?: string | null }
+      >;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

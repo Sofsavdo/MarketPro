@@ -113,3 +113,42 @@ export async function deleteQuizQuestion(questionId: string, lessonId: string) {
   await admin.from("quiz_questions").delete().eq("id", questionId);
   revalidatePath(`/admin/lessons/${lessonId}`);
 }
+
+export async function createLiveSession(formData: FormData) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+
+  const scheduledDate = String(formData.get("scheduled_date") ?? "");
+  const scheduledTime = String(formData.get("scheduled_time") ?? "");
+
+  await admin.from("live_sessions").insert({
+    course_id: String(formData.get("course_id") ?? ""),
+    tier: formData.get("tier") as "standard" | "pro",
+    title: String(formData.get("title") ?? ""),
+    meet_url: String(formData.get("meet_url") ?? ""),
+    scheduled_at: new Date(`${scheduledDate}T${scheduledTime}`).toISOString(),
+    duration_minutes: Number(formData.get("duration_minutes") ?? 60),
+  });
+
+  revalidatePath("/admin/live-sessions");
+}
+
+export async function deleteLiveSession(sessionId: string) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+  await admin.from("live_sessions").delete().eq("id", sessionId);
+  revalidatePath("/admin/live-sessions");
+}
+
+export async function answerSessionQuestion(questionId: string, sessionId: string, formData: FormData) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+
+  await admin
+    .from("session_questions")
+    .update({ answer: String(formData.get("answer") ?? ""), answered_at: new Date().toISOString() })
+    .eq("id", questionId);
+
+  revalidatePath(`/admin/live-sessions/${sessionId}`);
+  revalidatePath(`/live/${sessionId}`);
+}

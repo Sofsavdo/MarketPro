@@ -11,7 +11,8 @@
     "login": "Log in",
     "register": "Sign up",
     "dashboard": "Dashboard",
-    "logout": "Log out"
+    "logout": "Log out",
+    "live": "Live classes"
   },
   "home": {
     "hero": {
@@ -81,9 +82,9 @@
     "tierStart": "Start",
     "tierStandard": "Standard",
     "tierPro": "Pro",
-    "tierStartDesc": "Video lessons + mentor support in a private chat",
-    "tierStandardDesc": "Video lessons + group Zoom sessions twice a week + feedback on assignments",
-    "tierProDesc": "Small group (15 people) + 3 live sessions a week + personal audit by the founder",
+    "tierStartDesc": "Video lessons + mentor support in a private community (Telegram)",
+    "tierStandardDesc": "Video lessons + a live group class twice a week (in-platform, Google Meet) + feedback on assignments",
+    "tierProDesc": "Small group (15 people) + 3 live sessions a week (in-platform, Google Meet) + personal audit by the founder",
     "choosePlan": "Choose",
     "monthly": "Monthly",
     "yearly": "Yearly",
@@ -209,5 +210,20 @@
       "philosophyBody": "Not theory — action. Not video — a real project. Every curriculum is built from the founder's own experience, never copied from third-party materials.",
       "cta": "Browse courses"
     }
+  },
+  "live": {
+    "title": "Live classes",
+    "subtitle": "Standard and Pro plans — weekly live Zoom/Meet class schedule",
+    "none": "No live classes scheduled yet",
+    "join": "Join class (Google Meet)",
+    "starts": "Starts",
+    "duration": "min",
+    "backToList": "Back to live classes",
+    "qaTitle": "Q&A",
+    "qaDesc": "Ask your question before or during the class — the instructor will answer.",
+    "askPlaceholder": "Write your question...",
+    "askButton": "Send",
+    "waitingAnswer": "Waiting for an answer...",
+    "noAccess": "You don't have access to this class — buy the course at the right plan or subscribe."
   }
 }
