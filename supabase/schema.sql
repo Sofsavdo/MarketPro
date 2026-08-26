@@ -22,6 +22,14 @@ create table if not exists public.profiles (
   -- stored here — nothing would keep a stored value in sync without a cron.
   lead_status text not null default 'new_lead'
     check (lead_status in ('new_lead', 'vip_offered', 'downsell_subscribed')),
+  -- Highest referral-count reward tier already granted (see
+  -- lib/lms/referral-actions.ts) — without this, a race between two
+  -- friends' signups landing at once, or an admin correcting a fraudulent
+  -- referral, can make the referral count skip straight past a threshold
+  -- like 10, and the strict "count === 10" check would then never fire for
+  -- that referrer. Tracking what's already been granted lets a late check
+  -- catch up on any tier that was crossed but never rewarded.
+  referral_reward_tier int not null default 0,
   created_at timestamptz not null default now()
 );
 

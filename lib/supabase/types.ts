@@ -30,6 +30,7 @@ export interface Database {
           role: "student" | "instructor" | "admin";
           referral_code: string | null;
           referred_by: string | null;
+          referral_reward_tier: number;
           lead_status: LeadStatus;
           created_at: string;
         },
@@ -45,6 +46,7 @@ export interface Database {
           phone?: string | null;
           address?: string | null;
           referred_by?: string | null;
+          referral_reward_tier?: number;
           lead_status?: LeadStatus;
         }
       >;

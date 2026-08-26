@@ -247,7 +247,7 @@
   },
   "referral": {
     "title": "Invite friends",
-    "desc": "Every friend who signs up through your link counts. 10 friends = 1 month, 50 = 6 months, 100 = 1 year of free Premium!",
+    "desc": "Every friend who registers through your link counts — they also get a free 7-day trial. 10 friends = 1 month, 50 = 6 months, 100 = 1 year of free Premium subscription!",
     "invited": "Invited",
     "nextReward": "Next reward: {count} friends → {months} mo free"
   },
