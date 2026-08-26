@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
-import { formatSom } from "@/lib/utils";
+import { formatSom, formatDate } from "@/lib/utils";
 import { refundPayment } from "@/lib/lms/admin-actions";
 
 export default async function AdminPaymentsPage() {
@@ -61,7 +61,7 @@ export default async function AdminPaymentsPage() {
             {(payments ?? []).map((p) => (
               <tr key={p.id} className="border-b border-slate-900">
                 <td className="py-3 pr-4 text-slate-400">
-                  {new Date(p.created_at).toLocaleDateString("uz-UZ")}
+                  {formatDate(p.created_at)}
                 </td>
                 <td className="py-3 pr-4 capitalize text-slate-300">{p.provider}</td>
                 <td className="py-3 pr-4 text-white">

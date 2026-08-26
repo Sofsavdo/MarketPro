@@ -28,6 +28,38 @@ export function toIntlLocale(locale: Locale) {
 }
 
 /**
+ * This app only serves Uzbekistan, so every date/time shown to anyone —
+ * student or admin — should read as Tashkent wall-clock time regardless of
+ * which timezone the Node server process happens to run in (Vercel and
+ * most hosts default to UTC, which silently shifted every displayed time
+ * by 5 hours before this existed). Uzbekistan doesn't observe DST, so a
+ * fixed IANA zone is always correct.
+ */
+const APP_TIME_ZONE = "Asia/Tashkent";
+
+export function formatDateTime(
+  date: string | Date,
+  locale: Locale = "uz",
+  options?: Intl.DateTimeFormatOptions,
+) {
+  return new Date(date).toLocaleString(toIntlLocale(locale), {
+    timeZone: APP_TIME_ZONE,
+    ...options,
+  });
+}
+
+export function formatDate(
+  date: string | Date,
+  locale: Locale = "uz",
+  options?: Intl.DateTimeFormatOptions,
+) {
+  return new Date(date).toLocaleDateString(toIntlLocale(locale), {
+    timeZone: APP_TIME_ZONE,
+    ...options,
+  });
+}
+
+/**
  * Normalizes a phone number to the E.164-ish digits-only form Supabase phone
  * auth expects (e.g. "998901234567"). Students type it as "+998 90 123 45 67"
  * or just "90 123 45 67" — a bare 9-digit local number is assumed to be

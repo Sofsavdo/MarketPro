@@ -372,12 +372,17 @@ export async function createLiveSession(formData: FormData) {
   const scheduledDate = String(formData.get("scheduled_date") ?? "");
   const scheduledTime = String(formData.get("scheduled_time") ?? "");
 
+  // The date/time inputs are the admin's wall-clock time in Tashkent — without
+  // an explicit offset, `new Date("...T...")` parses as the server process's
+  // local time (usually UTC on hosting), which would silently shift every
+  // scheduled class by 5 hours. Uzbekistan doesn't observe DST, so a fixed
+  // +05:00 offset is always correct.
   await admin.from("live_sessions").insert({
     course_id: String(formData.get("course_id") ?? ""),
     tier: formData.get("tier") as "standard" | "pro",
     title: String(formData.get("title") ?? ""),
     meet_url: String(formData.get("meet_url") ?? ""),
-    scheduled_at: new Date(`${scheduledDate}T${scheduledTime}`).toISOString(),
+    scheduled_at: new Date(`${scheduledDate}T${scheduledTime}:00+05:00`).toISOString(),
     duration_minutes: Number(formData.get("duration_minutes") ?? 60),
   });
 

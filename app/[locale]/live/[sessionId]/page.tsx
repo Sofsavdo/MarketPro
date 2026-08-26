@@ -7,8 +7,13 @@ import { ChevronLeft, Video, Clock } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { SessionQA } from "@/components/live/session-qa";
 import { localizedField } from "@/lib/courses";
-import { toIntlLocale } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
+
+const TIER_KEY = {
+  standard: "pricing.tierStandard",
+  pro: "pricing.tierPro",
+} as const;
 
 export default async function LiveSessionDetailPage({
   params,
@@ -17,6 +22,7 @@ export default async function LiveSessionDetailPage({
 }) {
   const { sessionId } = await params;
   const t = await getTranslations("live");
+  const tAll = await getTranslations();
   const locale = (await getLocale()) as Locale;
   const supabase = await createClient();
   const {
@@ -60,7 +66,7 @@ export default async function LiveSessionDetailPage({
       </Link>
 
       <div className="mt-4 flex items-center gap-2">
-        <Badge variant="outline">{session.tier}</Badge>
+        <Badge variant="outline">{tAll(TIER_KEY[session.tier])}</Badge>
         <span className="text-sm text-slate-500">
           {course && localizedField(course, "title", locale)}
         </span>
@@ -69,7 +75,7 @@ export default async function LiveSessionDetailPage({
 
       <div className="mt-4 flex items-center gap-2 text-sm text-slate-400">
         <Clock className="h-4 w-4" />
-        {new Date(session.scheduled_at).toLocaleString(toIntlLocale(locale), {
+        {formatDateTime(session.scheduled_at, locale, {
           dateStyle: "full",
           timeStyle: "short",
         })}{" "}

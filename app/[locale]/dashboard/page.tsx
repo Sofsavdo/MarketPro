@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { createClient } from "@/lib/supabase/server";
 import { localizedField } from "@/lib/courses";
 import type { Locale } from "@/i18n/routing";
-import { formatSom, toIntlLocale } from "@/lib/utils";
+import { formatSom, formatDate } from "@/lib/utils";
 import { PayInstallmentButton } from "@/components/course/pay-installment-button";
 import { AlertTriangle } from "lucide-react";
 
@@ -158,9 +158,7 @@ export default async function DashboardPage() {
                           {t("dashboard.nextInstallment")}: {formatSom(nextInstallment.amount, locale)}
                         </span>
                         <span className="text-xs text-slate-500">
-                          {new Date(nextInstallment.due_date).toLocaleDateString(
-                            toIntlLocale(locale),
-                          )}
+                          {formatDate(nextInstallment.due_date, locale)}
                         </span>
                       </div>
                       <div className="mt-2">

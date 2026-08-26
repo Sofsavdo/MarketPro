@@ -6,11 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Video } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getUpcomingSessionsForUser } from "@/lib/lms/live-sessions";
-import { toIntlLocale } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
+
+const TIER_KEY = {
+  standard: "pricing.tierStandard",
+  pro: "pricing.tierPro",
+} as const;
 
 export default async function LiveSessionsPage() {
   const t = await getTranslations("live");
+  const tAll = await getTranslations();
   const locale = (await getLocale()) as Locale;
   const supabase = await createClient();
   const {
@@ -18,7 +24,7 @@ export default async function LiveSessionsPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const sessions = await getUpcomingSessionsForUser();
+  const sessions = await getUpcomingSessionsForUser(locale);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-16">
@@ -31,9 +37,9 @@ export default async function LiveSessionsPage() {
             <Card className="transition-colors hover:border-amber-500/50">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <Badge variant="outline">{s.tier}</Badge>
+                  <Badge variant="outline">{tAll(TIER_KEY[s.tier])}</Badge>
                   <span className="text-xs text-slate-500">
-                    {new Date(s.scheduled_at).toLocaleString(toIntlLocale(locale), {
+                    {formatDateTime(s.scheduled_at, locale, {
                       dateStyle: "medium",
                       timeStyle: "short",
                     })}

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createLiveSession, deleteLiveSession } from "@/lib/lms/admin-actions";
+import { formatDateTime } from "@/lib/utils";
 
 export default async function AdminLiveSessionsPage() {
   const supabase = await createAdminClient();
@@ -85,7 +86,7 @@ export default async function AdminLiveSessionsPage() {
               <Input id="scheduled_date" name="scheduled_date" type="date" required />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="scheduled_time">Vaqt</Label>
+              <Label htmlFor="scheduled_time">Vaqt (Toshkent bo&apos;yicha)</Label>
               <Input id="scheduled_time" name="scheduled_time" type="time" required />
             </div>
           </div>
@@ -112,7 +113,7 @@ export default async function AdminLiveSessionsPage() {
             {(sessions ?? []).map((s) => (
               <tr key={s.id} className="border-b border-slate-900">
                 <td className="py-3 pr-4 text-slate-300">
-                  {new Date(s.scheduled_at).toLocaleString("uz-UZ")}
+                  {formatDateTime(s.scheduled_at)}
                 </td>
                 <td className="py-3 pr-4 text-white">{courseById.get(s.course_id) ?? "—"}</td>
                 <td className="py-3 pr-4">

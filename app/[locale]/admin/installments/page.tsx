@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
-import { formatSom } from "@/lib/utils";
+import { formatSom, formatDate } from "@/lib/utils";
 
 export default async function AdminInstallmentsPage() {
   const supabase = await createAdminClient();
@@ -88,7 +88,7 @@ export default async function AdminInstallmentsPage() {
                         <span>{formatSom(ip.amount)}</span>
                       </div>
                       <div className="mt-1">
-                        {new Date(ip.due_date).toLocaleDateString("uz-UZ")} —{" "}
+                        {formatDate(ip.due_date)} —{" "}
                         {overdue ? "muddati o'tgan" : ip.status === "paid" ? "to'langan" : "kutilmoqda"}
                       </div>
                     </div>

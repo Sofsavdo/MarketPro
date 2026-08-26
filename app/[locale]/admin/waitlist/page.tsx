@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/server";
+import { formatDate } from "@/lib/utils";
 
 export default async function AdminWaitlistPage() {
   const supabase = await createAdminClient();
@@ -33,7 +34,7 @@ export default async function AdminWaitlistPage() {
             {(entries ?? []).map((e) => (
               <tr key={e.id} className="border-b border-slate-900">
                 <td className="py-3 pr-4 text-slate-400">
-                  {new Date(e.created_at).toLocaleDateString("uz-UZ")}
+                  {formatDate(e.created_at)}
                 </td>
                 <td className="py-3 pr-4 text-white">{courseById.get(e.course_id) ?? "—"}</td>
                 <td className="py-3 pr-4 text-slate-300">{e.email}</td>

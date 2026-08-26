@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { answerSessionQuestion } from "@/lib/lms/admin-actions";
+import { formatDateTime } from "@/lib/utils";
 
 export default async function AdminSessionQuestionsPage({
   params,
@@ -29,7 +30,7 @@ export default async function AdminSessionQuestionsPage({
     <div>
       <h1 className="text-2xl font-bold text-white">{session.title}</h1>
       <p className="mt-1 text-sm text-slate-500">
-        {new Date(session.scheduled_at).toLocaleString("uz-UZ")}
+        {formatDateTime(session.scheduled_at)}
       </p>
 
       <div className="mt-8 space-y-4">
