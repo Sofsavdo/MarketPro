@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { formatSom } from "@/lib/utils";
+import { refundPayment } from "@/lib/lms/admin-actions";
 
 export default async function AdminPaymentsPage() {
   const supabase = await createAdminClient();
@@ -44,7 +45,7 @@ export default async function AdminPaymentsPage() {
       </div>
 
       <div className="mt-8 overflow-x-auto">
-        <table className="w-full min-w-[760px] border-collapse text-sm">
+        <table className="w-full min-w-[860px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-slate-800 text-left text-slate-400">
               <th className="py-2 pr-4">Sana</th>
@@ -53,6 +54,7 @@ export default async function AdminPaymentsPage() {
               <th className="py-2 pr-4">Tarif</th>
               <th className="py-2 pr-4">Summa</th>
               <th className="py-2 pr-4">Holat</th>
+              <th className="py-2 pr-4"></th>
             </tr>
           </thead>
           <tbody>
@@ -70,11 +72,20 @@ export default async function AdminPaymentsPage() {
                 <td className="py-3 pr-4">
                   <Badge variant={statusVariant[p.status]}>{p.status}</Badge>
                 </td>
+                <td className="py-3 pr-4">
+                  {p.status === "paid" && (
+                    <form action={refundPayment.bind(null, p.id)}>
+                      <button type="submit" className="text-red-400 hover:underline">
+                        Qaytarish
+                      </button>
+                    </form>
+                  )}
+                </td>
               </tr>
             ))}
             {!payments?.length && (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-slate-500">
+                <td colSpan={7} className="py-8 text-center text-slate-500">
                   Hozircha to&apos;lovlar yo&apos;q
                 </td>
               </tr>

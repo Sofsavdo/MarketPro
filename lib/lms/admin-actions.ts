@@ -154,3 +154,38 @@ export async function answerSessionQuestion(questionId: string, sessionId: strin
   revalidatePath(`/admin/live-sessions/${sessionId}`);
   revalidatePath(`/live/${sessionId}`);
 }
+
+/**
+ * Implements the refund policy (§4.2/§4.2 of the business plan, and
+ * /refund-policy): marks the payment refunded and revokes whatever it
+ * granted — the course enrollment, or the active subscription. Progress
+ * (user_progress) is left alone; if the student is re-enrolled later
+ * there's no reason to make them redo lessons they already watched.
+ */
+export async function refundPayment(paymentId: string) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+
+  const { data: payment } = await admin.from("payments").select("*").eq("id", paymentId).single();
+  if (!payment || payment.status !== "paid") return;
+
+  await admin.from("payments").update({ status: "refunded" }).eq("id", paymentId);
+
+  if (payment.course_id) {
+    await admin
+      .from("enrollments")
+      .delete()
+      .eq("user_id", payment.user_id)
+      .eq("course_id", payment.course_id);
+  }
+
+  if (payment.subscription_plan) {
+    await admin
+      .from("subscriptions")
+      .update({ status: "canceled" })
+      .eq("user_id", payment.user_id)
+      .eq("status", "active");
+  }
+
+  revalidatePath("/admin/payments");
+}
