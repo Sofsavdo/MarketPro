@@ -327,6 +327,19 @@ create index if not exists idx_lesson_materials_lesson on public.lesson_material
 create index if not exists idx_progress_user_course on public.user_progress (user_id, course_id);
 create index if not exists idx_enrollments_user on public.enrollments (user_id);
 
+-- Postgres doesn't auto-index foreign key columns (only primary keys get
+-- that), and this exact filter — active subscription for a user, not yet
+-- expired — is what has_course_access/getLessonAccess run on nearly every
+-- page load (any lesson, the dashboard, /live, every purchase check). Without
+-- this it's a sequential scan of the whole subscriptions table on every
+-- single request once there's real traffic.
+create index if not exists idx_subscriptions_user_status
+  on public.subscriptions (user_id, status, current_period_end);
+create index if not exists idx_quiz_questions_lesson on public.quiz_questions (lesson_id);
+create index if not exists idx_payments_user on public.payments (user_id, created_at);
+create index if not exists idx_installment_plans_user_course
+  on public.installment_plans (user_id, course_id);
+
 -- ============================================================
 -- Row Level Security
 -- ============================================================
