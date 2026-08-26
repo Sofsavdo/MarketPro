@@ -13,6 +13,44 @@ function slugify(input: string) {
     .replace(/-+/g, "-");
 }
 
+/**
+ * Lesson order_index is a single sequence across the whole course (module 1's
+ * lessons, then module 2's, etc.) — that's what isLessonLocked/completeLesson
+ * walk with `order_index - 1` / `+ 1` to find the previous/next lesson, and a
+ * gap or a per-module restart makes that lookup silently wrong (a gap reads
+ * as "no previous lesson", which unlocks a lesson that shouldn't be).
+ * Call this after any insert/delete/reorder that touches lessons or module
+ * order so the sequence stays contiguous and matches module order.
+ */
+async function renumberCourseLessons(
+  admin: Awaited<ReturnType<typeof createAdminClient>>,
+  courseId: string,
+) {
+  const { data: modules } = await admin
+    .from("modules")
+    .select("id")
+    .eq("course_id", courseId)
+    .order("order_index", { ascending: true });
+
+  const { data: lessons } = await admin
+    .from("lessons")
+    .select("id, module_id, order_index")
+    .eq("course_id", courseId)
+    .order("order_index", { ascending: true });
+
+  if (!modules || !lessons) return;
+
+  let nextIndex = 0;
+  for (const mod of modules) {
+    for (const lesson of lessons.filter((l) => l.module_id === mod.id)) {
+      if (lesson.order_index !== nextIndex) {
+        await admin.from("lessons").update({ order_index: nextIndex }).eq("id", lesson.id);
+      }
+      nextIndex += 1;
+    }
+  }
+}
+
 async function requireAdmin() {
   const supabase = await createClient();
   const {
@@ -151,6 +189,7 @@ export async function deleteModule(moduleId: string, courseId: string) {
   await requireAdmin();
   const admin = await createAdminClient();
   await admin.from("modules").delete().eq("id", moduleId);
+  await renumberCourseLessons(admin, courseId);
   revalidatePath(`/admin/courses/${courseId}`);
 }
 
@@ -158,11 +197,9 @@ export async function createLesson(courseId: string, moduleId: string, formData:
   await requireAdmin();
   const admin = await createAdminClient();
 
-  const { count } = await admin
-    .from("lessons")
-    .select("id", { count: "exact", head: true })
-    .eq("module_id", moduleId);
-
+  // Placeholder order_index high enough to sort after every existing lesson
+  // in the course; renumberCourseLessons below then settles it into the
+  // correct slot at the end of this module's lessons.
   const { data: lesson, error } = await admin
     .from("lessons")
     .insert({
@@ -171,12 +208,14 @@ export async function createLesson(courseId: string, moduleId: string, formData:
       title_uz: String(formData.get("title_uz") ?? ""),
       title_ru: String(formData.get("title_ru") ?? ""),
       title_en: String(formData.get("title_en") ?? ""),
-      order_index: count ?? 0,
+      order_index: 1_000_000,
     })
     .select("id")
     .single();
 
   if (error || !lesson) throw new Error(error?.message ?? "Dars yaratilmadi");
+
+  await renumberCourseLessons(admin, courseId);
 
   revalidatePath(`/admin/courses/${courseId}`);
   redirect(`/admin/lessons/${lesson.id}`);
@@ -186,6 +225,7 @@ export async function deleteLesson(lessonId: string, courseId: string) {
   await requireAdmin();
   const admin = await createAdminClient();
   await admin.from("lessons").delete().eq("id", lessonId);
+  await renumberCourseLessons(admin, courseId);
   revalidatePath(`/admin/courses/${courseId}`);
 }
 
@@ -247,6 +287,7 @@ export async function moveModule(moduleId: string, courseId: string, direction: 
   const sibling = siblings[swapIndex];
   await admin.from("modules").update({ order_index: sibling.order_index }).eq("id", mod.id);
   await admin.from("modules").update({ order_index: mod.order_index }).eq("id", sibling.id);
+  await renumberCourseLessons(admin, courseId);
 
   revalidatePath(`/admin/courses/${courseId}`);
 }

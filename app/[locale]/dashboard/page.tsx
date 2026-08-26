@@ -35,7 +35,23 @@ export default async function DashboardPage() {
     .select("course_id, tier")
     .eq("user_id", user.id);
 
-  const courseIds = (enrollments ?? []).map((e) => e.course_id);
+  // A subscription grants every published course without an enrollment row
+  // per course — so subscribers must see the full catalog here, not "no
+  // courses yet", or their dashboard would look broken despite paying for
+  // unlimited access.
+  const { data: subscriberCourses } = subscription
+    ? await supabase
+        .from("courses")
+        .select("id")
+        .eq("is_published", true)
+        .order("order_index", { ascending: true })
+    : { data: null };
+
+  const courses = subscription
+    ? (subscriberCourses ?? []).map((c) => ({ course_id: c.id, tier: "pro" as const }))
+    : (enrollments ?? []);
+
+  const courseIds = courses.map((e) => e.course_id);
 
   const { data: enrolledCourses } = courseIds.length
     ? await supabase.from("courses").select("*").in("id", courseIds)
@@ -101,7 +117,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {!enrollments?.length ? (
+      {!courses.length ? (
         <div className="mt-16 flex flex-col items-center gap-4 text-center">
           <p className="text-slate-400">{t("dashboard.noCourses")}</p>
           <Button asChild>
@@ -110,7 +126,7 @@ export default async function DashboardPage() {
         </div>
       ) : (
         <div className="mt-10 grid gap-6 sm:grid-cols-2">
-          {enrollments.map((enrollment) => {
+          {courses.map((enrollment) => {
             const course = courseById.get(enrollment.course_id);
             if (!course) return null;
             const pct = progressFor(enrollment.course_id);
@@ -155,7 +171,11 @@ export default async function DashboardPage() {
 
                   <Button asChild variant="outline" className="w-full">
                     <Link href={`/courses/${course.slug}`}>
-                      {pct > 0 ? t("course.continueLesson") : t("course.startLesson")}
+                      {pct >= 100
+                        ? t("course.completed")
+                        : pct > 0
+                          ? t("course.continueLesson")
+                          : t("course.startLesson")}
                     </Link>
                   </Button>
                 </CardContent>

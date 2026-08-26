@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
@@ -56,6 +56,20 @@ export function LessonPlayer({
   const router = useRouter();
 
   const [videoWatched, setVideoWatched] = useState(alreadyCompleted || !videoUrl);
+  const [videoError, setVideoError] = useState(false);
+
+  // react-player's provider embeds (YouTube/Vimeo custom elements) can fail
+  // to load their bootstrap script off-thread — that rejection doesn't
+  // surface through the <video> element's onError, so without this the
+  // player silently shows a broken-image icon instead of a real message.
+  useEffect(() => {
+    if (!videoUrl || videoError) return;
+    function handleRejection() {
+      setVideoError(true);
+    }
+    window.addEventListener("unhandledrejection", handleRejection);
+    return () => window.removeEventListener("unhandledrejection", handleRejection);
+  }, [videoUrl, videoError]);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [quizResult, setQuizResult] = useState<"passed" | "failed" | null>(
     quizAlreadyPassed ? "passed" : null,
@@ -106,13 +120,21 @@ export function LessonPlayer({
     <div className="mt-8 space-y-8">
       {videoUrl && (
         <div className="aspect-video overflow-hidden rounded-2xl border border-slate-800 bg-black">
-          <ReactPlayer
-            src={videoUrl}
-            width="100%"
-            height="100%"
-            controls
-            onEnded={() => setVideoWatched(true)}
-          />
+          {videoError ? (
+            <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center text-slate-500">
+              <XCircle className="h-8 w-8 text-red-400" />
+              <p className="text-sm">{t("videoError")}</p>
+            </div>
+          ) : (
+            <ReactPlayer
+              src={videoUrl}
+              width="100%"
+              height="100%"
+              controls
+              onEnded={() => setVideoWatched(true)}
+              onError={() => setVideoError(true)}
+            />
+          )}
         </div>
       )}
 
@@ -213,7 +235,7 @@ export function LessonPlayer({
         </Button>
       ) : (
         <p className="flex items-center gap-2 text-emerald-400">
-          <CheckCircle2 className="h-5 w-5" /> {t("quizPassed")}
+          <CheckCircle2 className="h-5 w-5" /> {t("lessonCompleted")}
         </p>
       )}
     </div>

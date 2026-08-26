@@ -151,7 +151,9 @@
     "quizFailed": "Test topshirilmadi. Qayta urinib ko'ring.",
     "quizRequired": "Keyingi mavzuga o'tish uchun testni muvaffaqiyatli topshiring",
     "videoComingSoon": "Video tez orada",
-    "materialsTitle": "Qo'shimcha materiallar"
+    "materialsTitle": "Qo'shimcha materiallar",
+    "videoError": "Videoni yuklab bo'lmadi. Internet aloqasini tekshiring yoki keyinroq qayta urinib ko'ring.",
+    "lessonCompleted": "Dars yakunlandi"
   },
   "dashboard": {
     "title": "Mening kurslarim",

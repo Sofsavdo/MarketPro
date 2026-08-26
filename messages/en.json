@@ -151,7 +151,9 @@
     "quizFailed": "Quiz not passed. Try again.",
     "quizRequired": "Pass the quiz to move on to the next lesson",
     "videoComingSoon": "Video coming soon",
-    "materialsTitle": "Additional materials"
+    "materialsTitle": "Additional materials",
+    "videoError": "Could not load the video. Check your connection or try again later.",
+    "lessonCompleted": "Lesson completed"
   },
   "dashboard": {
     "title": "My courses",
