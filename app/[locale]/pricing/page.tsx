@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,13 +6,21 @@ import { formatSom } from "@/lib/utils";
 import { SUBSCRIPTION_PRICE } from "@/lib/pricing";
 import { SubscribeButtons } from "@/components/course/subscribe-buttons";
 import { createClient } from "@/lib/supabase/server";
+import { getPublishedCourses } from "@/lib/courses";
+import type { Locale } from "@/i18n/routing";
 
 export default async function PricingPage() {
   const t = await getTranslations();
+  const locale = (await getLocale()) as Locale;
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const courses = await getPublishedCourses();
+  const startingPrice = courses.length
+    ? Math.min(...courses.map((c) => c.price_start))
+    : null;
 
   const tiers = [
     { key: "start", label: t("pricing.tierStart"), desc: t("pricing.tierStartDesc") },
@@ -41,7 +49,15 @@ export default async function PricingPage() {
           ))}
         </div>
         <p className="mt-3 text-sm text-slate-500">
-          {t("home.coursesSection.from")} —{" "}
+          {startingPrice !== null && (
+            <>
+              {t("home.coursesSection.from")}{" "}
+              <span className="font-medium text-slate-300">
+                {formatSom(startingPrice, locale)}
+              </span>{" "}
+              ·{" "}
+            </>
+          )}
           <Link href="/courses" className="text-amber-400 hover:underline">
             {t("home.coursesSection.viewAll")}
           </Link>
@@ -64,7 +80,7 @@ export default async function PricingPage() {
             <div className="rounded-xl border border-slate-800 p-5">
               <p className="text-sm text-slate-400">{t("pricing.monthly")}</p>
               <p className="mt-1 text-3xl font-bold text-white">
-                {formatSom(SUBSCRIPTION_PRICE.monthly)}
+                {formatSom(SUBSCRIPTION_PRICE.monthly, locale)}
               </p>
               <div className="mt-4">
                 <SubscribeButtons plan="monthly" isLoggedIn={!!user} />
@@ -75,7 +91,7 @@ export default async function PricingPage() {
                 {t("pricing.yearly")} · <span className="text-amber-400">{t("pricing.yearlyDiscount")}</span>
               </p>
               <p className="mt-1 text-3xl font-bold text-white">
-                {formatSom(SUBSCRIPTION_PRICE.yearly)}
+                {formatSom(SUBSCRIPTION_PRICE.yearly, locale)}
               </p>
               <div className="mt-4">
                 <SubscribeButtons plan="yearly" isLoggedIn={!!user} />

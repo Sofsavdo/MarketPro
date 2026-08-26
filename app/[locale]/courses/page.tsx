@@ -18,6 +18,10 @@ export default async function CoursesPage() {
       <h1 className="text-3xl font-bold text-white sm:text-4xl">{t("home.coursesSection.title")}</h1>
       <p className="mt-2 text-slate-400">{t("home.coursesSection.subtitle")}</p>
 
+      {!courses.length && (
+        <p className="mt-16 text-center text-slate-500">{t("home.coursesSection.empty")}</p>
+      )}
+
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {courses.map((course) => (
           <Card key={course.id} className="flex flex-col justify-between">
@@ -45,7 +49,7 @@ export default async function CoursesPage() {
             <CardContent className="flex items-center justify-between pt-0">
               <p className="text-sm text-slate-400">
                 {t("home.coursesSection.from")}{" "}
-                <span className="font-semibold text-white">{formatSom(course.price_start)}</span>
+                <span className="font-semibold text-white">{formatSom(course.price_start, locale)}</span>
               </p>
               <Button asChild size="sm" variant={course.is_published ? "default" : "outline"}>
                 <Link href={`/courses/${course.slug}`}>{t("home.coursesSection.viewCourse")}</Link>

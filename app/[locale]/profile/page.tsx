@@ -46,7 +46,7 @@ export default async function ProfilePage() {
               <Input id="email" value={user.email ?? ""} disabled />
             </div>
             <Button type="submit" className="mt-2">
-              Saqlash
+              {t("save")}
             </Button>
           </form>
         </CardContent>

@@ -1,11 +1,14 @@
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Video, Clock } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { SessionQA } from "@/components/live/session-qa";
+import { localizedField } from "@/lib/courses";
+import { toIntlLocale } from "@/lib/utils";
+import type { Locale } from "@/i18n/routing";
 
 export default async function LiveSessionDetailPage({
   params,
@@ -14,6 +17,7 @@ export default async function LiveSessionDetailPage({
 }) {
   const { sessionId } = await params;
   const t = await getTranslations("live");
+  const locale = (await getLocale()) as Locale;
   const supabase = await createClient();
   const {
     data: { user },
@@ -39,7 +43,7 @@ export default async function LiveSessionDetailPage({
 
   const { data: course } = await supabase
     .from("courses")
-    .select("title_uz")
+    .select("*")
     .eq("id", session.course_id)
     .maybeSingle();
 
@@ -57,13 +61,15 @@ export default async function LiveSessionDetailPage({
 
       <div className="mt-4 flex items-center gap-2">
         <Badge variant="outline">{session.tier}</Badge>
-        <span className="text-sm text-slate-500">{course?.title_uz}</span>
+        <span className="text-sm text-slate-500">
+          {course && localizedField(course, "title", locale)}
+        </span>
       </div>
       <h1 className="mt-2 text-2xl font-bold text-white sm:text-3xl">{session.title}</h1>
 
       <div className="mt-4 flex items-center gap-2 text-sm text-slate-400">
         <Clock className="h-4 w-4" />
-        {new Date(session.scheduled_at).toLocaleString("uz-UZ", {
+        {new Date(session.scheduled_at).toLocaleString(toIntlLocale(locale), {
           dateStyle: "full",
           timeStyle: "short",
         })}{" "}

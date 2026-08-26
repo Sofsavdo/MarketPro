@@ -3,6 +3,7 @@ import { Link } from "@/i18n/navigation";
 
 export default async function TermsPage() {
   const t = await getTranslations("legal.terms");
+  const tFooter = await getTranslations("footer");
 
   const sections = ["s1", "s2", "s3", "s4", "s5", "s6"] as const;
 
@@ -18,7 +19,7 @@ export default async function TermsPage() {
                 <>
                   {t(`${s}Body`)}{" "}
                   <Link href="/refund-policy" className="text-amber-400 hover:underline">
-                    /refund-policy
+                    {tFooter("refundPolicy")}
                   </Link>
                 </>
               ) : (

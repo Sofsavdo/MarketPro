@@ -77,7 +77,7 @@ export function SessionQA({
             <p className="text-sm text-slate-200">
               {q.question}
               {q.user_id === currentUserId && (
-                <span className="ml-2 text-xs text-amber-500">(siz)</span>
+                <span className="ml-2 text-xs text-amber-500">({t("you")})</span>
               )}
             </p>
             {q.answer ? (

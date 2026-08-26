@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 
 export function WaitlistForm({ courseId }: { courseId: string }) {
   const t = useTranslations("course");
+  const tCommon = useTranslations("common");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
@@ -52,7 +53,9 @@ export function WaitlistForm({ courseId }: { courseId: string }) {
       <Button type="submit" disabled={status === "submitting"}>
         {status === "submitting" ? "..." : t("waitlistJoin")}
       </Button>
-      {status === "error" && <p className="text-sm text-red-400">Xatolik yuz berdi</p>}
+      {status === "error" && (
+        <p className="text-sm text-red-400">{tCommon("genericError")}</p>
+      )}
     </form>
   );
 }

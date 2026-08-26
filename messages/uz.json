@@ -48,7 +48,8 @@
       "badgeComingSoon": "Tez orada",
       "from": "dan boshlab",
       "months": "oy",
-      "viewCourse": "Kursni ko'rish"
+      "viewCourse": "Kursni ko'rish",
+      "empty": "Hozircha kurs mavjud emas"
     },
     "pricingTeaser": {
       "title": "Alohida kurs yoki to'liq obuna",
@@ -109,7 +110,8 @@
     "noAccount": "Akkountingiz yo'qmi?",
     "haveAccount": "Akkountingiz bormi?",
     "createOne": "Ro'yxatdan o'ting",
-    "signIn": "Kiring"
+    "signIn": "Kiring",
+    "save": "Saqlash"
   },
   "course": {
     "curriculum": "O'quv dasturi",
@@ -146,7 +148,8 @@
     "quizSubmit": "Testni yakunlash",
     "quizPassed": "Test muvaffaqiyatli topshirildi!",
     "quizFailed": "Test topshirilmadi. Qayta urinib ko'ring.",
-    "quizRequired": "Keyingi mavzuga o'tish uchun testni muvaffaqiyatli topshiring"
+    "quizRequired": "Keyingi mavzuga o'tish uchun testni muvaffaqiyatli topshiring",
+    "videoComingSoon": "Video tez orada"
   },
   "dashboard": {
     "title": "Mening kurslarim",
@@ -229,12 +232,19 @@
     "askPlaceholder": "Savolingizni yozing...",
     "askButton": "Yuborish",
     "waitingAnswer": "Javob kutilmoqda...",
-    "noAccess": "Bu darsga kirish huquqingiz yo'q — kursni tegishli tarifda sotib oling yoki obuna bo'ling."
+    "noAccess": "Bu darsga kirish huquqingiz yo'q — kursni tegishli tarifda sotib oling yoki obuna bo'ling.",
+    "you": "siz"
   },
   "referral": {
     "title": "Do'stlarni taklif qiling",
     "desc": "Havolangiz orqali ro'yxatdan o'tgan har bir do'stingiz hisoblanadi. 10 ta do'st = 1 oy, 50 ta = 6 oy, 100 ta = 1 yil bepul Premium obuna!",
     "invited": "Taklif qilinganlar",
     "nextReward": "Keyingi mukofot: {count} ta do'st → {months} oy bepul"
+  },
+  "common": {
+    "errorTitle": "Xatolik yuz berdi",
+    "errorDesc": "Sahifani yuklashda muammo bo'ldi. Iltimos, qayta urinib ko'ring.",
+    "retry": "Qayta urinish",
+    "genericError": "Xatolik yuz berdi"
   }
 }

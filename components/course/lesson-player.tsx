@@ -99,7 +99,7 @@ export function LessonPlayer({
         </div>
       ) : (
         <div className="flex aspect-video items-center justify-center rounded-2xl border border-dashed border-slate-800 text-slate-600">
-          Video coming soon
+          {t("videoComingSoon")}
         </div>
       )}
 

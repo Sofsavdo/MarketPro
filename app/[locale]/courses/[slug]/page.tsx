@@ -95,7 +95,7 @@ export default async function CourseDetailPage({
               <Card key={tier.key}>
                 <CardHeader>
                   <CardTitle className="text-base">{tier.label}</CardTitle>
-                  <p className="text-2xl font-bold text-amber-500">{formatSom(tier.price)}</p>
+                  <p className="text-2xl font-bold text-amber-500">{formatSom(tier.price, locale)}</p>
                 </CardHeader>
                 <CardContent className="pt-0">
                   {user ? (

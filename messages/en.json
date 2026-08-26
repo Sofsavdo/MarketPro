@@ -48,7 +48,8 @@
       "badgeComingSoon": "Coming soon",
       "from": "from",
       "months": "mo",
-      "viewCourse": "View course"
+      "viewCourse": "View course",
+      "empty": "No courses available yet"
     },
     "pricingTeaser": {
       "title": "A single course or a full subscription",
@@ -109,7 +110,8 @@
     "noAccount": "Don't have an account?",
     "haveAccount": "Already have an account?",
     "createOne": "Sign up",
-    "signIn": "Log in"
+    "signIn": "Log in",
+    "save": "Save"
   },
   "course": {
     "curriculum": "Curriculum",
@@ -146,7 +148,8 @@
     "quizSubmit": "Submit quiz",
     "quizPassed": "Quiz passed!",
     "quizFailed": "Quiz not passed. Try again.",
-    "quizRequired": "Pass the quiz to move on to the next lesson"
+    "quizRequired": "Pass the quiz to move on to the next lesson",
+    "videoComingSoon": "Video coming soon"
   },
   "dashboard": {
     "title": "My courses",
@@ -229,12 +232,19 @@
     "askPlaceholder": "Write your question...",
     "askButton": "Send",
     "waitingAnswer": "Waiting for an answer...",
-    "noAccess": "You don't have access to this class — buy the course at the right plan or subscribe."
+    "noAccess": "You don't have access to this class — buy the course at the right plan or subscribe.",
+    "you": "you"
   },
   "referral": {
     "title": "Invite friends",
     "desc": "Every friend who signs up through your link counts. 10 friends = 1 month, 50 = 6 months, 100 = 1 year of free Premium!",
     "invited": "Invited",
     "nextReward": "Next reward: {count} friends → {months} mo free"
+  },
+  "common": {
+    "errorTitle": "Something went wrong",
+    "errorDesc": "There was a problem loading the page. Please try again.",
+    "retry": "Retry",
+    "genericError": "Something went wrong"
   }
 }

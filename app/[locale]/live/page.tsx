@@ -1,14 +1,17 @@
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Video } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getUpcomingSessionsForUser } from "@/lib/lms/live-sessions";
+import { toIntlLocale } from "@/lib/utils";
+import type { Locale } from "@/i18n/routing";
 
 export default async function LiveSessionsPage() {
   const t = await getTranslations("live");
+  const locale = (await getLocale()) as Locale;
   const supabase = await createClient();
   const {
     data: { user },
@@ -30,7 +33,7 @@ export default async function LiveSessionsPage() {
                 <div className="flex items-center justify-between">
                   <Badge variant="outline">{s.tier}</Badge>
                   <span className="text-xs text-slate-500">
-                    {new Date(s.scheduled_at).toLocaleString("uz-UZ", {
+                    {new Date(s.scheduled_at).toLocaleString(toIntlLocale(locale), {
                       dateStyle: "medium",
                       timeStyle: "short",
                     })}

@@ -100,6 +100,10 @@ export default async function HomePage() {
             <p className="max-w-xl text-slate-400">{t("home.coursesSection.subtitle")}</p>
           </div>
 
+          {!courses.length && (
+            <p className="mt-12 text-center text-slate-500">{t("home.coursesSection.empty")}</p>
+          )}
+
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {courses.map((course, i) => (
               <Card key={course.id} className="flex flex-col justify-between">
@@ -134,7 +138,7 @@ export default async function HomePage() {
                   <p className="text-sm text-slate-400">
                     {t("home.coursesSection.from")}{" "}
                     <span className="font-semibold text-white">
-                      {formatSom(course.price_start)}
+                      {formatSom(course.price_start, locale)}
                     </span>
                   </p>
                   <Button asChild size="sm" variant={course.is_published ? "default" : "outline"}>

@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { createClient } from "@/lib/supabase/server";
 import { localizedField } from "@/lib/courses";
 import type { Locale } from "@/i18n/routing";
-import { formatSom } from "@/lib/utils";
+import { formatSom, toIntlLocale } from "@/lib/utils";
 import { PayInstallmentButton } from "@/components/course/pay-installment-button";
 import { AlertTriangle } from "lucide-react";
 
@@ -139,10 +139,12 @@ export default async function DashboardPage() {
                       <div className="flex items-center justify-between">
                         <span className={overdue ? "flex items-center gap-1.5 text-red-400" : "text-slate-300"}>
                           {overdue && <AlertTriangle className="h-4 w-4" />}
-                          {t("dashboard.nextInstallment")}: {formatSom(nextInstallment.amount)}
+                          {t("dashboard.nextInstallment")}: {formatSom(nextInstallment.amount, locale)}
                         </span>
                         <span className="text-xs text-slate-500">
-                          {new Date(nextInstallment.due_date).toLocaleDateString("uz-UZ")}
+                          {new Date(nextInstallment.due_date).toLocaleDateString(
+                            toIntlLocale(locale),
+                          )}
                         </span>
                       </div>
                       <div className="mt-2">
