@@ -15,8 +15,24 @@ create table if not exists public.profiles (
   role text not null default 'student' check (role in ('student', 'instructor', 'admin')),
   referral_code text unique,
   referred_by uuid references public.profiles (id) on delete set null,
+  -- CRM pipeline for the downsell flow: a subscriber ("start" access) who
+  -- gets offered a VIP course and either takes it or doesn't. Whether their
+  -- subscription is expiring soon is time-sensitive, so it's computed live
+  -- from subscriptions.current_period_end (see lib/lms/leads.ts) instead of
+  -- stored here — nothing would keep a stored value in sync without a cron.
+  lead_status text not null default 'new_lead'
+    check (lead_status in ('new_lead', 'vip_offered', 'downsell_subscribed')),
   created_at timestamptz not null default now()
 );
+
+-- RLS's `for update using (auth.uid() = id)` only restricts *which rows* the
+-- authenticated role can touch, not *which columns* — without this, any
+-- logged-in student could PATCH their own `role` to 'admin' (or rewrite
+-- referral_code/referred_by/lead_status) directly through the PostgREST API,
+-- bypassing the app's updateProfile server action entirely. Column-level
+-- grants close that regardless of what RLS policies exist.
+revoke update on public.profiles from authenticated;
+grant update (full_name, phone, address, avatar_url) on public.profiles to authenticated;
 
 -- Registration is phone + password only (no email): auth.users.phone is set
 -- directly by supabase.auth.signUp({ phone, password }), so the trigger
@@ -43,6 +59,18 @@ create trigger on_auth_user_created
 
 -- ============================================================
 -- courses / modules / lessons — 3-language content, ordered
+--
+-- Access is now Hybrid (see lib/lms/access.ts):
+--   - Subscription (lib/pricing.ts) grants "start" access to every published
+--     course: pre-recorded video lessons + community Q&A only, no live
+--     classes, no mentor feedback.
+--   - Buying a specific course (this `price`, one-time) grants "vip" access
+--     to that course, for life: everything "start" has, plus its live
+--     sessions and mentor feedback. Subscribing later never downgrades a
+--     VIP course back to start, and an expired subscription never touches
+--     a course bought outright.
+-- There's no more per-tier course pricing (old price_start/standard/pro) —
+-- one course, one price, one purchase unlocks everything about it.
 -- ============================================================
 create table if not exists public.courses (
   id uuid primary key default gen_random_uuid(),
@@ -57,9 +85,7 @@ create table if not exists public.courses (
   instructor_name text,
   instructor_avatar_url text,
   duration_months int not null default 1,
-  price_start int not null default 0,
-  price_standard int not null default 0,
-  price_pro int not null default 0,
+  price int not null default 0,
   is_published boolean not null default false,
   order_index int not null default 0,
   created_at timestamptz not null default now()
@@ -117,15 +143,15 @@ create table if not exists public.lesson_materials (
 );
 
 -- ============================================================
--- enrollments — one-time course purchase (per tier)
--- subscriptions — recurring, grants access to every course
+-- enrollments — one-time course purchase, always grants lifetime VIP
+-- access to that one course (see the access-model note on `courses` above)
+-- subscriptions — recurring, grants "start" access to every course
 -- ============================================================
 create table if not exists public.enrollments (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
   course_id uuid not null references public.courses (id) on delete cascade,
-  tier text not null check (tier in ('start', 'standard', 'pro')),
-  source text not null default 'purchase' check (source in ('purchase', 'subscription')),
+  source text not null default 'purchase' check (source in ('purchase', 'downsell_credit')),
   created_at timestamptz not null default now(),
   unique (user_id, course_id)
 );
@@ -166,7 +192,6 @@ create table if not exists public.installment_plans (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
   course_id uuid not null references public.courses (id) on delete cascade,
-  tier text not null check (tier in ('start', 'standard', 'pro')),
   total_amount int not null,
   installments_count int not null check (installments_count in (2, 3)),
   created_at timestamptz not null default now()
@@ -191,12 +216,18 @@ create index if not exists idx_installment_payments_plan on public.installment_p
 create table if not exists public.payments (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
-  provider text not null check (provider in ('click', 'payme')),
+  -- 'manual' is the operator-triggered downsell credit (see
+  -- upgradeToVipWithCredit in lib/lms/admin-actions.ts) — not a real
+  -- Click/Payme transaction, so provider_transaction_id stays null for it.
+  provider text not null check (provider in ('click', 'payme', 'manual')),
   provider_transaction_id text,
   amount int not null,
+  -- For a downsell-credit payment: the subscription payment amount that was
+  -- subtracted from the course price to produce `amount`. Zero for a normal
+  -- Click/Payme purchase.
+  discount_amount int not null default 0,
   status text not null default 'pending' check (status in ('pending', 'paid', 'failed', 'refunded')),
   course_id uuid references public.courses (id),
-  tier text check (tier in ('start', 'standard', 'pro')),
   subscription_plan text check (subscription_plan in ('monthly', 'yearly')),
   installment_payment_id uuid references public.installment_payments (id),
   created_at timestamptz not null default now()
@@ -230,13 +261,15 @@ create table if not exists public.referrals (
 create index if not exists idx_referrals_referrer on public.referrals (referrer_id);
 
 -- ============================================================
--- live_sessions — scheduled Standard/Pro group classes (Google Meet)
+-- live_sessions — scheduled group classes (Google Meet), VIP-only: only
+-- someone who bought the course outright (an enrollments row) can join —
+-- a bare subscription ("start" access) never unlocks live sessions, see
+-- has_live_session_access below.
 -- session_questions — live Q&A thread attached to each session
 -- ============================================================
 create table if not exists public.live_sessions (
   id uuid primary key default gen_random_uuid(),
   course_id uuid not null references public.courses (id) on delete cascade,
-  tier text not null check (tier in ('standard', 'pro')),
   title text not null,
   meet_url text not null,
   scheduled_at timestamptz not null,
@@ -256,6 +289,25 @@ create table if not exists public.session_questions (
 
 create index if not exists idx_live_sessions_course on public.live_sessions (course_id, scheduled_at);
 create index if not exists idx_session_questions_session on public.session_questions (session_id, created_at);
+
+-- ============================================================
+-- operator_call_logs — CRM notes: every time a sales operator calls a lead
+-- (whether they've bought anything yet or not), they log what was said
+-- here. Admin-only — students never see notes about themselves, so there's
+-- no student-facing RLS policy; all reads/writes go through the service
+-- role from the admin panel (lib/lms/admin-actions.ts).
+-- ============================================================
+create table if not exists public.operator_call_logs (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  note text not null,
+  created_by uuid references public.profiles (id) on delete set null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_call_logs_user on public.operator_call_logs (user_id, created_at);
+
+alter table public.operator_call_logs enable row level security;
 
 create index if not exists idx_lessons_course on public.lessons (course_id, order_index);
 create index if not exists idx_modules_course on public.modules (course_id, order_index);
@@ -371,33 +423,27 @@ create policy "Anyone can join the waitlist" on public.waitlist
   for insert with check (true);
 
 -- ============================================================
--- Live session access — Pro enrollment/subscription unlocks both Standard
--- and Pro sessions; Standard enrollment unlocks only Standard sessions.
+-- Live session access — VIP (bought the course) only. Deliberately does NOT
+-- check subscriptions: a subscription is "start" access (video + community)
+-- everywhere, and must never unlock live classes or mentor time — that's
+-- the whole point of the hybrid model (subscription is the low-commitment
+-- tier, buying the course outright is what earns live + mentor access).
 -- ============================================================
 create or replace function public.has_live_session_access(p_session_id uuid)
 returns boolean as $$
 declare
   v_course_id uuid;
-  v_tier text;
 begin
-  select course_id, tier into v_course_id, v_tier
+  select course_id into v_course_id
   from public.live_sessions where id = p_session_id;
 
   if v_course_id is null then
     return false;
   end if;
 
-  if exists (
-    select 1 from public.subscriptions s
-    where s.user_id = auth.uid() and s.status = 'active' and s.current_period_end > now()
-  ) then
-    return true;
-  end if;
-
   return exists (
     select 1 from public.enrollments e
     where e.user_id = auth.uid() and e.course_id = v_course_id
-      and (e.tier = 'pro' or (e.tier = 'standard' and v_tier = 'standard'))
   );
 end;
 $$ language plpgsql security definer set search_path = public;

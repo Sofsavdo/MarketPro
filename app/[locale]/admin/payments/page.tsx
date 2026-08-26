@@ -51,7 +51,7 @@ export default async function AdminPaymentsPage() {
               <th className="py-2 pr-4">Sana</th>
               <th className="py-2 pr-4">Provayder</th>
               <th className="py-2 pr-4">Kurs / Obuna</th>
-              <th className="py-2 pr-4">Tarif</th>
+              <th className="py-2 pr-4">Chegirma</th>
               <th className="py-2 pr-4">Summa</th>
               <th className="py-2 pr-4">Holat</th>
               <th className="py-2 pr-4"></th>
@@ -67,7 +67,9 @@ export default async function AdminPaymentsPage() {
                 <td className="py-3 pr-4 text-white">
                   {p.course_id ? (courseById.get(p.course_id) ?? "—") : `Obuna (${p.subscription_plan})`}
                 </td>
-                <td className="py-3 pr-4 text-slate-400">{p.tier ?? "—"}</td>
+                <td className="py-3 pr-4 text-slate-400">
+                  {p.discount_amount > 0 ? `-${formatSom(p.discount_amount)}` : "—"}
+                </td>
                 <td className="py-3 pr-4 text-white">{formatSom(p.amount)}</td>
                 <td className="py-3 pr-4">
                   <Badge variant={statusVariant[p.status]}>{p.status}</Badge>

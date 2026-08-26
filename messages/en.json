@@ -80,21 +80,17 @@
     "subtitle": "Choose the format that fits you",
     "tabCourses": "Individual courses",
     "tabSubscription": "Subscription",
-    "tierStart": "Start",
-    "tierStandard": "Standard",
-    "tierPro": "Pro",
-    "tierStartDesc": "Video lessons + mentor support in a private community (Telegram)",
-    "tierStandardDesc": "Video lessons + a live group class twice a week (in-platform, Google Meet) + feedback on assignments",
-    "tierProDesc": "Small group (15 people) + 3 live sessions a week (in-platform, Google Meet) + personal audit by the founder",
     "choosePlan": "Choose",
     "monthly": "Monthly",
     "yearly": "Yearly",
     "yearlyDiscount": "2 months free",
     "subscriptionTitle": "Full access to every course",
-    "subscriptionDesc": "One subscription unlocks unlimited access to all 7 tracks. New courses included at no extra cost.",
+    "subscriptionDesc": "Unlimited access to every track's video lessons + community. Live classes and mentor feedback aren't included — those come with buying a course outright (VIP).",
     "subscriptionCta": "Subscribe",
     "mostPopular": "Most popular",
-    "guaranteeNote": "On every plan: 100% refund guarantee after the first 2 lessons"
+    "guaranteeNote": "On every plan: 100% refund guarantee after the first 2 lessons",
+    "vipTitle": "Buy the course — VIP, for life",
+    "vipDesc": "Video lessons + community + live classes + personal mentor feedback. Pay once and the course is yours, even if your subscription lapses."
   },
   "auth": {
     "loginTitle": "Log in",
@@ -120,9 +116,6 @@
     "lessons": "lessons",
     "duration": "Duration",
     "outcome": "Outcome",
-    "startPrice": "Start",
-    "standardPrice": "Standard",
-    "proPrice": "Pro",
     "buyNow": "Buy now",
     "loginToBuy": "Log in to buy",
     "freePreview": "Free preview",
@@ -137,7 +130,10 @@
     "instructorLabel": "Instructor",
     "planFull": "Full",
     "planTwoPart": "2 parts",
-    "planThreePart": "3 parts"
+    "planThreePart": "3 parts",
+    "upgradeToVipTitle": "Upgrade to VIP",
+    "vipTitle": "VIP access (lifetime)",
+    "vipIncludes": "Video lessons + community + live classes + personal mentor feedback — for life."
   },
   "lesson": {
     "completeButton": "Complete lesson",
@@ -164,7 +160,15 @@
     "subscriptionActive": "Active subscription",
     "subscriptionNone": "No subscription",
     "profile": "Profile",
-    "nextInstallment": "Next payment"
+    "nextInstallment": "Next payment",
+    "accessStart": "Start (video)",
+    "startAccessNote": "This course only includes video + community.",
+    "downsellBanner": "Want mentor feedback and access to live sessions?",
+    "downsellCta": "Talk to an operator",
+    "expiryPopupTitle": "Your subscription expires in {days} days",
+    "expiryPopupToday": "Your subscription expires today",
+    "expiryPopupDesc": "Renew to keep your access, or buy the course outright (VIP) for lifetime access.",
+    "expiryPopupRenew": "Renew subscription"
   },
   "footer": {
     "rights": "All rights reserved.",
@@ -237,7 +241,9 @@
     "askButton": "Send",
     "waitingAnswer": "Waiting for an answer...",
     "noAccess": "You don't have access to this class — buy the course at the right plan or subscribe.",
-    "you": "you"
+    "you": "you",
+    "vipOnly": "VIP only",
+    "upgradeToVip": "Upgrade to VIP"
   },
   "referral": {
     "title": "Invite friends",

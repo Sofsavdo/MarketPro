@@ -39,12 +39,6 @@ export default async function CourseDetailPage({
   );
   const lockMap = new Map(allLessons.map((l, i) => [l.id, lockStates[i]]));
 
-  const tiers = [
-    { key: "start", price: course.price_start, label: t("course.startPrice") },
-    { key: "standard", price: course.price_standard, label: t("course.standardPrice") },
-    { key: "pro", price: course.price_pro, label: t("course.proPrice") },
-  ] as const;
-
   return (
     <div className="mx-auto max-w-5xl px-4 py-16">
       <Badge variant={course.is_published ? "default" : "outline"}>
@@ -89,30 +83,25 @@ export default async function CourseDetailPage({
           </div>
         </div>
       ) : (
-        !access.hasCourseAccess && (
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            {tiers.map((tier) => (
-              <Card key={tier.key}>
-                <CardHeader>
-                  <CardTitle className="text-base">{tier.label}</CardTitle>
-                  <p className="text-2xl font-bold text-amber-500">{formatSom(tier.price, locale)}</p>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  {user ? (
-                    <PurchaseButtons
-                      courseId={course.id}
-                      tier={tier.key}
-                      allowThreePart={tier.key !== "start"}
-                    />
-                  ) : (
-                    <Button asChild className="w-full">
-                      <Link href="/login">{t("course.loginToBuy")}</Link>
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+        access.accessLevel !== "vip" && (
+          <Card className="mt-8 max-w-md border-amber-500/40">
+            <CardHeader>
+              <CardTitle className="text-base">
+                {access.accessLevel === "start" ? t("course.upgradeToVipTitle") : t("course.vipTitle")}
+              </CardTitle>
+              <p className="text-sm text-slate-400">{t("course.vipIncludes")}</p>
+              <p className="text-2xl font-bold text-amber-500">{formatSom(course.price, locale)}</p>
+            </CardHeader>
+            <CardContent className="pt-0">
+              {user ? (
+                <PurchaseButtons courseId={course.id} />
+              ) : (
+                <Button asChild className="w-full">
+                  <Link href="/login">{t("course.loginToBuy")}</Link>
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         )
       )}
 

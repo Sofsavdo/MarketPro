@@ -3,7 +3,7 @@ import { SUBSCRIPTION_PRICE } from "@/lib/pricing";
 import { createInstallmentPlan } from "@/lib/payments/installments";
 
 /**
- * The client only tells us *what* the user wants to buy (course+tier, or a
+ * The client only tells us *what* the user wants to buy (a course, or a
  * subscription plan) — never trust the amount it sends, since a tampered
  * request could otherwise pay any price it likes. This resolves the real
  * price server-side, and for a new installment purchase also creates the
@@ -12,7 +12,6 @@ import { createInstallmentPlan } from "@/lib/payments/installments";
 export async function resolvePurchase(params: {
   userId: string;
   courseId?: string;
-  tier?: "start" | "standard" | "pro";
   subscriptionPlan?: "monthly" | "yearly";
   installmentsCount?: 2 | 3;
   /** Paying a specific already-scheduled installment instead of starting a new purchase. */
@@ -45,27 +44,21 @@ export async function resolvePurchase(params: {
     return amount === null ? null : { amount, installmentPaymentId: null };
   }
 
-  if (params.courseId && params.tier) {
+  if (params.courseId) {
     const { data: course } = await admin
       .from("courses")
-      .select("price_start, price_standard, price_pro, is_published")
+      .select("price, is_published")
       .eq("id", params.courseId)
       .maybeSingle();
 
     if (!course || !course.is_published) return null;
 
-    const priceByTier = {
-      start: course.price_start,
-      standard: course.price_standard,
-      pro: course.price_pro,
-    } as const;
-    const totalAmount = priceByTier[params.tier];
+    const totalAmount = course.price;
 
     if (params.installmentsCount) {
       const { firstInstallmentId, firstInstallmentAmount } = await createInstallmentPlan({
         userId: params.userId,
         courseId: params.courseId,
-        tier: params.tier,
         totalAmount,
         installmentsCount: params.installmentsCount,
       });

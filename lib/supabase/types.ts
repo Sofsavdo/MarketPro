@@ -1,8 +1,14 @@
 export type SubscriptionStatus = "active" | "expired" | "canceled" | "trialing";
 export type AccessSource = "subscription" | "purchase" | "none";
-export type PlanTier = "start" | "standard" | "pro";
-export type PaymentProvider = "click" | "payme";
+/**
+ * Hybrid access model: "start" (subscription) is video + community only;
+ * "vip" (bought the course outright) adds live sessions + mentor feedback,
+ * for that course, for life. See the note on `courses` in schema.sql.
+ */
+export type AccessLevel = "start" | "vip";
+export type PaymentProvider = "click" | "payme" | "manual";
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
+export type LeadStatus = "new_lead" | "vip_offered" | "downsell_subscribed";
 
 interface Table<Row, Insert, Update = Partial<Insert>> {
   Row: Row;
@@ -24,6 +30,7 @@ export interface Database {
           role: "student" | "instructor" | "admin";
           referral_code: string | null;
           referred_by: string | null;
+          lead_status: LeadStatus;
           created_at: string;
         },
         {
@@ -38,6 +45,7 @@ export interface Database {
           phone?: string | null;
           address?: string | null;
           referred_by?: string | null;
+          lead_status?: LeadStatus;
         }
       >;
       courses: Table<
@@ -54,9 +62,7 @@ export interface Database {
           instructor_name: string | null;
           instructor_avatar_url: string | null;
           duration_months: number;
-          price_start: number;
-          price_standard: number;
-          price_pro: number;
+          price: number;
           is_published: boolean;
           order_index: number;
           created_at: string;
@@ -143,11 +149,10 @@ export interface Database {
           id: string;
           user_id: string;
           course_id: string;
-          tier: PlanTier;
-          source: "purchase" | "subscription";
+          source: "purchase" | "downsell_credit";
           created_at: string;
         },
-        { user_id: string; course_id: string; tier: PlanTier; source?: "purchase" | "subscription" }
+        { user_id: string; course_id: string; source?: "purchase" | "downsell_credit" }
       >;
       subscriptions: Table<
         {
@@ -172,9 +177,9 @@ export interface Database {
           provider: PaymentProvider;
           provider_transaction_id: string | null;
           amount: number;
+          discount_amount: number;
           status: PaymentStatus;
           course_id: string | null;
-          tier: PlanTier | null;
           subscription_plan: "monthly" | "yearly" | null;
           installment_payment_id: string | null;
           created_at: string;
@@ -184,9 +189,9 @@ export interface Database {
           provider: PaymentProvider;
           provider_transaction_id?: string | null;
           amount: number;
+          discount_amount?: number;
           status?: PaymentStatus;
           course_id?: string | null;
-          tier?: PlanTier | null;
           subscription_plan?: "monthly" | "yearly" | null;
           installment_payment_id?: string | null;
         }
@@ -196,7 +201,6 @@ export interface Database {
           id: string;
           user_id: string;
           course_id: string;
-          tier: PlanTier;
           total_amount: number;
           installments_count: 2 | 3;
           created_at: string;
@@ -204,7 +208,6 @@ export interface Database {
         {
           user_id: string;
           course_id: string;
-          tier: PlanTier;
           total_amount: number;
           installments_count: 2 | 3;
         }
@@ -251,7 +254,6 @@ export interface Database {
         {
           id: string;
           course_id: string;
-          tier: "standard" | "pro";
           title: string;
           meet_url: string;
           scheduled_at: string;
@@ -260,7 +262,6 @@ export interface Database {
         },
         {
           course_id: string;
-          tier: "standard" | "pro";
           title: string;
           meet_url: string;
           scheduled_at: string;
@@ -279,6 +280,16 @@ export interface Database {
         },
         { session_id: string; user_id: string; question: string },
         { answer?: string | null; answered_at?: string | null }
+      >;
+      operator_call_logs: Table<
+        {
+          id: string;
+          user_id: string;
+          note: string;
+          created_by: string | null;
+          created_at: string;
+        },
+        { user_id: string; note: string; created_by?: string | null }
       >;
     };
     Views: Record<string, never>;

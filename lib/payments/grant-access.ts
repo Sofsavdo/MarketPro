@@ -1,5 +1,4 @@
 import { createAdminClient } from "@/lib/supabase/server";
-import type { PlanTier } from "@/lib/supabase/types";
 import { markInstallmentPaid } from "@/lib/payments/installments";
 
 /**
@@ -36,12 +35,11 @@ export async function grantAccessForPayment(paymentId: string) {
     return;
   }
 
-  if (payment.course_id && payment.tier) {
+  if (payment.course_id) {
     await supabase.from("enrollments").upsert(
       {
         user_id: payment.user_id,
         course_id: payment.course_id,
-        tier: payment.tier as PlanTier,
         source: "purchase",
       },
       { onConflict: "user_id,course_id" },

@@ -7,6 +7,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, FileText, Presentation, Image as ImageIcon, Link as LinkIcon, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { VideoWatermark } from "@/components/course/video-watermark";
 
 const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
 
@@ -41,6 +42,7 @@ export function LessonPlayer({
   alreadyCompleted,
   quizAlreadyPassed,
   materials = [],
+  watermarkText,
 }: {
   courseId: string;
   courseSlug: string;
@@ -51,6 +53,8 @@ export function LessonPlayer({
   alreadyCompleted: boolean;
   quizAlreadyPassed: boolean;
   materials?: Material[];
+  /** Student's phone + short id, stamped over the video (see VideoWatermark). */
+  watermarkText?: string;
 }) {
   const t = useTranslations("lesson");
   const router = useRouter();
@@ -119,21 +123,24 @@ export function LessonPlayer({
   return (
     <div className="mt-8 space-y-8">
       {videoUrl && (
-        <div className="aspect-video overflow-hidden rounded-2xl border border-slate-800 bg-black">
+        <div className="relative aspect-video overflow-hidden rounded-2xl border border-slate-800 bg-black">
           {videoError ? (
             <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center text-slate-500">
               <XCircle className="h-8 w-8 text-red-400" />
               <p className="text-sm">{t("videoError")}</p>
             </div>
           ) : (
-            <ReactPlayer
-              src={videoUrl}
-              width="100%"
-              height="100%"
-              controls
-              onEnded={() => setVideoWatched(true)}
-              onError={() => setVideoError(true)}
-            />
+            <>
+              <ReactPlayer
+                src={videoUrl}
+                width="100%"
+                height="100%"
+                controls
+                onEnded={() => setVideoWatched(true)}
+                onError={() => setVideoError(true)}
+              />
+              {watermarkText && <VideoWatermark text={watermarkText} />}
+            </>
           )}
         </div>
       )}

@@ -51,7 +51,7 @@ async function renumberCourseLessons(
   }
 }
 
-async function requireAdmin() {
+async function requireAdmin(): Promise<{ userId: string }> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -64,6 +64,8 @@ async function requireAdmin() {
     .eq("id", user.id)
     .maybeSingle();
   if (profile?.role !== "admin") throw new Error("forbidden");
+
+  return { userId: user.id };
 }
 
 export async function toggleCoursePublished(courseId: string, isPublished: boolean) {
@@ -91,9 +93,7 @@ export async function updateCourse(courseId: string, formData: FormData) {
       instructor_name: String(formData.get("instructor_name") ?? "") || null,
       instructor_avatar_url: String(formData.get("instructor_avatar_url") ?? "") || null,
       duration_months: Number(formData.get("duration_months") ?? 1),
-      price_start: Number(formData.get("price_start") ?? 0),
-      price_standard: Number(formData.get("price_standard") ?? 0),
-      price_pro: Number(formData.get("price_pro") ?? 0),
+      price: Number(formData.get("price") ?? 0),
     })
     .eq("id", courseId);
 
@@ -129,9 +129,7 @@ export async function createCourse(formData: FormData) {
       description_en: String(formData.get("description_en") ?? ""),
       cover_url: String(formData.get("cover_url") ?? "") || null,
       duration_months: Number(formData.get("duration_months") ?? 1),
-      price_start: Number(formData.get("price_start") ?? 0),
-      price_standard: Number(formData.get("price_standard") ?? 0),
-      price_pro: Number(formData.get("price_pro") ?? 0),
+      price: Number(formData.get("price") ?? 0),
       order_index: count ?? 0,
       is_published: false,
     })
@@ -379,7 +377,6 @@ export async function createLiveSession(formData: FormData) {
   // +05:00 offset is always correct.
   await admin.from("live_sessions").insert({
     course_id: String(formData.get("course_id") ?? ""),
-    tier: formData.get("tier") as "standard" | "pro",
     title: String(formData.get("title") ?? ""),
     meet_url: String(formData.get("meet_url") ?? ""),
     scheduled_at: new Date(`${scheduledDate}T${scheduledTime}:00+05:00`).toISOString(),
@@ -441,5 +438,85 @@ export async function refundPayment(paymentId: string) {
       .eq("status", "active");
   }
 
+  revalidatePath("/admin/payments");
+}
+
+// ============================================================
+// CRM / downsell — operator tools for turning a "start"-only subscriber
+// into a VIP course buyer. See app/[locale]/admin/leads/page.tsx.
+// ============================================================
+
+export async function updateLeadStatus(userId: string, status: string) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+  await admin
+    .from("profiles")
+    .update({ lead_status: status as "new_lead" | "vip_offered" | "downsell_subscribed" })
+    .eq("id", userId);
+  revalidatePath("/admin/leads");
+}
+
+export async function addOperatorCallNote(userId: string, formData: FormData) {
+  const caller = await requireAdmin();
+  const admin = await createAdminClient();
+  await admin.from("operator_call_logs").insert({
+    user_id: userId,
+    note: String(formData.get("note") ?? ""),
+    created_by: caller.userId,
+  });
+  revalidatePath("/admin/leads");
+}
+
+/**
+ * The downsell close: a subscriber who's been offered a VIP course within
+ * the last ~14 days of paying their subscription gets that subscription
+ * payment credited straight off the VIP price, instead of paying for both
+ * in full. This is an operator-triggered manual settlement (the customer
+ * already agreed over a call/Telegram), not a new Click/Payme charge — it
+ * records a 'manual' payment for the audit trail and grants VIP access
+ * immediately.
+ */
+export async function upgradeToVipWithCredit(userId: string, formData: FormData) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+  const courseId = String(formData.get("courseId") ?? "");
+
+  const { data: course } = await admin
+    .from("courses")
+    .select("price")
+    .eq("id", courseId)
+    .maybeSingle();
+  if (!course) throw new Error("course_not_found");
+
+  const { data: lastSubPayment } = await admin
+    .from("payments")
+    .select("amount")
+    .eq("user_id", userId)
+    .eq("status", "paid")
+    .not("subscription_plan", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const credit = Math.min(lastSubPayment?.amount ?? 0, course.price);
+  const finalAmount = course.price - credit;
+
+  await admin.from("payments").insert({
+    user_id: userId,
+    provider: "manual",
+    amount: finalAmount,
+    discount_amount: credit,
+    status: "paid",
+    course_id: courseId,
+  });
+
+  await admin.from("enrollments").upsert(
+    { user_id: userId, course_id: courseId, source: "downsell_credit" },
+    { onConflict: "user_id,course_id" },
+  );
+
+  await admin.from("profiles").update({ lead_status: "downsell_subscribed" }).eq("id", userId);
+
+  revalidatePath("/admin/leads");
   revalidatePath("/admin/payments");
 }

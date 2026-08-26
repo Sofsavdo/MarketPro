@@ -18,15 +18,7 @@ export default async function PricingPage() {
   } = await supabase.auth.getUser();
 
   const courses = await getPublishedCourses();
-  const startingPrice = courses.length
-    ? Math.min(...courses.map((c) => c.price_start))
-    : null;
-
-  const tiers = [
-    { key: "start", label: t("pricing.tierStart"), desc: t("pricing.tierStartDesc") },
-    { key: "standard", label: t("pricing.tierStandard"), desc: t("pricing.tierStandardDesc") },
-    { key: "pro", label: t("pricing.tierPro"), desc: t("pricing.tierProDesc") },
-  ];
+  const startingPrice = courses.length ? Math.min(...courses.map((c) => c.price)) : null;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-16">
@@ -35,37 +27,8 @@ export default async function PricingPage() {
         <p className="mt-2 text-slate-400">{t("pricing.subtitle")}</p>
       </div>
 
-      {/* Per-course tier explainer */}
+      {/* Subscription — "start" access to every course */}
       <div className="mt-14">
-        <h2 className="text-xl font-semibold text-white">{t("pricing.tabCourses")}</h2>
-        <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          {tiers.map((tier) => (
-            <Card key={tier.key}>
-              <CardHeader>
-                <CardTitle className="text-base">{tier.label}</CardTitle>
-                <CardDescription>{tier.desc}</CardDescription>
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
-        <p className="mt-3 text-sm text-slate-500">
-          {startingPrice !== null && (
-            <>
-              {t("home.coursesSection.from")}{" "}
-              <span className="font-medium text-slate-300">
-                {formatSom(startingPrice, locale)}
-              </span>{" "}
-              ·{" "}
-            </>
-          )}
-          <Link href="/courses" className="text-amber-400 hover:underline">
-            {t("home.coursesSection.viewAll")}
-          </Link>
-        </p>
-      </div>
-
-      {/* Subscription */}
-      <div className="mt-16">
         <div className="flex items-center gap-3">
           <h2 className="text-xl font-semibold text-white">{t("pricing.tabSubscription")}</h2>
           <Badge>{t("pricing.mostPopular")}</Badge>
@@ -101,6 +64,31 @@ export default async function PricingPage() {
         </Card>
 
         <p className="mt-6 text-center text-sm text-slate-500">{t("pricing.guaranteeNote")}</p>
+      </div>
+
+      {/* VIP — buy one course outright, lifetime access + live + mentor */}
+      <div className="mt-16">
+        <h2 className="text-xl font-semibold text-white">{t("pricing.tabCourses")}</h2>
+        <Card className="mt-6 max-w-xl">
+          <CardHeader>
+            <CardTitle className="text-base">{t("pricing.vipTitle")}</CardTitle>
+            <CardDescription>{t("pricing.vipDesc")}</CardDescription>
+          </CardHeader>
+        </Card>
+        <p className="mt-3 text-sm text-slate-500">
+          {startingPrice !== null && (
+            <>
+              {t("home.coursesSection.from")}{" "}
+              <span className="font-medium text-slate-300">
+                {formatSom(startingPrice, locale)}
+              </span>{" "}
+              ·{" "}
+            </>
+          )}
+          <Link href="/courses" className="text-amber-400 hover:underline">
+            {t("home.coursesSection.viewAll")}
+          </Link>
+        </p>
       </div>
     </div>
   );

@@ -49,7 +49,7 @@ export default async function CoursesPage() {
             <CardContent className="flex items-center justify-between pt-0">
               <p className="text-sm text-slate-400">
                 {t("home.coursesSection.from")}{" "}
-                <span className="font-semibold text-white">{formatSom(course.price_start, locale)}</span>
+                <span className="font-semibold text-white">{formatSom(course.price, locale)}</span>
               </p>
               <Button asChild size="sm" variant={course.is_published ? "default" : "outline"}>
                 <Link href={`/courses/${course.slug}`}>{t("home.coursesSection.viewCourse")}</Link>

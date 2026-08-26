@@ -138,7 +138,7 @@ export default async function HomePage() {
                   <p className="text-sm text-slate-400">
                     {t("home.coursesSection.from")}{" "}
                     <span className="font-semibold text-white">
-                      {formatSom(course.price_start, locale)}
+                      {formatSom(course.price, locale)}
                     </span>
                   </p>
                   <Button asChild size="sm" variant={course.is_published ? "default" : "outline"}>

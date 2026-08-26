@@ -10,11 +10,6 @@ import { localizedField } from "@/lib/courses";
 import { formatDateTime } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
 
-const TIER_KEY = {
-  standard: "pricing.tierStandard",
-  pro: "pricing.tierPro",
-} as const;
-
 export default async function LiveSessionDetailPage({
   params,
 }: {
@@ -22,7 +17,6 @@ export default async function LiveSessionDetailPage({
 }) {
   const { sessionId } = await params;
   const t = await getTranslations("live");
-  const tAll = await getTranslations();
   const locale = (await getLocale()) as Locale;
   const supabase = await createClient();
   const {
@@ -66,7 +60,7 @@ export default async function LiveSessionDetailPage({
       </Link>
 
       <div className="mt-4 flex items-center gap-2">
-        <Badge variant="outline">{tAll(TIER_KEY[session.tier])}</Badge>
+        <Badge variant="outline">VIP</Badge>
         <span className="text-sm text-slate-500">
           {course && localizedField(course, "title", locale)}
         </span>

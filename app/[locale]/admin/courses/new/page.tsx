@@ -32,11 +32,14 @@ export default function AdminNewCoursePage() {
           name="cover_url"
           placeholder="https://.../cover.jpg"
         />
-        <div className="grid gap-4 sm:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Muddat (oy)" name="duration_months" type="number" defaultValue="1" />
-          <Field label="Start narxi" name="price_start" type="number" defaultValue="0" />
-          <Field label="Standard narxi" name="price_standard" type="number" defaultValue="0" />
-          <Field label="Pro narxi" name="price_pro" type="number" defaultValue="0" />
+          <Field
+            label="Narxi (VIP, umrbod kirish — 2 000 000 – 8 000 000)"
+            name="price"
+            type="number"
+            defaultValue="0"
+          />
         </div>
         <Button type="submit">Kursni yaratish</Button>
       </form>

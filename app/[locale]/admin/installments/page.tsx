@@ -61,7 +61,7 @@ export default async function AdminInstallmentsPage() {
                     <span className="text-slate-500">— {courseById.get(plan.course_id)}</span>
                   </p>
                   <p className="text-xs text-slate-500">
-                    {profile?.phone ?? "—"} · {plan.tier} · {plan.installments_count} bo&apos;lak
+                    {profile?.phone ?? "—"} · {plan.installments_count} bo&apos;lak
                   </p>
                 </div>
                 <Badge variant="outline">

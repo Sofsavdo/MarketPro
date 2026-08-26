@@ -20,6 +20,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/live-sessions" className="text-slate-400 hover:text-white">
           Jonli darslar
         </Link>
+        <Link href="/admin/leads" className="text-slate-400 hover:text-white">
+          Mijozlar (CRM)
+        </Link>
         <Link href="/admin/payments" className="text-slate-400 hover:text-white">
           To&apos;lovlar
         </Link>

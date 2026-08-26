@@ -57,12 +57,49 @@ supabase/schema.sql         — To'liq SQL sxema (RLS bilan)
 supabase/seed.sql            — Namunaviy kurs katalogi
 ```
 
-## LMS mantiqi
+## Kirish modeli: Hybrid (Obuna + Standalone Lifetime)
 
-- **`getLessonAccess`** — foydalanuvchida faol obuna yoki shu kursga xarid bormi, tekshiradi.
+Ikki bosqichli kirish darajasi bor — bittasi cheklovsiz, ikkinchisi kursga xos, umrbod:
+
+- **Start** — obuna (`SUBSCRIPTION_PRICE`, `lib/pricing.ts`) barcha kurslarning video
+  darslari + community (Q&A)'siga cheklovsiz kirish beradi. Live darslar va mentor
+  feedback KIRMAYDI. Obuna tugasa (`subscriptions.current_period_end` o'tsa), kirish
+  darhol yopiladi — bu har bir so'rovda live tekshiriladi (`getLessonAccess`,
+  `has_course_access` SQL funksiyasi), alohida cron kerak emas.
+- **VIP** — bitta kursni to'liq sotib olish (`courses.price`, `enrollments` jadvaliga
+  yozuv) shu kursga UMRBOD to'liq kirish beradi: video + community + live darslar +
+  mentor feedback. Obuna keyinroq tugasa ham, sotib olingan kurs yopilmaydi.
+
+`lib/lms/access.ts`:
+- **`getLessonAccess`** — foydalanuvchining `courseId` uchun kirish darajasini
+  qaytaradi (`accessLevel: "start" | "vip" | null`) — enrollment (VIP) har doim faol
+  obunadan (start) ustun turadi.
 - **`isLessonLocked`** — avvalgi dars (`order_index - 1`) tugallanmagan yoki uning testi
-  o'tilmagan bo'lsa, joriy darsni bloklaydi.
+  o'tilmagan bo'lsa, joriy darsni bloklaydi (ketma-ket ochilish start va VIP'da bir xil).
 - **`completeLesson`** — `user_progress` jadvaliga yozadi va keyingi darsni qaytaradi.
+
+## CRM / Downsell (`/admin/leads`)
+
+Obunachi (start) — operator uchun issiq lid: `profiles.lead_status` orqali kuzatiladi
+("Qiziqdi" → "VIP taklif qilindi" → "Downsell → obuna sotib oldi"), `operator_call_logs`
+jadvaliga har bir qo'ng'iroq eslatmasi yoziladi. **"Upgrade to VIP with Subscription
+Credit"** tugmasi (`upgradeToVipWithCredit`, `lib/lms/admin-actions.ts`) mijozning oxirgi
+obuna to'lovini tanlangan VIP kurs narxidan avtomatik ayiradi, `payments`'ga `provider:
+'manual'` yozuv qo'shadi va kursga darhol VIP kirish beradi. Dashboard'da har bir
+obunachiga doimiy downsell banner (`components/profile/downsell-banner.tsx`) va obuna
+tugashiga ≤3 kun qolganda eslatma popup (`components/profile/expiry-popup.tsx`)
+ko'rsatiladi.
+
+## Video xavfsizligi
+
+Har bir video ustida talabaning telefon raqami + qisqa ID'si shaffof holatda (opacity
+0.4) 5 soniyada bir joy almashtirib turadi (`components/course/video-watermark.tsx`) —
+ekran yozib olib tarqatishni to'xtatmaydi, lekin har qanday sizib chiqqan yozuvni
+qaysi akkaunt orqali bo'lganini aniqlashtiradi. To'liq DRM/token-asosida striming
+(Bunny.net Stream, VdoCipher) yoki hech bo'lmasa domenga bog'langan embedding (Vimeo Pro)
+— bular pullik video-hosting xizmatlari va real API kalitlari talab qiladi, shuning
+uchun Supabase/to'lovlar kabi loyihaning oxirida ulanadi; hozircha video havolasi
+to'g'ridan-to'g'ri (`lessons.video_url`) saqlanadi.
 
 ## To'lov oqimi
 
@@ -79,20 +116,22 @@ ma'lumotlarini kiriting (`CLICK_SERVICE_ID`, `CLICK_MERCHANT_ID`, `CLICK_SECRET_
 
 ## Jonli darslar (Google Meet)
 
-Standard/Pro tariflar haftalik jonli guruh darsiga ega — bu tashqi Zoom emas, balki
-platforma ichida joylashgan:
+Faqat VIP (kursni to'liq sotib olgan) talabalar uchun — obunachilar (start) kira olmaydi,
+bu tashqi Zoom emas, balki platforma ichida joylashgan:
 
-1. Admin `/admin/live-sessions`'da kurs + tarif (Standard/Pro) + sana/vaqt bo'yicha dars
-   yaratadi va Google Meet havolasini ([meet.google.com/new](https://meet.google.com/new)
-   orqali qo'lda yaratilgan) joylaydi.
-2. Talaba `/live`'da o'ziga tegishli (sotib olingan tarifi yoki obunasi qamrab oladigan)
-   darslar jadvalini ko'radi va "Darsga kirish" tugmasi orqali Meet'ga o'tadi.
+1. Admin `/admin/live-sessions`'da kurs + sana/vaqt bo'yicha dars yaratadi va Google Meet
+   havolasini ([meet.google.com/new](https://meet.google.com/new) orqali qo'lda
+   yaratilgan) joylaydi.
+2. Talaba `/live`'da o'ziga tegishli (sotib olgan/VIP) darslar jadvalini ko'radi va
+   "Darsga kirish" tugmasi orqali Meet'ga o'tadi. Obunachi (start) uchun shu kurs
+   darslari qulflangan holda, "VIP'ga o'ting" havolasi bilan ko'rsatiladi
+   (`getLockedSessionsForSubscriber`, `lib/lms/live-sessions.ts`).
 3. Har bir dars sahifasida jonli Savol-Javob taxtasi bor (`components/live/session-qa.tsx`)
    — talaba istalgan vaqt savol yozadi, admin `/admin/live-sessions/[id]`'da javob beradi,
    ikkala tomon ham Supabase Realtime orqali sahifani yangilamasdan ko'radi.
 4. Kirish huquqi `has_live_session_access` SQL funksiyasi orqali RLS darajasida
-   tekshiriladi: Pro xarid/obuna — Standard va Pro darslarga, Standard xarid — faqat
-   Standard darslarga kirish beradi.
+   tekshiriladi — faqat `enrollments`ga qaraydi (VIP), obunani (start) qasddan hisobga
+   olmaydi.
 
 Google Meet havolasini avtomatik yaratish (Google Calendar API orqali) keyingi bosqichda
 qo'shilishi mumkin — hozircha admin havolani qo'lda joylaydi, bu ko'pchilik kichik

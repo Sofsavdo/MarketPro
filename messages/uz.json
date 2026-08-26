@@ -80,21 +80,17 @@
     "subtitle": "O'zingizga mos formatni tanlang",
     "tabCourses": "Alohida kurslar",
     "tabSubscription": "Obuna",
-    "tierStart": "Start",
-    "tierStandard": "Standard",
-    "tierPro": "Pro",
-    "tierStartDesc": "Video darslar + mentor bilan yopiq community (Telegram) orqali qo'llab-quvvatlov",
-    "tierStandardDesc": "Video darslar + haftasiga 2 marta jonli guruh darsi (platforma ichida, Google Meet) + amaliy topshiriq feedback",
-    "tierProDesc": "Kichik guruh (15 kishi) + haftasiga 3 marta jonli sessiya (platforma ichida, Google Meet) + founder shaxsiy audit",
     "choosePlan": "Tanlash",
     "monthly": "Oylik",
     "yearly": "Yillik",
     "yearlyDiscount": "2 oy bepul",
     "subscriptionTitle": "Barcha kurslarga to'liq kirish",
-    "subscriptionDesc": "Bitta obuna bilan barcha 7 yo'nalishga cheklovsiz kirish huquqiga ega bo'ling. Yangi kurslar chiqqanda ham qo'shimcha to'lovsiz.",
+    "subscriptionDesc": "Barcha yo'nalishlarning video darslari + community'ga cheklovsiz kirish. Live darslar va mentor feedback kirmaydi — bular faqat kursni to'liq (VIP) sotib olganlarga.",
     "subscriptionCta": "Obuna bo'lish",
     "mostPopular": "Eng ko'p tanlanadigan",
-    "guaranteeNote": "Barcha tariflarda: birinchi 2 darsdan keyin 100% pul qaytarish kafolati"
+    "guaranteeNote": "Barcha tariflarda: birinchi 2 darsdan keyin 100% pul qaytarish kafolati",
+    "vipTitle": "Kursni sotib oling — VIP, umrbod",
+    "vipDesc": "Video darslar + community + live darslar + shaxsiy mentor feedback. Bir marta to'lang, kurs sizniki bo'lib qoladi — obuna tugasa ham."
   },
   "auth": {
     "loginTitle": "Kirish",
@@ -120,9 +116,6 @@
     "lessons": "dars",
     "duration": "Muddat",
     "outcome": "Natija",
-    "startPrice": "Start",
-    "standardPrice": "Standard",
-    "proPrice": "Pro",
     "buyNow": "Sotib olish",
     "loginToBuy": "Sotib olish uchun kiring",
     "freePreview": "Bepul ko'rish",
@@ -137,7 +130,10 @@
     "instructorLabel": "Ustoz",
     "planFull": "To'liq",
     "planTwoPart": "2 bo'lak",
-    "planThreePart": "3 bo'lak"
+    "planThreePart": "3 bo'lak",
+    "upgradeToVipTitle": "VIP'ga o'ting",
+    "vipTitle": "VIP kirish (umrbod)",
+    "vipIncludes": "Video darslar + Community + Live darslar + Shaxsiy mentor feedback — umrbod."
   },
   "lesson": {
     "completeButton": "Mavzuni yakunlash",
@@ -164,7 +160,15 @@
     "subscriptionActive": "Faol obuna",
     "subscriptionNone": "Obuna yo'q",
     "profile": "Profil",
-    "nextInstallment": "Keyingi to'lov"
+    "nextInstallment": "Keyingi to'lov",
+    "accessStart": "Start (video)",
+    "startAccessNote": "Bu kursda faqat video + community bor.",
+    "downsellBanner": "Mentordan dars olish va Live sessiyalarga qo'shilishni xohlaysizmi?",
+    "downsellCta": "Operator bilan bog'lanish",
+    "expiryPopupTitle": "Obunangiz tugashiga {days} kun qoldi",
+    "expiryPopupToday": "Obunangiz bugun tugaydi",
+    "expiryPopupDesc": "Kirishni davom ettirish uchun obunani uzaytiring, yoki kursni to'liq (VIP) sotib olib umrbod kirish oling.",
+    "expiryPopupRenew": "Obunani uzaytirish"
   },
   "footer": {
     "rights": "Barcha huquqlar himoyalangan.",
@@ -237,7 +241,9 @@
     "askButton": "Yuborish",
     "waitingAnswer": "Javob kutilmoqda...",
     "noAccess": "Bu darsga kirish huquqingiz yo'q — kursni tegishli tarifda sotib oling yoki obuna bo'ling.",
-    "you": "siz"
+    "you": "siz",
+    "vipOnly": "Faqat VIP",
+    "upgradeToVip": "VIP'ga o'ting"
   },
   "referral": {
     "title": "Do'stlarni taklif qiling",

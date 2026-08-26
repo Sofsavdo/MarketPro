@@ -10,6 +10,8 @@ import { localizedField } from "@/lib/courses";
 import type { Locale } from "@/i18n/routing";
 import { formatSom, formatDate } from "@/lib/utils";
 import { PayInstallmentButton } from "@/components/course/pay-installment-button";
+import { DownsellBanner } from "@/components/profile/downsell-banner";
+import { ExpiryPopup } from "@/components/profile/expiry-popup";
 import { AlertTriangle } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -32,13 +34,15 @@ export default async function DashboardPage() {
 
   const { data: enrollments } = await supabase
     .from("enrollments")
-    .select("course_id, tier")
+    .select("course_id")
     .eq("user_id", user.id);
+  const vipCourseIds = new Set((enrollments ?? []).map((e) => e.course_id));
 
-  // A subscription grants every published course without an enrollment row
-  // per course — so subscribers must see the full catalog here, not "no
-  // courses yet", or their dashboard would look broken despite paying for
-  // unlimited access.
+  // A subscription grants "start" access to every published course without
+  // an enrollment row per course — so subscribers must see the full catalog
+  // here (marked "start"), not "no courses yet", or their dashboard would
+  // look broken despite paying for it. A course they *also* bought outright
+  // shows as VIP instead, since that's the better access they hold for it.
   const { data: subscriberCourses } = subscription
     ? await supabase
         .from("courses")
@@ -47,11 +51,14 @@ export default async function DashboardPage() {
         .order("order_index", { ascending: true })
     : { data: null };
 
-  const courses = subscription
-    ? (subscriberCourses ?? []).map((c) => ({ course_id: c.id, tier: "pro" as const }))
-    : (enrollments ?? []);
+  const courseAccess: { courseId: string; accessLevel: "start" | "vip" }[] = subscription
+    ? (subscriberCourses ?? []).map((c) => ({
+        courseId: c.id,
+        accessLevel: vipCourseIds.has(c.id) ? ("vip" as const) : ("start" as const),
+      }))
+    : [...vipCourseIds].map((courseId) => ({ courseId, accessLevel: "vip" as const }));
 
-  const courseIds = courses.map((e) => e.course_id);
+  const courseIds = courseAccess.map((c) => c.courseId);
 
   const { data: enrolledCourses } = courseIds.length
     ? await supabase.from("courses").select("*").in("id", courseIds)
@@ -97,8 +104,19 @@ export default async function DashboardPage() {
     return (pendingInstallments ?? []).find((ip) => ip.plan_id === plan.id) ?? null;
   }
 
+  const daysUntilExpiry = subscription
+    ? Math.ceil(
+        (new Date(subscription.current_period_end).getTime() - new Date().getTime()) /
+          (24 * 60 * 60 * 1000),
+      )
+    : null;
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-16">
+      {daysUntilExpiry !== null && daysUntilExpiry <= 3 && (
+        <ExpiryPopup daysLeft={daysUntilExpiry} />
+      )}
+
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-3xl font-bold text-white">{t("dashboard.title")}</h1>
@@ -117,7 +135,9 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {!courses.length ? (
+      {subscription && <DownsellBanner />}
+
+      {!courseAccess.length ? (
         <div className="mt-16 flex flex-col items-center gap-4 text-center">
           <p className="text-slate-400">{t("dashboard.noCourses")}</p>
           <Button asChild>
@@ -126,16 +146,21 @@ export default async function DashboardPage() {
         </div>
       ) : (
         <div className="mt-10 grid gap-6 sm:grid-cols-2">
-          {courses.map((enrollment) => {
-            const course = courseById.get(enrollment.course_id);
+          {courseAccess.map(({ courseId, accessLevel }) => {
+            const course = courseById.get(courseId);
             if (!course) return null;
-            const pct = progressFor(enrollment.course_id);
-            const nextInstallment = nextInstallmentFor(enrollment.course_id);
+            const pct = progressFor(courseId);
+            const nextInstallment = nextInstallmentFor(courseId);
             const overdue = nextInstallment && new Date(nextInstallment.due_date) < new Date();
             return (
-              <Card key={enrollment.course_id}>
+              <Card key={courseId}>
                 <CardHeader>
-                  <CardTitle>{localizedField(course, "title", locale)}</CardTitle>
+                  <div className="flex items-center justify-between gap-2">
+                    <CardTitle>{localizedField(course, "title", locale)}</CardTitle>
+                    <Badge variant={accessLevel === "vip" ? "default" : "outline"}>
+                      {accessLevel === "vip" ? "VIP" : t("dashboard.accessStart")}
+                    </Badge>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-3 pt-0">
                   <div className="flex items-center justify-between text-sm text-slate-400">
@@ -165,6 +190,15 @@ export default async function DashboardPage() {
                         <PayInstallmentButton installmentPaymentId={nextInstallment.id} />
                       </div>
                     </div>
+                  )}
+
+                  {accessLevel === "start" && (
+                    <p className="rounded-lg border border-dashed border-slate-800 p-2 text-center text-xs text-slate-500">
+                      {t("dashboard.startAccessNote")}{" "}
+                      <Link href={`/courses/${course.slug}`} className="text-amber-400 hover:underline">
+                        {t("course.upgradeToVipTitle")}
+                      </Link>
+                    </p>
                   )}
 
                   <Button asChild variant="outline" className="w-full">

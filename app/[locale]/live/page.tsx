@@ -3,20 +3,14 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Video } from "lucide-react";
+import { Video, Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getUpcomingSessionsForUser } from "@/lib/lms/live-sessions";
+import { getUpcomingSessionsForUser, getLockedSessionsForSubscriber } from "@/lib/lms/live-sessions";
 import { formatDateTime } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
 
-const TIER_KEY = {
-  standard: "pricing.tierStandard",
-  pro: "pricing.tierPro",
-} as const;
-
 export default async function LiveSessionsPage() {
   const t = await getTranslations("live");
-  const tAll = await getTranslations();
   const locale = (await getLocale()) as Locale;
   const supabase = await createClient();
   const {
@@ -25,6 +19,7 @@ export default async function LiveSessionsPage() {
   if (!user) redirect("/login");
 
   const sessions = await getUpcomingSessionsForUser(locale);
+  const lockedSessions = await getLockedSessionsForSubscriber(locale);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-16">
@@ -37,7 +32,7 @@ export default async function LiveSessionsPage() {
             <Card className="transition-colors hover:border-amber-500/50">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <Badge variant="outline">{tAll(TIER_KEY[s.tier])}</Badge>
+                  <Badge variant="outline">VIP</Badge>
                   <span className="text-xs text-slate-500">
                     {formatDateTime(s.scheduled_at, locale, {
                       dateStyle: "medium",
@@ -55,11 +50,39 @@ export default async function LiveSessionsPage() {
           </Link>
         ))}
 
-        {!sessions.length && (
+        {!sessions.length && !lockedSessions.length && (
           <p className="rounded-lg border border-slate-800 bg-slate-900/40 p-6 text-center text-slate-500">
             {t("none")}
           </p>
         )}
+
+        {lockedSessions.map((s, i) => (
+          <Card key={i} className="border-dashed opacity-70">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className="gap-1">
+                  <Lock className="h-3 w-3" /> {t("vipOnly")}
+                </Badge>
+                <span className="text-xs text-slate-500">
+                  {formatDateTime(s.scheduled_at, locale, { dateStyle: "medium", timeStyle: "short" })}
+                </span>
+              </div>
+              <CardTitle className="mt-2 flex items-center gap-2 text-base text-slate-400">
+                <Video className="h-4 w-4 text-slate-500" />
+                {s.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-0 text-sm text-slate-500">
+              {s.courseTitle}
+              <Link
+                href={`/courses/${s.courseSlug}`}
+                className="text-amber-400 hover:underline"
+              >
+                {t("upgradeToVip")}
+              </Link>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );

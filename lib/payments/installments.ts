@@ -1,5 +1,4 @@
 import { createAdminClient } from "@/lib/supabase/server";
-import type { PlanTier } from "@/lib/supabase/types";
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -26,7 +25,6 @@ function splitAmount(totalAmount: number, installmentsCount: 2 | 3): number[] {
 export async function createInstallmentPlan(params: {
   userId: string;
   courseId: string;
-  tier: PlanTier;
   totalAmount: number;
   installmentsCount: 2 | 3;
 }): Promise<{ planId: string; firstInstallmentId: string; firstInstallmentAmount: number }> {
@@ -37,7 +35,6 @@ export async function createInstallmentPlan(params: {
     .insert({
       user_id: params.userId,
       course_id: params.courseId,
-      tier: params.tier,
       total_amount: params.totalAmount,
       installments_count: params.installmentsCount,
     })

@@ -98,6 +98,7 @@ export default async function LessonPage({
             fileUrl: m.file_url,
             fileType: m.file_type,
           }))}
+          watermarkText={user.phone ? `${user.phone} · ${user.id.slice(0, 8)}` : undefined}
         />
       )}
     </div>
