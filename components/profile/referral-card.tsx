@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Send, MessageCircle } from "lucide-react";
 
 export function ReferralCard({
   code,
@@ -45,6 +45,27 @@ export function ReferralCard({
           </code>
           <Button size="sm" variant="outline" onClick={copyLink}>
             {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          </Button>
+        </div>
+
+        <div className="flex gap-2">
+          <Button asChild size="sm" variant="outline" className="flex-1">
+            <a
+              href={`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(t("shareTelegram"))}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Send className="mr-1.5 h-4 w-4" /> {t("shareTelegram")}
+            </a>
+          </Button>
+          <Button asChild size="sm" variant="outline" className="flex-1">
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`${link}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <MessageCircle className="mr-1.5 h-4 w-4" /> {t("shareWhatsapp")}
+            </a>
           </Button>
         </div>
 

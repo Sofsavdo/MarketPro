@@ -133,7 +133,26 @@
     "planThreePart": "3 bo'lak",
     "upgradeToVipTitle": "VIP'ga o'ting",
     "vipTitle": "VIP kirish (umrbod)",
-    "vipIncludes": "Video darslar + Community + Live darslar + Shaxsiy mentor feedback — umrbod."
+    "vipIncludes": "Video darslar + Community + Live darslar + Shaxsiy mentor feedback — umrbod.",
+    "reviews": {
+      "title": "Sharhlar",
+      "yourRating": "Sizning bahoyingiz",
+      "commentPlaceholder": "Kurs haqida fikringiz (ixtiyoriy)...",
+      "submit": "Sharh qoldirish",
+      "update": "Sharhni yangilash",
+      "anon": "Talaba",
+      "empty": "Hozircha sharhlar yo'q. Birinchi bo'ling!"
+    },
+    "comments": {
+      "title": "Muhokama",
+      "placeholder": "Savol yoki fikringizni yozing...",
+      "submit": "Yuborish",
+      "anon": "Talaba",
+      "empty": "Hozircha izohlar yo'q."
+    },
+    "certificateReady": "Tabriklaymiz! Kursni 100% yakunladingiz.",
+    "downloadCertificate": "Sertifikatni yuklab olish",
+    "promoCodePlaceholder": "Promo-kod (ixtiyoriy)"
   },
   "lesson": {
     "completeButton": "Mavzuni yakunlash",
@@ -168,7 +187,11 @@
     "expiryPopupTitle": "Obunangiz tugashiga {days} kun qoldi",
     "expiryPopupToday": "Obunangiz bugun tugaydi",
     "expiryPopupDesc": "Kirishni davom ettirish uchun obunani uzaytiring, yoki kursni to'liq (VIP) sotib olib umrbod kirish oling.",
-    "expiryPopupRenew": "Obunani uzaytirish"
+    "expiryPopupRenew": "Obunani uzaytirish",
+    "streak": "{count} kunlik seriya",
+    "upsellTitle": "Keyingi qadam",
+    "upsellDesc": "Kursni tugatdingiz! Boshqa yo'nalishlarni ham ko'rib chiqing.",
+    "browseMore": "Boshqa kurslarni ko'rish"
   },
   "footer": {
     "rights": "Barcha huquqlar himoyalangan.",
@@ -249,12 +272,31 @@
     "title": "Do'stlarni taklif qiling",
     "desc": "Havolangiz orqali ro'yxatdan o'tgan har bir do'stingiz hisoblanadi — u ham 7 kunlik bepul sinovni oladi. 10 ta do'st = 1 oy, 50 ta = 6 oy, 100 ta = 1 yil bepul Premium obuna!",
     "invited": "Taklif qilinganlar",
-    "nextReward": "Keyingi mukofot: {count} ta do'st → {months} oy bepul"
+    "nextReward": "Keyingi mukofot: {count} ta do'st → {months} oy bepul",
+    "shareTelegram": "Telegram orqali ulashish",
+    "shareWhatsapp": "WhatsApp orqali ulashish"
   },
   "common": {
     "errorTitle": "Xatolik yuz berdi",
     "errorDesc": "Sahifani yuklashda muammo bo'ldi. Iltimos, qayta urinib ko'ring.",
     "retry": "Qayta urinish",
     "genericError": "Xatolik yuz berdi"
+  },
+  "admin": {
+    "pagination": {
+      "prev": "Oldingi",
+      "next": "Keyingi",
+      "page": "Sahifa"
+    },
+    "promoCodes": {
+      "title": "Promo-kodlar",
+      "code": "Kod",
+      "discount": "Chegirma (%)",
+      "maxUses": "Maksimal ishlatilish soni",
+      "expiresAt": "Amal qilish muddati",
+      "create": "Yaratish",
+      "active": "Faol",
+      "used": "Ishlatilgan"
+    }
   }
 }

@@ -533,3 +533,31 @@ export async function upgradeToVipWithCredit(userId: string, formData: FormData)
   revalidatePath("/admin/leads");
   revalidatePath("/admin/payments");
 }
+
+export async function createPromoCode(formData: FormData) {
+  const admin = await createAdminClient();
+
+  const code = String(formData.get("code") ?? "").trim().toUpperCase();
+  const discountPercent = Number(formData.get("discount_percent"));
+  const maxUsesRaw = String(formData.get("max_uses") ?? "").trim();
+  const expiresAtRaw = String(formData.get("expires_at") ?? "").trim();
+
+  if (!code || !Number.isInteger(discountPercent) || discountPercent < 1 || discountPercent > 100) {
+    throw new Error("invalid_promo_code");
+  }
+
+  await admin.from("promo_codes").insert({
+    code,
+    discount_percent: discountPercent,
+    max_uses: maxUsesRaw ? Number(maxUsesRaw) : null,
+    expires_at: expiresAtRaw ? new Date(expiresAtRaw).toISOString() : null,
+  });
+
+  revalidatePath("/admin/promo-codes");
+}
+
+export async function togglePromoCode(promoCodeId: string, active: boolean) {
+  const admin = await createAdminClient();
+  await admin.from("promo_codes").update({ active: !active }).eq("id", promoCodeId);
+  revalidatePath("/admin/promo-codes");
+}

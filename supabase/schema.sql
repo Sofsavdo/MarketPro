@@ -30,6 +30,12 @@ create table if not exists public.profiles (
   -- that referrer. Tracking what's already been granted lets a late check
   -- catch up on any tier that was crossed but never rewarded.
   referral_reward_tier int not null default 0,
+  -- Daily-activity streak (audit §6) — bumped by completeLesson
+  -- (lib/lms/access.ts) whenever a student finishes a lesson: same day is a
+  -- no-op, the very next day extends the streak, any later day resets it.
+  current_streak int not null default 0,
+  longest_streak int not null default 0,
+  last_active_date date,
   created_at timestamptz not null default now()
 );
 
@@ -242,6 +248,11 @@ create table if not exists public.payments (
   course_id uuid references public.courses (id),
   subscription_plan text check (subscription_plan in ('monthly', 'yearly')),
   installment_payment_id uuid references public.installment_payments (id),
+  -- The promo code text applied at checkout, if any. `used_count` on
+  -- promo_codes is only incremented once this payment actually reaches
+  -- 'paid' (see the Click/Payme webhook handlers) — never at checkout time,
+  -- so an abandoned or failed checkout doesn't burn a redemption.
+  promo_code text,
   created_at timestamptz not null default now()
 );
 
@@ -488,6 +499,95 @@ create policy "Users can post questions on accessible sessions" on public.sessio
 -- new questions and instructor answers via supabase-js .channel(...).on("postgres_changes", ...)
 -- without the student having to refresh the page.
 alter publication supabase_realtime add table public.session_questions;
+
+-- ============================================================
+-- course_reviews — public star rating + comment, one per (course, user),
+-- only from someone who actually has access (audit §3: "eng katta bo'shliq"
+-- — social proof is the single cheapest trust/conversion lever the catalog
+-- was missing).
+-- ============================================================
+create table if not exists public.course_reviews (
+  id uuid primary key default gen_random_uuid(),
+  course_id uuid not null references public.courses (id) on delete cascade,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  rating int not null check (rating between 1 and 5),
+  comment text,
+  created_at timestamptz not null default now(),
+  unique (course_id, user_id)
+);
+
+create index if not exists idx_course_reviews_course on public.course_reviews (course_id, created_at desc);
+
+alter table public.course_reviews enable row level security;
+
+create policy "Course reviews are public" on public.course_reviews
+  for select using (true);
+create policy "Only course-access holders can review" on public.course_reviews
+  for insert with check (auth.uid() = user_id and public.has_course_access(course_id));
+create policy "Users can update their own review" on public.course_reviews
+  for update using (auth.uid() = user_id);
+
+-- ============================================================
+-- lesson_comments — a discussion thread under each lesson, separate from
+-- the live-session Q&A: for asking about the actual lesson content, on your
+-- own time, not just during a scheduled class.
+-- ============================================================
+create table if not exists public.lesson_comments (
+  id uuid primary key default gen_random_uuid(),
+  lesson_id uuid not null references public.lessons (id) on delete cascade,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  comment text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_lesson_comments_lesson on public.lesson_comments (lesson_id, created_at);
+
+alter table public.lesson_comments enable row level security;
+
+create policy "Lesson comments require course access" on public.lesson_comments
+  for select using (public.has_quiz_access(lesson_id));
+create policy "Users can post comments if they have access" on public.lesson_comments
+  for insert with check (auth.uid() = user_id and public.has_quiz_access(lesson_id));
+
+-- ============================================================
+-- certificates — issued once a student's user_progress shows every lesson
+-- in the course completed (checked in lib/lms/certificate.ts). The row is
+-- just a stable record (id doubles as the verification code) — the actual
+-- PDF is generated on demand from it, never stored as a file.
+-- ============================================================
+create table if not exists public.certificates (
+  id uuid primary key default gen_random_uuid(),
+  course_id uuid not null references public.courses (id) on delete cascade,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  issued_at timestamptz not null default now(),
+  unique (course_id, user_id)
+);
+
+alter table public.certificates enable row level security;
+
+create policy "Users see their own certificates" on public.certificates
+  for select using (auth.uid() = user_id);
+
+-- ============================================================
+-- promo_codes — admin-issued discount codes (audit §5), applied in
+-- lib/payments/resolve-amount.ts. No student-facing RLS policy: a code's
+-- discount is only ever validated server-side with the service-role
+-- client, so a browsable "which codes exist" table is never exposed.
+-- ============================================================
+create table if not exists public.promo_codes (
+  id uuid primary key default gen_random_uuid(),
+  code text not null unique,
+  discount_percent int not null check (discount_percent between 1 and 100),
+  max_uses int,
+  used_count int not null default 0,
+  expires_at timestamptz,
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+alter table public.promo_codes enable row level security;
+
+create index if not exists idx_certificates_user on public.certificates (user_id);
 
 -- Writes to courses/modules/lessons/quiz_questions/enrollments/subscriptions/payments/
 -- installment_plans/installment_payments/live_sessions, instructor answers on

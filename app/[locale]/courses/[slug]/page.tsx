@@ -7,12 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, PlayCircle } from "lucide-react";
 import { getCourseBySlug, getCourseModulesWithLessons, localizedField } from "@/lib/courses";
 import { getLessonAccess, isLessonLocked } from "@/lib/lms/access";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { formatSom, cn } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
 import { PurchaseButtons } from "@/components/course/purchase-buttons";
 import { WaitlistForm } from "@/components/course/waitlist-form";
 import { InstructorBadge } from "@/components/course/instructor-badge";
+import { CourseReviews } from "@/components/course/course-reviews";
+import { submitCourseReview } from "@/lib/lms/reviews-actions";
 
 export default async function CourseDetailPage({
   params,
@@ -38,6 +40,34 @@ export default async function CourseDetailPage({
     allLessons.map((l) => isLessonLocked(user?.id ?? null, course.id, l.order_index)),
   );
   const lockMap = new Map(allLessons.map((l, i) => [l.id, lockStates[i]]));
+
+  const { data: reviewRows } = course.is_published
+    ? await supabase
+        .from("course_reviews")
+        .select("id, rating, comment, created_at, user_id")
+        .eq("course_id", course.id)
+        .order("created_at", { ascending: false })
+    : { data: [] };
+  // Reviews are public, so displaying the reviewer's name needs the
+  // service-role client — RLS on `profiles` only lets a session read its
+  // own row, and full_name isn't sensitive enough to warrant a broader
+  // public SELECT policy on the whole table.
+  const reviewerIds = [...new Set((reviewRows ?? []).map((r) => r.user_id))];
+  const reviewerAdmin = reviewerIds.length ? await createAdminClient() : null;
+  const { data: reviewerProfiles } = reviewerAdmin
+    ? await reviewerAdmin.from("profiles").select("id, full_name").in("id", reviewerIds)
+    : { data: [] };
+  const reviewerNameById = new Map((reviewerProfiles ?? []).map((p) => [p.id, p.full_name]));
+  const reviews = (reviewRows ?? []).map((r) => ({
+    ...r,
+    full_name: reviewerNameById.get(r.user_id) ?? null,
+  }));
+  const averageRating = reviews.length
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    : null;
+  const existingUserRating = user
+    ? (reviews.find((r) => r.user_id === user.id)?.rating ?? null)
+    : null;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-16">
@@ -162,6 +192,15 @@ export default async function CourseDetailPage({
               </div>
             ))}
           </div>
+
+          <CourseReviews
+            reviews={reviews}
+            average={averageRating}
+            canReview={access.hasCourseAccess}
+            existingRating={existingUserRating}
+            action={submitCourseReview.bind(null, course.id, slug)}
+            locale={locale}
+          />
         </>
       )}
     </div>

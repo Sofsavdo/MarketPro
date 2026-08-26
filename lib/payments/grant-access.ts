@@ -18,6 +18,23 @@ export async function grantAccessForPayment(paymentId: string) {
 
   if (!payment || payment.status !== "paid") return;
 
+  if (payment.promo_code) {
+    // Best-effort increment, not a strict atomic counter — a promo code is
+    // an admin-issued convenience limit, not a security boundary, so a rare
+    // race under heavy concurrent redemption isn't worth a DB function for.
+    const { data: promo } = await supabase
+      .from("promo_codes")
+      .select("used_count")
+      .eq("code", payment.promo_code)
+      .maybeSingle();
+    if (promo) {
+      await supabase
+        .from("promo_codes")
+        .update({ used_count: promo.used_count + 1 })
+        .eq("code", payment.promo_code);
+    }
+  }
+
   if (payment.installment_payment_id) {
     await markInstallmentPaid(payment.installment_payment_id);
   }

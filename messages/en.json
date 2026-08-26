@@ -133,7 +133,26 @@
     "planThreePart": "3 parts",
     "upgradeToVipTitle": "Upgrade to VIP",
     "vipTitle": "VIP access (lifetime)",
-    "vipIncludes": "Video lessons + community + live classes + personal mentor feedback — for life."
+    "vipIncludes": "Video lessons + community + live classes + personal mentor feedback — for life.",
+    "reviews": {
+      "title": "Reviews",
+      "yourRating": "Your rating",
+      "commentPlaceholder": "Your thoughts on the course (optional)...",
+      "submit": "Leave a review",
+      "update": "Update review",
+      "anon": "Student",
+      "empty": "No reviews yet. Be the first!"
+    },
+    "comments": {
+      "title": "Discussion",
+      "placeholder": "Write a question or comment...",
+      "submit": "Post",
+      "anon": "Student",
+      "empty": "No comments yet."
+    },
+    "certificateReady": "Congratulations! You've completed 100% of the course.",
+    "downloadCertificate": "Download certificate",
+    "promoCodePlaceholder": "Promo code (optional)"
   },
   "lesson": {
     "completeButton": "Complete lesson",
@@ -168,7 +187,11 @@
     "expiryPopupTitle": "Your subscription expires in {days} days",
     "expiryPopupToday": "Your subscription expires today",
     "expiryPopupDesc": "Renew to keep your access, or buy the course outright (VIP) for lifetime access.",
-    "expiryPopupRenew": "Renew subscription"
+    "expiryPopupRenew": "Renew subscription",
+    "streak": "{count}-day streak",
+    "upsellTitle": "What's next",
+    "upsellDesc": "You've completed the course! Check out other tracks.",
+    "browseMore": "Browse more courses"
   },
   "footer": {
     "rights": "All rights reserved.",
@@ -249,12 +272,31 @@
     "title": "Invite friends",
     "desc": "Every friend who registers through your link counts — they also get a free 7-day trial. 10 friends = 1 month, 50 = 6 months, 100 = 1 year of free Premium subscription!",
     "invited": "Invited",
-    "nextReward": "Next reward: {count} friends → {months} mo free"
+    "nextReward": "Next reward: {count} friends → {months} mo free",
+    "shareTelegram": "Share on Telegram",
+    "shareWhatsapp": "Share on WhatsApp"
   },
   "common": {
     "errorTitle": "Something went wrong",
     "errorDesc": "There was a problem loading the page. Please try again.",
     "retry": "Retry",
     "genericError": "Something went wrong"
+  },
+  "admin": {
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next",
+      "page": "Page"
+    },
+    "promoCodes": {
+      "title": "Promo Codes",
+      "code": "Code",
+      "discount": "Discount (%)",
+      "maxUses": "Max uses",
+      "expiresAt": "Expires at",
+      "create": "Create",
+      "active": "Active",
+      "used": "Used"
+    }
   }
 }

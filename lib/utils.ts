@@ -35,7 +35,7 @@ export function toIntlLocale(locale: Locale) {
  * by 5 hours before this existed). Uzbekistan doesn't observe DST, so a
  * fixed IANA zone is always correct.
  */
-const APP_TIME_ZONE = "Asia/Tashkent";
+export const APP_TIME_ZONE = "Asia/Tashkent";
 
 export function formatDateTime(
   date: string | Date,
@@ -57,6 +57,16 @@ export function formatDate(
     timeZone: APP_TIME_ZONE,
     ...options,
   });
+}
+
+/**
+ * "Today" as a plain YYYY-MM-DD date, in Tashkent's calendar rather than the
+ * server process's own (usually UTC — a lesson finished at 1am Tashkent
+ * time is still 8pm the previous day in UTC, which would silently reset a
+ * student's streak instead of extending it).
+ */
+export function todayInTashkent(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: APP_TIME_ZONE });
 }
 
 /**

@@ -32,6 +32,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/waitlist" className="text-slate-400 hover:text-white">
           Kutish ro&apos;yxati
         </Link>
+        <Link href="/admin/promo-codes" className="text-slate-400 hover:text-white">
+          Promo-kodlar
+        </Link>
         <Link href="/dashboard" className="ml-auto text-slate-400 hover:text-white">
           ← Saytga qaytish
         </Link>
