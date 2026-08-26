@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { uploadImage } from "@/lib/supabase/storage";
 
 function slugify(input: string) {
   return input
@@ -73,12 +74,18 @@ export async function toggleCoursePublished(courseId: string, isPublished: boole
   const admin = await createAdminClient();
   await admin.from("courses").update({ is_published: isPublished }).eq("id", courseId);
   revalidatePath("/admin");
+  revalidatePath("/[locale]", "page");
   revalidatePath("/[locale]/courses", "page");
 }
 
 export async function updateCourse(courseId: string, formData: FormData) {
   await requireAdmin();
   const admin = await createAdminClient();
+
+  // Only a newly-chosen file replaces the cover — an empty file input on a
+  // routine "save the rest of the form" submit must not wipe out the cover
+  // the course already has.
+  const newCoverUrl = await uploadImage("course-covers", formData.get("cover_file") as File | null);
 
   await admin
     .from("courses")
@@ -89,7 +96,7 @@ export async function updateCourse(courseId: string, formData: FormData) {
       description_uz: String(formData.get("description_uz") ?? ""),
       description_ru: String(formData.get("description_ru") ?? ""),
       description_en: String(formData.get("description_en") ?? ""),
-      cover_url: String(formData.get("cover_url") ?? "") || null,
+      ...(newCoverUrl ? { cover_url: newCoverUrl } : {}),
       instructor_name: String(formData.get("instructor_name") ?? "") || null,
       instructor_avatar_url: String(formData.get("instructor_avatar_url") ?? "") || null,
       duration_months: Number(formData.get("duration_months") ?? 1),
@@ -98,6 +105,8 @@ export async function updateCourse(courseId: string, formData: FormData) {
     .eq("id", courseId);
 
   revalidatePath(`/admin/courses/${courseId}`);
+  revalidatePath("/[locale]", "page");
+  revalidatePath("/[locale]/courses", "page");
 }
 
 export async function createCourse(formData: FormData) {
@@ -116,6 +125,7 @@ export async function createCourse(formData: FormData) {
   }
 
   const { count } = await admin.from("courses").select("id", { count: "exact", head: true });
+  const coverUrl = await uploadImage("course-covers", formData.get("cover_file") as File | null);
 
   const { data: course, error } = await admin
     .from("courses")
@@ -127,7 +137,7 @@ export async function createCourse(formData: FormData) {
       description_uz: String(formData.get("description_uz") ?? ""),
       description_ru: String(formData.get("description_ru") ?? ""),
       description_en: String(formData.get("description_en") ?? ""),
-      cover_url: String(formData.get("cover_url") ?? "") || null,
+      cover_url: coverUrl,
       duration_months: Number(formData.get("duration_months") ?? 1),
       price: Number(formData.get("price") ?? 0),
       order_index: count ?? 0,
@@ -139,12 +149,19 @@ export async function createCourse(formData: FormData) {
   if (error || !course) throw new Error(error?.message ?? "Kurs yaratilmadi");
 
   revalidatePath("/admin");
+  revalidatePath("/[locale]", "page");
+  revalidatePath("/[locale]/courses", "page");
   redirect(`/admin/courses/${course.id}`);
 }
 
 export async function updateLesson(lessonId: string, formData: FormData) {
   await requireAdmin();
   const admin = await createAdminClient();
+
+  const newThumbnailUrl = await uploadImage(
+    "lesson-thumbnails",
+    formData.get("thumbnail_file") as File | null,
+  );
 
   await admin
     .from("lessons")
@@ -153,6 +170,7 @@ export async function updateLesson(lessonId: string, formData: FormData) {
       title_ru: String(formData.get("title_ru") ?? ""),
       title_en: String(formData.get("title_en") ?? ""),
       video_url: String(formData.get("video_url") ?? ""),
+      ...(newThumbnailUrl ? { thumbnail_url: newThumbnailUrl } : {}),
       content_uz: String(formData.get("content_uz") ?? ""),
       content_ru: String(formData.get("content_ru") ?? ""),
       content_en: String(formData.get("content_en") ?? ""),
@@ -519,4 +537,32 @@ export async function upgradeToVipWithCredit(userId: string, formData: FormData)
 
   revalidatePath("/admin/leads");
   revalidatePath("/admin/payments");
+}
+
+export async function createPromoCode(formData: FormData) {
+  const admin = await createAdminClient();
+
+  const code = String(formData.get("code") ?? "").trim().toUpperCase();
+  const discountPercent = Number(formData.get("discount_percent"));
+  const maxUsesRaw = String(formData.get("max_uses") ?? "").trim();
+  const expiresAtRaw = String(formData.get("expires_at") ?? "").trim();
+
+  if (!code || !Number.isInteger(discountPercent) || discountPercent < 1 || discountPercent > 100) {
+    throw new Error("invalid_promo_code");
+  }
+
+  await admin.from("promo_codes").insert({
+    code,
+    discount_percent: discountPercent,
+    max_uses: maxUsesRaw ? Number(maxUsesRaw) : null,
+    expires_at: expiresAtRaw ? new Date(expiresAtRaw).toISOString() : null,
+  });
+
+  revalidatePath("/admin/promo-codes");
+}
+
+export async function togglePromoCode(promoCodeId: string, active: boolean) {
+  const admin = await createAdminClient();
+  await admin.from("promo_codes").update({ active: !active }).eq("id", promoCodeId);
+  revalidatePath("/admin/promo-codes");
 }

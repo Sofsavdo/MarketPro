@@ -5,7 +5,11 @@ function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        "rounded-2xl border border-slate-800 bg-slate-900/60 text-white shadow-sm",
+        // Brand book §11: course-card style — Midnight Blue bg, 1px Slate
+        // border, 8px radius. Clickable cards add their own
+        // hover:border-amber-500/50 (the brand's "hover turns Gold" rule
+        // only applies to actual links, not static info cards).
+        "rounded-lg border border-slate-800 bg-slate-900/60 text-white shadow-sm",
         className,
       )}
       {...props}

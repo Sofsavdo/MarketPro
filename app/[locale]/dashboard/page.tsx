@@ -12,7 +12,7 @@ import { formatSom, formatDate } from "@/lib/utils";
 import { PayInstallmentButton } from "@/components/course/pay-installment-button";
 import { DownsellBanner } from "@/components/profile/downsell-banner";
 import { ExpiryPopup } from "@/components/profile/expiry-popup";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Flame, Award } from "lucide-react";
 
 export default async function DashboardPage() {
   const t = await getTranslations();
@@ -23,6 +23,12 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("current_streak")
+    .eq("id", user.id)
+    .maybeSingle();
 
   const { data: subscription } = await supabase
     .from("subscriptions")
@@ -104,6 +110,18 @@ export default async function DashboardPage() {
     return (pendingInstallments ?? []).find((ip) => ip.plan_id === plan.id) ?? null;
   }
 
+  const hasCompletedACourse = courseIds.some((id) => progressFor(id) >= 100);
+  const { data: suggestedCourse } = hasCompletedACourse
+    ? await supabase
+        .from("courses")
+        .select("slug, title_uz, title_ru, title_en")
+        .eq("is_published", true)
+        .not("id", "in", `(${courseIds.length ? courseIds.join(",") : "00000000-0000-0000-0000-000000000000"})`)
+        .order("order_index", { ascending: true })
+        .limit(1)
+        .maybeSingle()
+    : { data: null };
+
   const daysUntilExpiry = subscription
     ? Math.ceil(
         (new Date(subscription.current_period_end).getTime() - new Date().getTime()) /
@@ -123,6 +141,12 @@ export default async function DashboardPage() {
           <p className="mt-1 text-slate-400">{t("dashboard.subtitle")}</p>
         </div>
         <div className="flex items-center gap-3">
+          {!!profile?.current_streak && (
+            <Badge variant="outline" className="gap-1">
+              <Flame className="h-3.5 w-3.5 text-amber-500" />
+              {t("dashboard.streak", { count: profile.current_streak })}
+            </Badge>
+          )}
           <Badge variant={subscription ? "default" : "outline"}>
             {subscription ? t("dashboard.subscriptionActive") : t("dashboard.subscriptionNone")}
           </Badge>
@@ -210,12 +234,36 @@ export default async function DashboardPage() {
                           : t("course.startLesson")}
                     </Link>
                   </Button>
+
+                  {pct >= 100 && (
+                    <Button asChild variant="outline" className="w-full gap-1.5">
+                      <a href={`/api/certificates/${courseId}?locale=${locale}`}>
+                        <Award className="h-4 w-4 text-amber-500" />
+                        {t("course.downloadCertificate")}
+                      </a>
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             );
           })}
         </div>
       )}
+
+      {hasCompletedACourse && suggestedCourse && (
+          <div className="mt-10 rounded-lg border border-amber-500/30 bg-amber-500/5 p-6">
+            <h2 className="text-lg font-semibold text-white">{t("dashboard.upsellTitle")}</h2>
+            <p className="mt-1 text-sm text-slate-400">{t("dashboard.upsellDesc")}</p>
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <span className="text-slate-200">
+                {localizedField(suggestedCourse, "title", locale)}
+              </span>
+              <Button asChild size="sm">
+                <Link href={`/courses/${suggestedCourse.slug}`}>{t("dashboard.browseMore")}</Link>
+              </Button>
+            </div>
+          </div>
+        )}
     </div>
   );
 }

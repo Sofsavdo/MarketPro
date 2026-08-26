@@ -43,6 +43,7 @@ export function LessonPlayer({
   quizAlreadyPassed,
   materials = [],
   watermarkText,
+  thumbnailUrl,
 }: {
   courseId: string;
   courseSlug: string;
@@ -55,6 +56,8 @@ export function LessonPlayer({
   materials?: Material[];
   /** Student's phone + short id, stamped over the video (see VideoWatermark). */
   watermarkText?: string;
+  /** Shown as the player's poster image before playback starts. */
+  thumbnailUrl?: string;
 }) {
   const t = useTranslations("lesson");
   const router = useRouter();
@@ -133,6 +136,7 @@ export function LessonPlayer({
             <>
               <ReactPlayer
                 src={videoUrl}
+                poster={thumbnailUrl}
                 width="100%"
                 height="100%"
                 controls

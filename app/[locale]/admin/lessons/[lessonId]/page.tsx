@@ -81,6 +81,27 @@ export default async function AdminLessonEditPage({
           defaultValue={lesson.video_url}
         />
 
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="thumbnail_file">
+            Dars rasmi (kurs dasturi ro&apos;yxatida ko&apos;rinadi, JPG/PNG/WEBP, 5 MB gacha)
+          </Label>
+          {lesson.thumbnail_url && (
+            // eslint-disable-next-line @next/next/no-img-element -- Supabase Storage URL, not an optimizable local asset
+            <img
+              src={lesson.thumbnail_url}
+              alt=""
+              className="h-24 w-40 rounded-lg border border-slate-800 object-cover"
+            />
+          )}
+          <input
+            id="thumbnail_file"
+            name="thumbnail_file"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-300 file:mr-3 file:rounded-md file:border-0 file:bg-amber-500 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-950 hover:file:bg-amber-400"
+          />
+        </div>
+
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Matn (UZ)" name="content_uz" defaultValue={lesson.content_uz ?? ""} textarea />
           <Field label="Matn (RU)" name="content_ru" defaultValue={lesson.content_ru ?? ""} textarea />

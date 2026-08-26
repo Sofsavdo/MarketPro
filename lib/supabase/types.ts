@@ -30,7 +30,11 @@ export interface Database {
           role: "student" | "instructor" | "admin";
           referral_code: string | null;
           referred_by: string | null;
+          referral_reward_tier: number;
           lead_status: LeadStatus;
+          current_streak: number;
+          longest_streak: number;
+          last_active_date: string | null;
           created_at: string;
         },
         {
@@ -45,7 +49,11 @@ export interface Database {
           phone?: string | null;
           address?: string | null;
           referred_by?: string | null;
+          referral_reward_tier?: number;
           lead_status?: LeadStatus;
+          current_streak?: number;
+          longest_streak?: number;
+          last_active_date?: string | null;
         }
       >;
       courses: Table<
@@ -89,6 +97,7 @@ export interface Database {
           title_ru: string;
           title_en: string;
           video_url: string;
+          thumbnail_url: string | null;
           content_uz: string | null;
           content_ru: string | null;
           content_en: string | null;
@@ -182,6 +191,7 @@ export interface Database {
           course_id: string | null;
           subscription_plan: "monthly" | "yearly" | null;
           installment_payment_id: string | null;
+          promo_code: string | null;
           created_at: string;
         },
         {
@@ -194,6 +204,7 @@ export interface Database {
           course_id?: string | null;
           subscription_plan?: "monthly" | "yearly" | null;
           installment_payment_id?: string | null;
+          promo_code?: string | null;
         }
       >;
       installment_plans: Table<
@@ -290,6 +301,57 @@ export interface Database {
           created_at: string;
         },
         { user_id: string; note: string; created_by?: string | null }
+      >;
+      course_reviews: Table<
+        {
+          id: string;
+          course_id: string;
+          user_id: string;
+          rating: number;
+          comment: string | null;
+          created_at: string;
+        },
+        { course_id: string; user_id: string; rating: number; comment?: string | null },
+        { rating?: number; comment?: string | null }
+      >;
+      lesson_comments: Table<
+        {
+          id: string;
+          lesson_id: string;
+          user_id: string;
+          comment: string;
+          created_at: string;
+        },
+        { lesson_id: string; user_id: string; comment: string }
+      >;
+      certificates: Table<
+        {
+          id: string;
+          course_id: string;
+          user_id: string;
+          issued_at: string;
+        },
+        { course_id: string; user_id: string }
+      >;
+      promo_codes: Table<
+        {
+          id: string;
+          code: string;
+          discount_percent: number;
+          max_uses: number | null;
+          used_count: number;
+          expires_at: string | null;
+          active: boolean;
+          created_at: string;
+        },
+        {
+          code: string;
+          discount_percent: number;
+          max_uses?: number | null;
+          expires_at?: string | null;
+          active?: boolean;
+        },
+        { used_count?: number; active?: boolean }
       >;
     };
     Views: Record<string, never>;

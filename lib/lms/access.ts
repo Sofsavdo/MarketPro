@@ -1,5 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import type { AccessLevel } from "@/lib/supabase/types";
+import { todayInTashkent } from "@/lib/utils";
 
 export interface LessonAccess {
   hasCourseAccess: boolean;
@@ -180,6 +181,8 @@ export async function completeLesson(userId: string, courseId: string, lessonId:
     { onConflict: "user_id,lesson_id" },
   );
 
+  await bumpStreak(userId);
+
   const { data: current } = await supabase
     .from("lessons")
     .select("order_index")
@@ -196,4 +199,44 @@ export async function completeLesson(userId: string, courseId: string, lessonId:
     .maybeSingle();
 
   return next?.id ?? null;
+}
+
+/**
+ * Daily-activity streak (audit §6): finishing a lesson today extends
+ * yesterday's streak by one, starts a fresh streak of one if the last
+ * active day was earlier than that, and is a no-op if today was already
+ * counted (so completing three lessons in one sitting doesn't triple-count
+ * it).
+ */
+async function bumpStreak(userId: string) {
+  // current_streak/longest_streak/last_active_date are system-managed —
+  // deliberately left out of the column grant that lets a logged-in user
+  // update their own profile (see schema.sql), so this has to go through
+  // the service-role client rather than the caller's own session.
+  const admin = await createAdminClient();
+
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("current_streak, longest_streak, last_active_date")
+    .eq("id", userId)
+    .maybeSingle();
+  if (!profile) return;
+
+  const today = todayInTashkent();
+  if (profile.last_active_date === today) return;
+
+  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toLocaleDateString("en-CA", {
+    timeZone: "Asia/Tashkent",
+  });
+
+  const newStreak = profile.last_active_date === yesterday ? profile.current_streak + 1 : 1;
+
+  await admin
+    .from("profiles")
+    .update({
+      current_streak: newStreak,
+      longest_streak: Math.max(newStreak, profile.longest_streak),
+      last_active_date: today,
+    })
+    .eq("id", userId);
 }

@@ -4,9 +4,11 @@ import { Link } from "@/i18n/navigation";
 import { ChevronLeft, Lock } from "lucide-react";
 import { getCourseBySlug, localizedField } from "@/lib/courses";
 import { getLessonAccess, isLessonLocked } from "@/lib/lms/access";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import type { Locale } from "@/i18n/routing";
 import { LessonPlayer } from "@/components/course/lesson-player";
+import { LessonComments } from "@/components/course/lesson-comments";
+import { submitLessonComment } from "@/lib/lms/reviews-actions";
 
 export default async function LessonPage({
   params,
@@ -58,6 +60,24 @@ export default async function LessonPage({
         .eq("lesson_id", lesson.id)
         .order("order_index", { ascending: true });
 
+  const { data: commentRows } = locked
+    ? { data: [] }
+    : await supabase
+        .from("lesson_comments")
+        .select("id, comment, created_at, user_id")
+        .eq("lesson_id", lesson.id)
+        .order("created_at", { ascending: true });
+  const commenterIds = [...new Set((commentRows ?? []).map((c) => c.user_id))];
+  const commenterAdmin = commenterIds.length ? await createAdminClient() : null;
+  const { data: commenterProfiles } = commenterAdmin
+    ? await commenterAdmin.from("profiles").select("id, full_name").in("id", commenterIds)
+    : { data: [] };
+  const commenterNameById = new Map((commenterProfiles ?? []).map((p) => [p.id, p.full_name]));
+  const comments = (commentRows ?? []).map((c) => ({
+    ...c,
+    full_name: commenterNameById.get(c.user_id) ?? null,
+  }));
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <Link
@@ -99,6 +119,19 @@ export default async function LessonPage({
             fileType: m.file_type,
           }))}
           watermarkText={user.phone ? `${user.phone} · ${user.id.slice(0, 8)}` : undefined}
+          thumbnailUrl={lesson.thumbnail_url ?? undefined}
+        />
+      )}
+
+      {!locked && (
+        <LessonComments
+          comments={comments}
+          action={submitLessonComment.bind(
+            null,
+            lesson.id,
+            `/courses/${course.slug}/lessons/${lesson.id}`,
+          )}
+          locale={locale}
         />
       )}
     </div>

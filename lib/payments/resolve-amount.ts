@@ -16,7 +16,14 @@ export async function resolvePurchase(params: {
   installmentsCount?: 2 | 3;
   /** Paying a specific already-scheduled installment instead of starting a new purchase. */
   installmentPaymentId?: string;
-}): Promise<{ amount: number; installmentPaymentId: string | null } | null> {
+  /** A code the buyer typed at checkout — only applies to a fresh course/subscription purchase, not an installment or an already-scheduled payment. */
+  promoCode?: string;
+}): Promise<{
+  amount: number;
+  installmentPaymentId: string | null;
+  promoCode: string | null;
+  discountAmount: number;
+} | null> {
   const admin = await createAdminClient();
 
   if (params.installmentPaymentId) {
@@ -36,12 +43,31 @@ export async function resolvePurchase(params: {
 
     if (!plan || plan.user_id !== params.userId) return null;
 
-    return { amount: installment.amount, installmentPaymentId: installment.id };
+    return {
+      amount: installment.amount,
+      installmentPaymentId: installment.id,
+      promoCode: null,
+      discountAmount: 0,
+    };
   }
+
+  // Only applies to a full one-time payment (course or subscription) — not
+  // an installment plan, since discounting one installment but not the rest
+  // would make the plan's schedule inconsistent with its stated total.
+  const promo = params.promoCode && !params.installmentsCount
+    ? await resolvePromoCode(admin, params.promoCode)
+    : null;
 
   if (params.subscriptionPlan) {
     const amount = SUBSCRIPTION_PRICE[params.subscriptionPlan] ?? null;
-    return amount === null ? null : { amount, installmentPaymentId: null };
+    if (amount === null) return null;
+    const discountAmount = promo ? Math.round((amount * promo.discount_percent) / 100) : 0;
+    return {
+      amount: amount - discountAmount,
+      installmentPaymentId: null,
+      promoCode: promo?.code ?? null,
+      discountAmount,
+    };
   }
 
   if (params.courseId) {
@@ -62,11 +88,36 @@ export async function resolvePurchase(params: {
         totalAmount,
         installmentsCount: params.installmentsCount,
       });
-      return { amount: firstInstallmentAmount, installmentPaymentId: firstInstallmentId };
+      return {
+        amount: firstInstallmentAmount,
+        installmentPaymentId: firstInstallmentId,
+        promoCode: null,
+        discountAmount: 0,
+      };
     }
 
-    return { amount: totalAmount, installmentPaymentId: null };
+    const discountAmount = promo ? Math.round((totalAmount * promo.discount_percent) / 100) : 0;
+    return {
+      amount: totalAmount - discountAmount,
+      installmentPaymentId: null,
+      promoCode: promo?.code ?? null,
+      discountAmount,
+    };
   }
 
   return null;
+}
+
+async function resolvePromoCode(admin: Awaited<ReturnType<typeof createAdminClient>>, code: string) {
+  const { data: promo } = await admin
+    .from("promo_codes")
+    .select("code, discount_percent, max_uses, used_count, expires_at, active")
+    .eq("code", code.trim().toUpperCase())
+    .maybeSingle();
+
+  if (!promo || !promo.active) return null;
+  if (promo.expires_at && new Date(promo.expires_at) < new Date()) return null;
+  if (promo.max_uses !== null && promo.used_count >= promo.max_uses) return null;
+
+  return promo;
 }

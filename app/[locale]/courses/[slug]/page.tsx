@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
+import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,12 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, PlayCircle } from "lucide-react";
 import { getCourseBySlug, getCourseModulesWithLessons, localizedField } from "@/lib/courses";
 import { getLessonAccess, isLessonLocked } from "@/lib/lms/access";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { formatSom, cn } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
 import { PurchaseButtons } from "@/components/course/purchase-buttons";
 import { WaitlistForm } from "@/components/course/waitlist-form";
 import { InstructorBadge } from "@/components/course/instructor-badge";
+import { CourseReviews } from "@/components/course/course-reviews";
+import { submitCourseReview } from "@/lib/lms/reviews-actions";
 
 export default async function CourseDetailPage({
   params,
@@ -39,8 +42,48 @@ export default async function CourseDetailPage({
   );
   const lockMap = new Map(allLessons.map((l, i) => [l.id, lockStates[i]]));
 
+  const { data: reviewRows } = course.is_published
+    ? await supabase
+        .from("course_reviews")
+        .select("id, rating, comment, created_at, user_id")
+        .eq("course_id", course.id)
+        .order("created_at", { ascending: false })
+    : { data: [] };
+  // Reviews are public, so displaying the reviewer's name needs the
+  // service-role client — RLS on `profiles` only lets a session read its
+  // own row, and full_name isn't sensitive enough to warrant a broader
+  // public SELECT policy on the whole table.
+  const reviewerIds = [...new Set((reviewRows ?? []).map((r) => r.user_id))];
+  const reviewerAdmin = reviewerIds.length ? await createAdminClient() : null;
+  const { data: reviewerProfiles } = reviewerAdmin
+    ? await reviewerAdmin.from("profiles").select("id, full_name").in("id", reviewerIds)
+    : { data: [] };
+  const reviewerNameById = new Map((reviewerProfiles ?? []).map((p) => [p.id, p.full_name]));
+  const reviews = (reviewRows ?? []).map((r) => ({
+    ...r,
+    full_name: reviewerNameById.get(r.user_id) ?? null,
+  }));
+  const averageRating = reviews.length
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    : null;
+  const existingUserRating = user
+    ? (reviews.find((r) => r.user_id === user.id)?.rating ?? null)
+    : null;
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-16">
+      {course.cover_url && (
+        <div className="relative mb-8 aspect-[21/9] w-full overflow-hidden rounded-lg bg-slate-800">
+          <Image
+            src={course.cover_url}
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 1024px, 100vw"
+            priority
+            className="object-cover"
+          />
+        </div>
+      )}
       <Badge variant={course.is_published ? "default" : "outline"}>
         {course.is_published
           ? t("home.coursesSection.badgePopular")
@@ -124,20 +167,37 @@ export default async function CourseDetailPage({
                         key={lesson.id}
                         href={locked ? "#" : `/courses/${course.slug}/lessons/${lesson.id}`}
                         className={cn(
-                          "flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm transition-colors",
+                          "flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm transition-colors",
                           locked ? "cursor-not-allowed opacity-60" : "hover:border-amber-500/50",
                         )}
                       >
-                        <span className="flex items-center gap-3 text-slate-200">
-                          {locked ? (
-                            <Lock className="h-4 w-4 text-slate-500" />
+                        <span className="relative flex h-12 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-slate-800">
+                          {lesson.thumbnail_url ? (
+                            <Image
+                              src={lesson.thumbnail_url}
+                              alt=""
+                              fill
+                              sizes="80px"
+                              className="object-cover"
+                            />
                           ) : (
-                            <PlayCircle className="h-4 w-4 text-amber-500" />
+                            <PlayCircle className="h-5 w-5 text-slate-600" />
                           )}
+                          <span className="absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-950/80">
+                            {locked ? (
+                              <Lock className="h-3 w-3 text-slate-400" />
+                            ) : (
+                              <PlayCircle className="h-3 w-3 text-amber-500" />
+                            )}
+                          </span>
+                        </span>
+                        <span className="min-w-0 flex-1 text-slate-200">
                           {localizedField(lesson, "title", locale)}
                         </span>
                         {lesson.is_free_preview && (
-                          <Badge variant="outline">{t("course.freePreview")}</Badge>
+                          <Badge variant="outline" className="shrink-0">
+                            {t("course.freePreview")}
+                          </Badge>
                         )}
                       </Link>
                     );
@@ -146,6 +206,15 @@ export default async function CourseDetailPage({
               </div>
             ))}
           </div>
+
+          <CourseReviews
+            reviews={reviews}
+            average={averageRating}
+            canReview={access.hasCourseAccess}
+            existingRating={existingUserRating}
+            action={submitCourseReview.bind(null, course.id, slug)}
+            locale={locale}
+          />
         </>
       )}
     </div>

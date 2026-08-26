@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 import { formatDateTime } from "@/lib/utils";
 import {
   updateLeadStatus,
@@ -8,28 +9,50 @@ import {
   upgradeToVipWithCredit,
 } from "@/lib/lms/admin-actions";
 
+const PAGE_SIZE = 25;
+
 const LEAD_STATUS_LABELS: Record<string, string> = {
   new_lead: "Qiziqdi (New Lead)",
   vip_offered: "VIP Kurs Taklif Qilindi",
   downsell_subscribed: "Downsell → Obuna Sotib Oldi",
 };
 
-export default async function AdminLeadsPage() {
+export default async function AdminLeadsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, Number(pageParam) || 1);
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
   const admin = await createAdminClient();
 
-  const { data: profiles } = await admin
+  const {
+    data: profiles,
+    count: totalStudents,
+  } = await admin
     .from("profiles")
-    .select("*")
+    .select("*", { count: "exact" })
     .eq("role", "student")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(from, to);
 
-  const { data: subscriptions } = await admin
-    .from("subscriptions")
-    .select("user_id, status, current_period_end")
-    .eq("status", "active");
+  const profileIds = (profiles ?? []).map((p) => p.id);
+
+  const { data: subscriptions } = profileIds.length
+    ? await admin
+        .from("subscriptions")
+        .select("user_id, status, current_period_end")
+        .eq("status", "active")
+        .in("user_id", profileIds)
+    : { data: [] };
   const subByUser = new Map((subscriptions ?? []).map((s) => [s.user_id, s]));
 
-  const { data: enrollments } = await admin.from("enrollments").select("user_id, course_id");
+  const { data: enrollments } = profileIds.length
+    ? await admin.from("enrollments").select("user_id, course_id").in("user_id", profileIds)
+    : { data: [] };
   const vipCountByUser = new Map<string, number>();
   for (const e of enrollments ?? []) {
     vipCountByUser.set(e.user_id, (vipCountByUser.get(e.user_id) ?? 0) + 1);
@@ -41,10 +64,13 @@ export default async function AdminLeadsPage() {
     .eq("is_published", true)
     .order("order_index", { ascending: true });
 
-  const { data: callLogs } = await admin
-    .from("operator_call_logs")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const { data: callLogs } = profileIds.length
+    ? await admin
+        .from("operator_call_logs")
+        .select("*")
+        .in("user_id", profileIds)
+        .order("created_at", { ascending: false })
+    : { data: [] };
   const logsByUser = new Map<string, typeof callLogs>();
   for (const log of callLogs ?? []) {
     const list = logsByUser.get(log.user_id) ?? [];
@@ -53,6 +79,7 @@ export default async function AdminLeadsPage() {
   }
 
   const now = new Date().getTime();
+  const totalPages = Math.max(1, Math.ceil((totalStudents ?? 0) / PAGE_SIZE));
 
   return (
     <div>
@@ -178,6 +205,28 @@ export default async function AdminLeadsPage() {
           <p className="text-sm text-slate-500">Hozircha foydalanuvchilar yo&apos;q.</p>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="mt-6 flex items-center justify-between text-sm">
+          {page > 1 ? (
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/admin/leads?page=${page - 1}`}>← Oldingi</Link>
+            </Button>
+          ) : (
+            <span />
+          )}
+          <span className="text-slate-500">
+            Sahifa {page} / {totalPages}
+          </span>
+          {page < totalPages ? (
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/admin/leads?page=${page + 1}`}>Keyingi →</Link>
+            </Button>
+          ) : (
+            <span />
+          )}
+        </div>
+      )}
     </div>
   );
 }

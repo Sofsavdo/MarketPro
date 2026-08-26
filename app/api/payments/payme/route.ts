@@ -15,11 +15,12 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { courseId, subscriptionPlan, installmentsCount, installmentPaymentId } = body as {
+  const { courseId, subscriptionPlan, installmentsCount, installmentPaymentId, promoCode } = body as {
     courseId?: string;
     subscriptionPlan?: "monthly" | "yearly";
     installmentsCount?: 2 | 3;
     installmentPaymentId?: string;
+    promoCode?: string;
   };
 
   const resolved = await resolvePurchase({
@@ -28,6 +29,7 @@ export async function POST(request: NextRequest) {
     subscriptionPlan,
     installmentsCount,
     installmentPaymentId,
+    promoCode,
   });
   if (resolved === null) {
     return NextResponse.json({ error: "invalid_purchase" }, { status: 400 });
@@ -40,10 +42,12 @@ export async function POST(request: NextRequest) {
       user_id: user.id,
       provider: "payme",
       amount: resolved.amount,
+      discount_amount: resolved.discountAmount,
       status: "pending",
       course_id: courseId ?? null,
       subscription_plan: subscriptionPlan ?? null,
       installment_payment_id: resolved.installmentPaymentId,
+      promo_code: resolved.promoCode,
     })
     .select("id")
     .single();
