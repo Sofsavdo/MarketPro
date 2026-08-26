@@ -76,12 +76,27 @@ export default async function AdminCourseEditPage({
             textarea
           />
         </div>
-        <Field
-          label="Cover rasm URL"
-          name="cover_url"
-          defaultValue={course.cover_url ?? ""}
-          placeholder="https://.../cover.jpg"
-        />
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="cover_file">Cover rasm (JPG/PNG/WEBP, 5 MB gacha)</Label>
+          {course.cover_url && (
+            // eslint-disable-next-line @next/next/no-img-element -- Supabase Storage URL, not an optimizable local asset
+            <img
+              src={course.cover_url}
+              alt=""
+              className="h-32 w-full max-w-xs rounded-lg border border-slate-800 object-cover"
+            />
+          )}
+          <input
+            id="cover_file"
+            name="cover_file"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-300 file:mr-3 file:rounded-md file:border-0 file:bg-amber-500 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-950 hover:file:bg-amber-400"
+          />
+          <p className="text-xs text-slate-500">
+            Yangi rasm tanlamasangiz, joriy cover o&apos;zgarmaydi.
+          </p>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field
             label="Ustoz ismi (ixtiyoriy)"

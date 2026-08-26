@@ -108,6 +108,10 @@ create table if not exists public.lessons (
   title_ru text not null,
   title_en text not null,
   video_url text not null default '',
+  -- Shown next to the lesson title in the curriculum list (course detail
+  -- page) alongside the lock/unlock icon, so a student sees what each
+  -- lesson covers before opening it — not just after.
+  thumbnail_url text,
   content_uz text,
   content_ru text,
   content_en text,
@@ -470,3 +474,26 @@ alter publication supabase_realtime add table public.session_questions;
 -- waitlist) are performed server-side with the service-role key (admin client),
 -- bypassing RLS — see lib/supabase/server.ts#createAdminClient, app/[locale]/admin/*,
 -- and app/api/payments/*.
+
+-- ============================================================
+-- Storage — course cover images and lesson thumbnails, uploaded from the
+-- admin panel (lib/supabase/storage.ts) instead of pasting an external URL.
+-- Both buckets are public-read (covers/thumbnails aren't sensitive — they're
+-- shown on the public catalog) but writes only ever happen through the
+-- service-role admin client, so no INSERT/UPDATE/DELETE policy is needed;
+-- the SELECT policy below just lets the anon/authenticated roles read them
+-- back via the public bucket URL.
+-- ============================================================
+insert into storage.buckets (id, name, public)
+values ('course-covers', 'course-covers', true)
+on conflict (id) do nothing;
+
+insert into storage.buckets (id, name, public)
+values ('lesson-thumbnails', 'lesson-thumbnails', true)
+on conflict (id) do nothing;
+
+create policy "Course covers are publicly readable" on storage.objects
+  for select using (bucket_id = 'course-covers');
+
+create policy "Lesson thumbnails are publicly readable" on storage.objects
+  for select using (bucket_id = 'lesson-thumbnails');

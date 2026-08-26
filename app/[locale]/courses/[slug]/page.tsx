@@ -124,20 +124,36 @@ export default async function CourseDetailPage({
                         key={lesson.id}
                         href={locked ? "#" : `/courses/${course.slug}/lessons/${lesson.id}`}
                         className={cn(
-                          "flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm transition-colors",
+                          "flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-900/40 px-4 py-3 text-sm transition-colors",
                           locked ? "cursor-not-allowed opacity-60" : "hover:border-amber-500/50",
                         )}
                       >
-                        <span className="flex items-center gap-3 text-slate-200">
-                          {locked ? (
-                            <Lock className="h-4 w-4 text-slate-500" />
+                        <span className="relative flex h-12 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-slate-800">
+                          {lesson.thumbnail_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element -- Supabase Storage URL, not an optimizable local asset
+                            <img
+                              src={lesson.thumbnail_url}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
                           ) : (
-                            <PlayCircle className="h-4 w-4 text-amber-500" />
+                            <PlayCircle className="h-5 w-5 text-slate-600" />
                           )}
+                          <span className="absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-slate-950/80">
+                            {locked ? (
+                              <Lock className="h-3 w-3 text-slate-400" />
+                            ) : (
+                              <PlayCircle className="h-3 w-3 text-amber-500" />
+                            )}
+                          </span>
+                        </span>
+                        <span className="min-w-0 flex-1 text-slate-200">
                           {localizedField(lesson, "title", locale)}
                         </span>
                         {lesson.is_free_preview && (
-                          <Badge variant="outline">{t("course.freePreview")}</Badge>
+                          <Badge variant="outline" className="shrink-0">
+                            {t("course.freePreview")}
+                          </Badge>
                         )}
                       </Link>
                     );

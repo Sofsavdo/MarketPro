@@ -1,8 +1,56 @@
 @import "tailwindcss";
 
 :root {
-  --background: #020617;
+  --background: #0a1628;
   --foreground: #f8fafc;
+}
+
+/*
+ * IZDOSH Academy Brand Book v1.0 — Rang palitrasi.
+ * Every component in this codebase is written with Tailwind's default
+ * slate/amber scale (bg-slate-950, text-amber-500, ...) rather than custom
+ * "brand-*" class names. Redefining what those two scales actually render
+ * as — anchored exactly at the brand book's Midnight Blue/Slate/Gold/Light
+ * Gold hex values — makes every existing bg-slate-950, border-slate-800,
+ * text-amber-500, etc. across the app brand-accurate without having to
+ * touch each of the ~50 files that use them. Success Green (#10B981) and
+ * Alert Red (#EF4444) already equal Tailwind's stock emerald-500/red-500,
+ * so those two are untouched.
+ */
+@theme {
+  --color-slate-950: #0a1628; /* Midnight Blue — exact */
+  --color-slate-900: #101e33;
+  --color-slate-800: #16263f;
+  --color-slate-700: #202f4d;
+  --color-slate-600: #34405f;
+  --color-slate-500: #4a5568; /* Slate — exact */
+  --color-slate-400: #6b7686;
+  --color-slate-300: #96a0ad;
+  --color-slate-200: #c2c9d1;
+  --color-slate-100: #e1e5e9;
+  --color-slate-50: #f3f5f6;
+
+  --color-amber-950: #3d3009;
+  --color-amber-900: #5c4a0f;
+  --color-amber-800: #7a6316;
+  --color-amber-700: #977c1d;
+  --color-amber-600: #b39424;
+  --color-amber-500: #c9a227; /* Gold — exact */
+  --color-amber-400: #d4b454;
+  --color-amber-300: #dfc781;
+  --color-amber-200: #ead9ad;
+  --color-amber-100: #f5e6c8; /* Light Gold — exact */
+  --color-amber-50: #faf3e3;
+
+  /*
+   * Brand book §15: base cards/inputs get an 8px radius (rounded-lg), large
+   * CTAs or special components up to 12px — nothing in the product should
+   * render rounder than that. rounded-2xl defaults to 16px in Tailwind;
+   * capping it at the brand's 12px ceiling here covers the few "special
+   * component" containers (video player, locked-lesson panel, legal-page
+   * cards) without editing each one individually.
+   */
+  --radius-2xl: 0.75rem;
 }
 
 @theme inline {
@@ -38,6 +86,6 @@ body {
 }
 
 ::selection {
-  background: #f59e0b;
-  color: #020617;
+  background: #c9a227;
+  color: #0a1628;
 }

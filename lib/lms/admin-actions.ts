@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { uploadImage } from "@/lib/supabase/storage";
 
 function slugify(input: string) {
   return input
@@ -80,6 +81,11 @@ export async function updateCourse(courseId: string, formData: FormData) {
   await requireAdmin();
   const admin = await createAdminClient();
 
+  // Only a newly-chosen file replaces the cover — an empty file input on a
+  // routine "save the rest of the form" submit must not wipe out the cover
+  // the course already has.
+  const newCoverUrl = await uploadImage("course-covers", formData.get("cover_file") as File | null);
+
   await admin
     .from("courses")
     .update({
@@ -89,7 +95,7 @@ export async function updateCourse(courseId: string, formData: FormData) {
       description_uz: String(formData.get("description_uz") ?? ""),
       description_ru: String(formData.get("description_ru") ?? ""),
       description_en: String(formData.get("description_en") ?? ""),
-      cover_url: String(formData.get("cover_url") ?? "") || null,
+      ...(newCoverUrl ? { cover_url: newCoverUrl } : {}),
       instructor_name: String(formData.get("instructor_name") ?? "") || null,
       instructor_avatar_url: String(formData.get("instructor_avatar_url") ?? "") || null,
       duration_months: Number(formData.get("duration_months") ?? 1),
@@ -116,6 +122,7 @@ export async function createCourse(formData: FormData) {
   }
 
   const { count } = await admin.from("courses").select("id", { count: "exact", head: true });
+  const coverUrl = await uploadImage("course-covers", formData.get("cover_file") as File | null);
 
   const { data: course, error } = await admin
     .from("courses")
@@ -127,7 +134,7 @@ export async function createCourse(formData: FormData) {
       description_uz: String(formData.get("description_uz") ?? ""),
       description_ru: String(formData.get("description_ru") ?? ""),
       description_en: String(formData.get("description_en") ?? ""),
-      cover_url: String(formData.get("cover_url") ?? "") || null,
+      cover_url: coverUrl,
       duration_months: Number(formData.get("duration_months") ?? 1),
       price: Number(formData.get("price") ?? 0),
       order_index: count ?? 0,
@@ -146,6 +153,11 @@ export async function updateLesson(lessonId: string, formData: FormData) {
   await requireAdmin();
   const admin = await createAdminClient();
 
+  const newThumbnailUrl = await uploadImage(
+    "lesson-thumbnails",
+    formData.get("thumbnail_file") as File | null,
+  );
+
   await admin
     .from("lessons")
     .update({
@@ -153,6 +165,7 @@ export async function updateLesson(lessonId: string, formData: FormData) {
       title_ru: String(formData.get("title_ru") ?? ""),
       title_en: String(formData.get("title_en") ?? ""),
       video_url: String(formData.get("video_url") ?? ""),
+      ...(newThumbnailUrl ? { thumbnail_url: newThumbnailUrl } : {}),
       content_uz: String(formData.get("content_uz") ?? ""),
       content_ru: String(formData.get("content_ru") ?? ""),
       content_en: String(formData.get("content_en") ?? ""),

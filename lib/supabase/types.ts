@@ -89,6 +89,7 @@ export interface Database {
           title_ru: string;
           title_en: string;
           video_url: string;
+          thumbnail_url: string | null;
           content_uz: string | null;
           content_ru: string | null;
           content_en: string | null;
