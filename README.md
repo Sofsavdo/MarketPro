@@ -36,6 +36,36 @@ npm run dev
    confirmations**'ni o'chirib qo'ying (aks holda har bir ro'yxatdan o'tishda SMS OTP
    provayderi — Twilio, Eskiz.uz va h.k. — sozlangan bo'lishi kerak bo'ladi).
 
+## Railway'ga chiqarish
+
+Railway Next.js loyihasini Nixpacks orqali avtomatik aniqlaydi — alohida Dockerfile yoki
+`railway.json` shart emas, faqat quyidagilarni sozlang:
+
+1. **Yangi loyiha yarating** → GitHub repo'ni ulang (bu repo, `main` branch).
+2. **Environment Variables** bo'limida quyidagilarni kiriting (`.env.example`dagi ro'yxat
+   bilan bir xil, lekin haqiqiy qiymatlar bilan):
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+     — Supabase loyihangizning **Settings → API** bo'limidan.
+   - `NEXT_PUBLIC_SITE_URL` — Railway sizga bergan domen (`https://xxx.up.railway.app`) yoki
+     ulangan maxsus domen (`https://izdosh.uz`). **Muhim**: bu qiymat noto'g'ri bo'lsa,
+     Click/Payme to'lovdan keyin foydalanuvchini noto'g'ri manzilga qaytaradi.
+   - `CLICK_SERVICE_ID`, `CLICK_MERCHANT_ID`, `CLICK_SECRET_KEY`, `PAYME_MERCHANT_ID`,
+     `PAYME_SECRET_KEY` — to'lov provayderlari ulanganda.
+3. Railway `npm install` → `npm run build` → `npm run start`ni avtomatik ishga tushiradi.
+   `next start` `$PORT` muhit o'zgaruvchisini o'zi o'qiydi (Railway buni avtomatik beradi),
+   qo'shimcha sozlash shart emas.
+4. Birinchi deploy'dan so'ng, Click/Payme kabinetlarida webhook manzillarini yangilang:
+   `https://<domeningiz>/api/payments/click/webhook` va `.../payme/webhook`.
+5. Node versiyasi `package.json`dagi `engines.node` (`>=20.9.0`) orqali belgilangan —
+   Railway buni Nixpacks build'da avtomatik hurmat qiladi.
+
+Deploy'dan keyin tekshirish uchun: `/uz` sahifasi ochilishi, `/uz/register`da telefon +
+parol bilan ro'yxatdan o'tish ishlashi (Supabase'da Phone provider yoqilgan bo'lishi shart —
+yuqoridagi "Ma'lumotlar bazasi" bo'limiga qarang), va admin akkaunt uchun Supabase SQL
+Editor'da `update public.profiles set role = 'admin' where phone = '<sizning raqamingiz>';`
+buyrug'ini bajaring (birinchi admin hech qanday UI orqali tayinlanmaydi — bu ataylab shunday,
+xavfsizlik uchun).
+
 ## Papka strukturasi
 
 ```
