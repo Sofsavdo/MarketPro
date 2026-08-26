@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, FileText, Presentation, Image as ImageIcon, Link as LinkIcon, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
@@ -16,6 +16,21 @@ interface Question {
   options: string[];
 }
 
+interface Material {
+  id: string;
+  title: string;
+  fileUrl: string;
+  fileType: string;
+}
+
+const MATERIAL_ICONS: Record<string, typeof FileText> = {
+  pdf: FileText,
+  pptx: Presentation,
+  doc: FileText,
+  image: ImageIcon,
+  link: LinkIcon,
+};
+
 export function LessonPlayer({
   courseId,
   courseSlug,
@@ -25,6 +40,7 @@ export function LessonPlayer({
   questions,
   alreadyCompleted,
   quizAlreadyPassed,
+  materials = [],
 }: {
   courseId: string;
   courseSlug: string;
@@ -34,11 +50,12 @@ export function LessonPlayer({
   questions: Question[];
   alreadyCompleted: boolean;
   quizAlreadyPassed: boolean;
+  materials?: Material[];
 }) {
   const t = useTranslations("lesson");
   const router = useRouter();
 
-  const [videoWatched, setVideoWatched] = useState(alreadyCompleted);
+  const [videoWatched, setVideoWatched] = useState(alreadyCompleted || !videoUrl);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [quizResult, setQuizResult] = useState<"passed" | "failed" | null>(
     quizAlreadyPassed ? "passed" : null,
@@ -87,7 +104,7 @@ export function LessonPlayer({
 
   return (
     <div className="mt-8 space-y-8">
-      {videoUrl ? (
+      {videoUrl && (
         <div className="aspect-video overflow-hidden rounded-2xl border border-slate-800 bg-black">
           <ReactPlayer
             src={videoUrl}
@@ -97,14 +114,40 @@ export function LessonPlayer({
             onEnded={() => setVideoWatched(true)}
           />
         </div>
-      ) : (
+      )}
+
+      {content && (
+        <div className="prose prose-invert prose-slate max-w-none text-slate-300">{content}</div>
+      )}
+
+      {!videoUrl && !content && materials.length === 0 && (
         <div className="flex aspect-video items-center justify-center rounded-2xl border border-dashed border-slate-800 text-slate-600">
           {t("videoComingSoon")}
         </div>
       )}
 
-      {content && (
-        <div className="prose prose-invert prose-slate max-w-none text-slate-300">{content}</div>
+      {materials.length > 0 && (
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+          <h3 className="text-lg font-semibold text-white">{t("materialsTitle")}</h3>
+          <div className="mt-4 space-y-2">
+            {materials.map((material) => {
+              const Icon = MATERIAL_ICONS[material.fileType] ?? FileText;
+              return (
+                <a
+                  key={material.id}
+                  href={material.fileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-3 rounded-lg border border-slate-800 px-4 py-3 text-sm text-slate-200 hover:border-amber-500/50 hover:text-white"
+                >
+                  <Icon className="h-5 w-5 shrink-0 text-amber-500" />
+                  <span className="flex-1">{material.title}</span>
+                  <Download className="h-4 w-4 shrink-0 text-slate-500" />
+                </a>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {hasQuiz && !alreadyCompleted && (

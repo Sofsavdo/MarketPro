@@ -10,6 +10,7 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   full_name text,
   phone text,
+  address text,
   avatar_url text,
   role text not null default 'student' check (role in ('student', 'instructor', 'admin')),
   referral_code text unique,
@@ -17,11 +18,20 @@ create table if not exists public.profiles (
   created_at timestamptz not null default now()
 );
 
+-- Registration is phone + password only (no email): auth.users.phone is set
+-- directly by supabase.auth.signUp({ phone, password }), so the trigger
+-- copies it straight across instead of relying on request metadata.
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, full_name, referral_code)
-  values (new.id, new.raw_user_meta_data ->> 'full_name', substr(replace(gen_random_uuid()::text, '-', ''), 1, 8));
+  insert into public.profiles (id, full_name, phone, address, referral_code)
+  values (
+    new.id,
+    new.raw_user_meta_data ->> 'full_name',
+    new.phone,
+    new.raw_user_meta_data ->> 'address',
+    substr(replace(gen_random_uuid()::text, '-', ''), 1, 8)
+  );
   return new;
 end;
 $$ language plpgsql security definer set search_path = public;
@@ -89,6 +99,20 @@ create table if not exists public.quiz_questions (
   options_ru text[] not null,
   options_en text[] not null,
   correct_index int not null,
+  order_index int not null default 0
+);
+
+-- Not every lesson is a video: a lesson can also (or instead) ship reading
+-- material — a PDF slide deck, a PPTX presentation, a doc, or a plain link —
+-- listed underneath the player as downloadable resources.
+create table if not exists public.lesson_materials (
+  id uuid primary key default gen_random_uuid(),
+  lesson_id uuid not null references public.lessons (id) on delete cascade,
+  title_uz text not null,
+  title_ru text not null,
+  title_en text not null,
+  file_url text not null,
+  file_type text not null default 'pdf' check (file_type in ('pdf', 'pptx', 'doc', 'image', 'link')),
   order_index int not null default 0
 );
 
@@ -235,6 +259,7 @@ create index if not exists idx_session_questions_session on public.session_quest
 
 create index if not exists idx_lessons_course on public.lessons (course_id, order_index);
 create index if not exists idx_modules_course on public.modules (course_id, order_index);
+create index if not exists idx_lesson_materials_lesson on public.lesson_materials (lesson_id, order_index);
 create index if not exists idx_progress_user_course on public.user_progress (user_id, course_id);
 create index if not exists idx_enrollments_user on public.enrollments (user_id);
 
@@ -245,6 +270,7 @@ alter table public.profiles enable row level security;
 alter table public.courses enable row level security;
 alter table public.modules enable row level security;
 alter table public.lessons enable row level security;
+alter table public.lesson_materials enable row level security;
 alter table public.quiz_questions enable row level security;
 alter table public.enrollments enable row level security;
 alter table public.subscriptions enable row level security;
@@ -322,6 +348,9 @@ end;
 $$ language plpgsql security definer set search_path = public;
 
 create policy "Quiz answers require course access" on public.quiz_questions
+  for select using (public.has_quiz_access(lesson_id));
+
+create policy "Lesson materials require course access" on public.lesson_materials
   for select using (public.has_quiz_access(lesson_id));
 
 create policy "Users see their own enrollments" on public.enrollments

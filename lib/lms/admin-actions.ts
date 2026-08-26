@@ -1,7 +1,17 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+
+function slugify(input: string) {
+  return input
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+}
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -39,6 +49,7 @@ export async function updateCourse(courseId: string, formData: FormData) {
       description_uz: String(formData.get("description_uz") ?? ""),
       description_ru: String(formData.get("description_ru") ?? ""),
       description_en: String(formData.get("description_en") ?? ""),
+      cover_url: String(formData.get("cover_url") ?? "") || null,
       instructor_name: String(formData.get("instructor_name") ?? "") || null,
       instructor_avatar_url: String(formData.get("instructor_avatar_url") ?? "") || null,
       duration_months: Number(formData.get("duration_months") ?? 1),
@@ -49,6 +60,50 @@ export async function updateCourse(courseId: string, formData: FormData) {
     .eq("id", courseId);
 
   revalidatePath(`/admin/courses/${courseId}`);
+}
+
+export async function createCourse(formData: FormData) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+
+  const title_uz = String(formData.get("title_uz") ?? "");
+  const baseSlug = slugify(title_uz) || "kurs";
+  let slug = baseSlug;
+  let suffix = 1;
+  while (true) {
+    const { data: existing } = await admin.from("courses").select("id").eq("slug", slug).maybeSingle();
+    if (!existing) break;
+    suffix += 1;
+    slug = `${baseSlug}-${suffix}`;
+  }
+
+  const { count } = await admin.from("courses").select("id", { count: "exact", head: true });
+
+  const { data: course, error } = await admin
+    .from("courses")
+    .insert({
+      slug,
+      title_uz,
+      title_ru: String(formData.get("title_ru") ?? ""),
+      title_en: String(formData.get("title_en") ?? ""),
+      description_uz: String(formData.get("description_uz") ?? ""),
+      description_ru: String(formData.get("description_ru") ?? ""),
+      description_en: String(formData.get("description_en") ?? ""),
+      cover_url: String(formData.get("cover_url") ?? "") || null,
+      duration_months: Number(formData.get("duration_months") ?? 1),
+      price_start: Number(formData.get("price_start") ?? 0),
+      price_standard: Number(formData.get("price_standard") ?? 0),
+      price_pro: Number(formData.get("price_pro") ?? 0),
+      order_index: count ?? 0,
+      is_published: false,
+    })
+    .select("id")
+    .single();
+
+  if (error || !course) throw new Error(error?.message ?? "Kurs yaratilmadi");
+
+  revalidatePath("/admin");
+  redirect(`/admin/courses/${course.id}`);
 }
 
 export async function updateLesson(lessonId: string, formData: FormData) {
@@ -69,6 +124,159 @@ export async function updateLesson(lessonId: string, formData: FormData) {
     })
     .eq("id", lessonId);
 
+  revalidatePath(`/admin/lessons/${lessonId}`);
+}
+
+export async function createModule(courseId: string, formData: FormData) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+
+  const { count } = await admin
+    .from("modules")
+    .select("id", { count: "exact", head: true })
+    .eq("course_id", courseId);
+
+  await admin.from("modules").insert({
+    course_id: courseId,
+    title_uz: String(formData.get("title_uz") ?? ""),
+    title_ru: String(formData.get("title_ru") ?? ""),
+    title_en: String(formData.get("title_en") ?? ""),
+    order_index: count ?? 0,
+  });
+
+  revalidatePath(`/admin/courses/${courseId}`);
+}
+
+export async function deleteModule(moduleId: string, courseId: string) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+  await admin.from("modules").delete().eq("id", moduleId);
+  revalidatePath(`/admin/courses/${courseId}`);
+}
+
+export async function createLesson(courseId: string, moduleId: string, formData: FormData) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+
+  const { count } = await admin
+    .from("lessons")
+    .select("id", { count: "exact", head: true })
+    .eq("module_id", moduleId);
+
+  const { data: lesson, error } = await admin
+    .from("lessons")
+    .insert({
+      course_id: courseId,
+      module_id: moduleId,
+      title_uz: String(formData.get("title_uz") ?? ""),
+      title_ru: String(formData.get("title_ru") ?? ""),
+      title_en: String(formData.get("title_en") ?? ""),
+      order_index: count ?? 0,
+    })
+    .select("id")
+    .single();
+
+  if (error || !lesson) throw new Error(error?.message ?? "Dars yaratilmadi");
+
+  revalidatePath(`/admin/courses/${courseId}`);
+  redirect(`/admin/lessons/${lesson.id}`);
+}
+
+export async function deleteLesson(lessonId: string, courseId: string) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+  await admin.from("lessons").delete().eq("id", lessonId);
+  revalidatePath(`/admin/courses/${courseId}`);
+}
+
+/**
+ * Swaps order_index with the lesson immediately before/after it within the
+ * same module — a minimal reorder UI (up/down arrows) instead of drag-drop.
+ */
+export async function moveLesson(lessonId: string, courseId: string, direction: "up" | "down") {
+  await requireAdmin();
+  const admin = await createAdminClient();
+
+  const { data: lesson } = await admin
+    .from("lessons")
+    .select("id, module_id, order_index")
+    .eq("id", lessonId)
+    .single();
+  if (!lesson) return;
+
+  const { data: siblings } = await admin
+    .from("lessons")
+    .select("id, order_index")
+    .eq("module_id", lesson.module_id)
+    .order("order_index", { ascending: true });
+  if (!siblings) return;
+
+  const index = siblings.findIndex((s) => s.id === lessonId);
+  const swapIndex = direction === "up" ? index - 1 : index + 1;
+  if (swapIndex < 0 || swapIndex >= siblings.length) return;
+
+  const sibling = siblings[swapIndex];
+  await admin.from("lessons").update({ order_index: sibling.order_index }).eq("id", lesson.id);
+  await admin.from("lessons").update({ order_index: lesson.order_index }).eq("id", sibling.id);
+
+  revalidatePath(`/admin/courses/${courseId}`);
+}
+
+export async function moveModule(moduleId: string, courseId: string, direction: "up" | "down") {
+  await requireAdmin();
+  const admin = await createAdminClient();
+
+  const { data: mod } = await admin
+    .from("modules")
+    .select("id, order_index")
+    .eq("id", moduleId)
+    .single();
+  if (!mod) return;
+
+  const { data: siblings } = await admin
+    .from("modules")
+    .select("id, order_index")
+    .eq("course_id", courseId)
+    .order("order_index", { ascending: true });
+  if (!siblings) return;
+
+  const index = siblings.findIndex((s) => s.id === moduleId);
+  const swapIndex = direction === "up" ? index - 1 : index + 1;
+  if (swapIndex < 0 || swapIndex >= siblings.length) return;
+
+  const sibling = siblings[swapIndex];
+  await admin.from("modules").update({ order_index: sibling.order_index }).eq("id", mod.id);
+  await admin.from("modules").update({ order_index: mod.order_index }).eq("id", sibling.id);
+
+  revalidatePath(`/admin/courses/${courseId}`);
+}
+
+export async function addLessonMaterial(lessonId: string, formData: FormData) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+
+  const { count } = await admin
+    .from("lesson_materials")
+    .select("id", { count: "exact", head: true })
+    .eq("lesson_id", lessonId);
+
+  await admin.from("lesson_materials").insert({
+    lesson_id: lessonId,
+    title_uz: String(formData.get("title_uz") ?? ""),
+    title_ru: String(formData.get("title_ru") ?? ""),
+    title_en: String(formData.get("title_en") ?? ""),
+    file_url: String(formData.get("file_url") ?? ""),
+    file_type: String(formData.get("file_type") ?? "pdf"),
+    order_index: count ?? 0,
+  });
+
+  revalidatePath(`/admin/lessons/${lessonId}`);
+}
+
+export async function deleteLessonMaterial(materialId: string, lessonId: string) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+  await admin.from("lesson_materials").delete().eq("id", materialId);
   revalidatePath(`/admin/lessons/${lessonId}`);
 }
 

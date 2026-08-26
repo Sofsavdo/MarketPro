@@ -19,14 +19,26 @@ export interface Database {
           id: string;
           full_name: string | null;
           phone: string | null;
+          address: string | null;
           avatar_url: string | null;
           role: "student" | "instructor" | "admin";
           referral_code: string | null;
           referred_by: string | null;
           created_at: string;
         },
-        { id: string; full_name?: string | null; phone?: string | null; role?: string },
-        { full_name?: string | null; phone?: string | null; referred_by?: string | null }
+        {
+          id: string;
+          full_name?: string | null;
+          phone?: string | null;
+          address?: string | null;
+          role?: string;
+        },
+        {
+          full_name?: string | null;
+          phone?: string | null;
+          address?: string | null;
+          referred_by?: string | null;
+        }
       >;
       courses: Table<
         {
@@ -76,6 +88,19 @@ export interface Database {
           content_en: string | null;
           order_index: number;
           is_free_preview: boolean;
+        },
+        Partial<Record<string, unknown>>
+      >;
+      lesson_materials: Table<
+        {
+          id: string;
+          lesson_id: string;
+          title_uz: string;
+          title_ru: string;
+          title_en: string;
+          file_url: string;
+          file_type: "pdf" | "pptx" | "doc" | "image" | "link";
+          order_index: number;
         },
         Partial<Record<string, unknown>>
       >;

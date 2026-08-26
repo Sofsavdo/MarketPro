@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "@/i18n/navigation";
 import { redeemReferral } from "@/lib/lms/referral-actions";
+import { normalizePhone } from "@/lib/utils";
 
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const t = useTranslations("auth");
@@ -16,10 +17,10 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const searchParams = useSearchParams();
   const supabase = createClient();
 
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -28,11 +29,13 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
     setError(null);
     setLoading(true);
 
+    const normalizedPhone = normalizePhone(phone);
+
     if (mode === "register") {
       const { error } = await supabase.auth.signUp({
-        email,
+        phone: normalizedPhone,
         password,
-        options: { data: { full_name: fullName, phone } },
+        options: { data: { full_name: fullName, address } },
       });
       if (error) setError(error.message);
       else {
@@ -42,7 +45,10 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         router.push("/dashboard");
       }
     } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({
+        phone: normalizedPhone,
+        password,
+      });
       if (error) setError(error.message);
       else {
         router.refresh();
@@ -55,39 +61,40 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       {mode === "register" && (
-        <>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="fullName">{t("fullName")}</Label>
-            <Input
-              id="fullName"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="phone">{t("phone")}</Label>
-            <Input
-              id="phone"
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="+998 90 123 45 67"
-            />
-          </div>
-        </>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="fullName">{t("fullName")}</Label>
+          <Input
+            id="fullName"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+          />
+        </div>
       )}
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="email">{t("email")}</Label>
+        <Label htmlFor="phone">{t("phone")}</Label>
         <Input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          id="phone"
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="+998 90 123 45 67"
           required
         />
       </div>
+
+      {mode === "register" && (
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="address">{t("address")}</Label>
+          <Input
+            id="address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            placeholder={t("addressPlaceholder")}
+          />
+        </div>
+      )}
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="password">{t("password")}</Label>

@@ -101,7 +101,6 @@
     "loginSubtitle": "Enter your details to access your dashboard",
     "registerTitle": "Sign up",
     "registerSubtitle": "Create a free account to start learning",
-    "email": "Email",
     "password": "Password",
     "fullName": "Full name",
     "phone": "Phone number",
@@ -111,7 +110,9 @@
     "haveAccount": "Already have an account?",
     "createOne": "Sign up",
     "signIn": "Log in",
-    "save": "Save"
+    "save": "Save",
+    "address": "Address",
+    "addressPlaceholder": "City, district, street"
   },
   "course": {
     "curriculum": "Curriculum",
@@ -149,7 +150,8 @@
     "quizPassed": "Quiz passed!",
     "quizFailed": "Quiz not passed. Try again.",
     "quizRequired": "Pass the quiz to move on to the next lesson",
-    "videoComingSoon": "Video coming soon"
+    "videoComingSoon": "Video coming soon",
+    "materialsTitle": "Additional materials"
   },
   "dashboard": {
     "title": "My courses",

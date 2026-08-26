@@ -13,7 +13,15 @@ export default async function AdminCoursesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white">Kurslar</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold text-white">Kurslar</h1>
+        <Link
+          href="/admin/courses/new"
+          className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-amber-400"
+        >
+          + Yangi kurs
+        </Link>
+      </div>
       <div className="mt-6 overflow-x-auto">
         <table className="w-full min-w-[720px] border-collapse text-sm">
           <thead>

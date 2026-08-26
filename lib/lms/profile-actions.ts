@@ -14,7 +14,7 @@ export async function updateProfile(formData: FormData) {
     .from("profiles")
     .update({
       full_name: String(formData.get("full_name") ?? ""),
-      phone: String(formData.get("phone") ?? ""),
+      address: String(formData.get("address") ?? ""),
     })
     .eq("id", user.id);
 

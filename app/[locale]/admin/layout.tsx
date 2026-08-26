@@ -10,7 +10,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <div className="mb-8 flex items-center gap-6 border-b border-slate-800 pb-4 text-sm">
+      <div className="mb-8 flex items-center gap-6 overflow-x-auto whitespace-nowrap border-b border-slate-800 pb-4 text-sm [&>a]:shrink-0">
         <Link href="/admin" className="font-semibold text-white">
           Admin
         </Link>

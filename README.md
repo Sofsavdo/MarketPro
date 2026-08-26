@@ -30,6 +30,11 @@ npm run dev
    `auth.users` uchun profil yaratish trigger'ini o'rnatadi.
 3. Ixtiyoriy: `supabase/seed.sql` — namunaviy kurs katalogini (7 yo'nalish, 2 tasi to'liq
    dastur bilan) yuklaydi.
+4. **Authentication → Sign In / Providers** bo'limida **Phone** provider'ni yoqing (email
+   emas — ro'yxatdan o'tish faqat telefon raqam + parol orqali). SMS orqali tasdiqlashni
+   talab qilmaslik uchun **Authentication → Sign In / Providers → Phone → Enable phone
+   confirmations**'ni o'chirib qo'ying (aks holda har bir ro'yxatdan o'tishda SMS OTP
+   provayderi — Twilio, Eskiz.uz va h.k. — sozlangan bo'lishi kerak bo'ladi).
 
 ## Papka strukturasi
 

@@ -26,3 +26,15 @@ const INTL_LOCALE: Record<Locale, string> = {
 export function toIntlLocale(locale: Locale) {
   return INTL_LOCALE[locale];
 }
+
+/**
+ * Normalizes a phone number to the E.164-ish digits-only form Supabase phone
+ * auth expects (e.g. "998901234567"). Students type it as "+998 90 123 45 67"
+ * or just "90 123 45 67" — a bare 9-digit local number is assumed to be
+ * Uzbekistan (+998) since that's the only market this app serves.
+ */
+export function normalizePhone(input: string) {
+  const digits = input.replace(/\D/g, "");
+  if (digits.length === 9) return `998${digits}`;
+  return digits;
+}

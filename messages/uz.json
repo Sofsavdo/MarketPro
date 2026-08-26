@@ -101,7 +101,6 @@
     "loginSubtitle": "Kabinetingizga kirish uchun ma'lumotlaringizni kiriting",
     "registerTitle": "Ro'yxatdan o'tish",
     "registerSubtitle": "Kurslarni boshlash uchun bepul akkaunt yarating",
-    "email": "Email",
     "password": "Parol",
     "fullName": "To'liq ism",
     "phone": "Telefon raqam",
@@ -111,7 +110,9 @@
     "haveAccount": "Akkountingiz bormi?",
     "createOne": "Ro'yxatdan o'ting",
     "signIn": "Kiring",
-    "save": "Saqlash"
+    "save": "Saqlash",
+    "address": "Manzil",
+    "addressPlaceholder": "Shahar, tuman, ko'cha"
   },
   "course": {
     "curriculum": "O'quv dasturi",
@@ -149,7 +150,8 @@
     "quizPassed": "Test muvaffaqiyatli topshirildi!",
     "quizFailed": "Test topshirilmadi. Qayta urinib ko'ring.",
     "quizRequired": "Keyingi mavzuga o'tish uchun testni muvaffaqiyatli topshiring",
-    "videoComingSoon": "Video tez orada"
+    "videoComingSoon": "Video tez orada",
+    "materialsTitle": "Qo'shimcha materiallar"
   },
   "dashboard": {
     "title": "Mening kurslarim",

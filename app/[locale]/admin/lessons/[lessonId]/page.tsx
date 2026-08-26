@@ -4,7 +4,21 @@ import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { updateLesson, addQuizQuestion, deleteQuizQuestion } from "@/lib/lms/admin-actions";
+import {
+  updateLesson,
+  addQuizQuestion,
+  deleteQuizQuestion,
+  addLessonMaterial,
+  deleteLessonMaterial,
+} from "@/lib/lms/admin-actions";
+
+const FILE_TYPE_LABELS: Record<string, string> = {
+  pdf: "PDF",
+  pptx: "PPTX (taqdimot)",
+  doc: "Word hujjat",
+  image: "Rasm",
+  link: "Havola",
+};
 
 export default async function AdminLessonEditPage({
   params,
@@ -32,8 +46,15 @@ export default async function AdminLessonEditPage({
     .eq("lesson_id", lessonId)
     .order("order_index", { ascending: true });
 
+  const { data: materials } = await supabase
+    .from("lesson_materials")
+    .select("*")
+    .eq("lesson_id", lessonId)
+    .order("order_index", { ascending: true });
+
   const updateLessonWithId = updateLesson.bind(null, lessonId);
   const addQuizQuestionWithId = addQuizQuestion.bind(null, lessonId);
+  const addLessonMaterialWithId = addLessonMaterial.bind(null, lessonId);
 
   return (
     <div>
@@ -55,7 +76,7 @@ export default async function AdminLessonEditPage({
         </div>
 
         <Field
-          label="Video havolasi (YouTube/Vimeo)"
+          label="Video havolasi (YouTube/Vimeo) — ixtiyoriy, faqat matn/material bilan ham dars bo'lishi mumkin"
           name="video_url"
           defaultValue={lesson.video_url}
         />
@@ -78,6 +99,72 @@ export default async function AdminLessonEditPage({
 
         <Button type="submit">Saqlash</Button>
       </form>
+
+      <h2 className="mt-12 text-xl font-semibold text-white">Qo&apos;shimcha materiallar</h2>
+      <p className="mt-1 text-sm text-slate-500">
+        PDF, PPTX taqdimot yoki boshqa hujjatlar — dars videosidan tashqari (yoki
+        o&apos;rniga) o&apos;quvchiga ko&apos;rgazmali material sifatida beriladi.
+      </p>
+
+      <div className="mt-4 space-y-2">
+        {(materials ?? []).map((material) => (
+          <div
+            key={material.id}
+            className="flex items-center justify-between gap-4 rounded-lg border border-slate-800 px-4 py-2 text-sm"
+          >
+            <a
+              href={material.file_url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-slate-200 hover:text-amber-400 hover:underline"
+            >
+              {material.title_uz}{" "}
+              <span className="text-slate-500">
+                ({FILE_TYPE_LABELS[material.file_type] ?? material.file_type})
+              </span>
+            </a>
+            <form action={deleteLessonMaterial.bind(null, material.id, lessonId)}>
+              <button type="submit" className="shrink-0 text-red-400 hover:underline">
+                O&apos;chirish
+              </button>
+            </form>
+          </div>
+        ))}
+      </div>
+
+      <details className="mt-4 rounded-lg border border-dashed border-slate-800 p-4">
+        <summary className="cursor-pointer text-sm font-medium text-amber-400">
+          + Material qo&apos;shish
+        </summary>
+        <form action={addLessonMaterialWithId} className="mt-4 max-w-2xl space-y-4">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="Nomi (UZ)" name="title_uz" />
+            <Field label="Nomi (RU)" name="title_ru" />
+            <Field label="Nomi (EN)" name="title_en" />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
+            <Field label="Fayl havolasi (URL)" name="file_url" placeholder="https://.../fayl.pdf" />
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="file_type">Turi</Label>
+              <select
+                id="file_type"
+                name="file_type"
+                defaultValue="pdf"
+                className="h-10 rounded-lg border border-slate-700 bg-slate-900 px-3 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+              >
+                <option value="pdf">PDF</option>
+                <option value="pptx">PPTX (taqdimot)</option>
+                <option value="doc">Word hujjat</option>
+                <option value="image">Rasm</option>
+                <option value="link">Havola</option>
+              </select>
+            </div>
+          </div>
+          <Button type="submit" variant="outline">
+            Qo&apos;shish
+          </Button>
+        </form>
+      </details>
 
       <h2 className="mt-12 text-xl font-semibold text-white">Test savollari</h2>
       <p className="mt-1 text-sm text-slate-500">
@@ -158,12 +245,14 @@ function Field({
   defaultValue,
   type = "text",
   textarea = false,
+  placeholder,
 }: {
   label: string;
   name: string;
   defaultValue?: string;
   type?: string;
   textarea?: boolean;
+  placeholder?: string;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
@@ -174,10 +263,11 @@ function Field({
           name={name}
           defaultValue={defaultValue}
           rows={3}
+          placeholder={placeholder}
           className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
         />
       ) : (
-        <Input id={name} name={name} type={type} defaultValue={defaultValue} />
+        <Input id={name} name={name} type={type} defaultValue={defaultValue} placeholder={placeholder} />
       )}
     </div>
   );

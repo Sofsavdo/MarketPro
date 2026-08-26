@@ -29,7 +29,7 @@ export default async function ProfilePage() {
     <div className="mx-auto max-w-md px-4 py-16">
       <Card>
         <CardHeader>
-          <CardTitle>{profile?.full_name || user.email}</CardTitle>
+          <CardTitle>{profile?.full_name || profile?.phone || user.phone}</CardTitle>
         </CardHeader>
         <CardContent>
           <form action={updateProfile} className="flex flex-col gap-4">
@@ -39,11 +39,11 @@ export default async function ProfilePage() {
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="phone">{t("phone")}</Label>
-              <Input id="phone" name="phone" defaultValue={profile?.phone ?? ""} />
+              <Input id="phone" value={profile?.phone ?? user.phone ?? ""} disabled />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="email">{t("email")}</Label>
-              <Input id="email" value={user.email ?? ""} disabled />
+              <Label htmlFor="address">{t("address")}</Label>
+              <Input id="address" name="address" defaultValue={profile?.address ?? ""} />
             </div>
             <Button type="submit" className="mt-2">
               {t("save")}

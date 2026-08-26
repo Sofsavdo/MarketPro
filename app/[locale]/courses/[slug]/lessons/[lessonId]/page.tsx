@@ -50,6 +50,14 @@ export default async function LessonPage({
     .eq("lesson_id", lesson.id)
     .maybeSingle();
 
+  const { data: materials } = locked
+    ? { data: null }
+    : await supabase
+        .from("lesson_materials")
+        .select("*")
+        .eq("lesson_id", lesson.id)
+        .order("order_index", { ascending: true });
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <Link
@@ -84,6 +92,12 @@ export default async function LessonPage({
           }))}
           alreadyCompleted={!!progress?.completed}
           quizAlreadyPassed={!!progress?.quiz_passed}
+          materials={(materials ?? []).map((m) => ({
+            id: m.id,
+            title: localizedField(m, "title", locale),
+            fileUrl: m.file_url,
+            fileType: m.file_type,
+          }))}
         />
       )}
     </div>
