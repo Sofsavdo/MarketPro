@@ -1,0 +1,89 @@
+import { redirect } from "next/navigation";
+import { getTranslations, getLocale } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Video, Lock } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { getUpcomingSessionsForUser, getLockedSessionsForSubscriber } from "@/lib/lms/live-sessions";
+import { formatDateTime } from "@/lib/utils";
+import type { Locale } from "@/i18n/routing";
+
+export default async function LiveSessionsPage() {
+  const t = await getTranslations("live");
+  const locale = (await getLocale()) as Locale;
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const sessions = await getUpcomingSessionsForUser(locale);
+  const lockedSessions = await getLockedSessionsForSubscriber(locale);
+
+  return (
+    <div className="mx-auto max-w-3xl px-4 py-16">
+      <h1 className="text-3xl font-bold text-white">{t("title")}</h1>
+      <p className="mt-2 text-slate-400">{t("subtitle")}</p>
+
+      <div className="mt-8 space-y-4">
+        {sessions.map((s) => (
+          <Link key={s.id} href={`/live/${s.id}`}>
+            <Card className="transition-colors hover:border-amber-500/50">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <Badge variant="outline">VIP</Badge>
+                  <span className="text-xs text-slate-500">
+                    {formatDateTime(s.scheduled_at, locale, {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                  </span>
+                </div>
+                <CardTitle className="mt-2 flex items-center gap-2 text-base">
+                  <Video className="h-4 w-4 text-amber-500" />
+                  {s.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0 text-sm text-slate-400">{s.course_title}</CardContent>
+            </Card>
+          </Link>
+        ))}
+
+        {!sessions.length && !lockedSessions.length && (
+          <p className="rounded-lg border border-slate-800 bg-slate-900/40 p-6 text-center text-slate-500">
+            {t("none")}
+          </p>
+        )}
+
+        {lockedSessions.map((s, i) => (
+          <Card key={i} className="border-dashed opacity-70">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className="gap-1">
+                  <Lock className="h-3 w-3" /> {t("vipOnly")}
+                </Badge>
+                <span className="text-xs text-slate-500">
+                  {formatDateTime(s.scheduled_at, locale, { dateStyle: "medium", timeStyle: "short" })}
+                </span>
+              </div>
+              <CardTitle className="mt-2 flex items-center gap-2 text-base text-slate-400">
+                <Video className="h-4 w-4 text-slate-500" />
+                {s.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-0 text-sm text-slate-500">
+              {s.courseTitle}
+              <Link
+                href={`/courses/${s.courseSlug}`}
+                className="text-amber-400 hover:underline"
+              >
+                {t("upgradeToVip")}
+              </Link>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}

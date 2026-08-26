@@ -1,336 +1,180 @@
-# 🚀 BiznesYordam - O'zbekiston Marketplace Fulfillment Platform
+# IZDOSH Academy
 
-**Professional marketplace fulfillment platform for Uzbekistan businesses**
+O'zbekistondagi amaliy raqamli ko'nikmalar akademiyasi — marketplace savdosi va AI yordamida
+mahsulot yaratish bo'yicha kurslar platformasi.
 
-[![Production Status](https://img.shields.io/badge/Status-Production%20Ready-green)](https://biznes-yordam.onrender.com)
-[![Database](https://img.shields.io/badge/Database-PostgreSQL-blue)](https://www.postgresql.org/)
-[![Framework](https://img.shields.io/badge/Framework-React%20%2B%20Express-orange)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.6.3-blue)](https://www.typescriptlang.org/)
-[![WebSocket](https://img.shields.io/badge/WebSocket-Real--time-green)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
+Next.js (App Router) + TypeScript + Tailwind CSS + shadcn/ui-style komponentlar + next-intl
+(UZ/RU/EN) + Supabase (Postgres + Auth) + Click/Payme to'lov integratsiyasi asosida qurilgan.
 
-## 🌟 **Platform Overview**
+## Stack
 
-BiznesYordam is a comprehensive fulfillment platform designed specifically for Uzbekistan's growing e-commerce ecosystem. It connects businesses with marketplace opportunities across Uzum, Wildberries, Yandex Market, and Ozon.
+- **Frontend:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4
+- **UI:** shadcn/ui uslubidagi komponentlar (Radix primitives), lucide-react
+- **i18n:** next-intl — `uz` (default), `ru`, `en`
+- **Backend:** Supabase — Postgres, Auth, Row Level Security
+- **To'lov:** Click va Payme (checkout + webhook)
+- **Video:** react-player — video havolasi (YouTube/Vimeo) orqali, saytda ichki pleer
 
-### ✨ **Key Features**
+## Ishga tushirish
 
-- 🛒 **Multi-Marketplace Integration** - Uzum, Wildberries, Yandex, Ozon
-- 📊 **Real-time Analytics** - Profit tracking, trend analysis
-- 💬 **Live Chat System** - WebSocket-powered communication with file sharing
-- 🎯 **Tier-based Access** - Starter Pro to Enterprise Elite
-- 🔐 **Secure Authentication** - Role-based access control with audit logging
-- 📱 **Responsive Design** - Mobile-first approach
-- 🚀 **Production Ready** - Real PostgreSQL database with fallback
-- 🔄 **Real-time Updates** - WebSocket connections with heartbeat monitoring
-- 📁 **File Management** - Chat file uploads and document sharing
-- 📈 **Advanced Analytics** - Profit breakdown and trending products
-
-## 🔑 **Default Credentials**
-
-### Admin Access
-```
-URL: /admin-panel
-Username: admin
-Password: BiznesYordam2024!
-Email: admin@biznesyordam.uz
-```
-
-### Test Partner
-```
-URL: /partner-dashboard  
-Username: testpartner
-Password: Partner2024!
-Email: partner@biznesyordam.uz
-```
-
-## 🏗️ **Architecture**
-
-```
-BiznesYordam/
-├── client/                 # React Frontend (Vite + TypeScript)
-│   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── hooks/         # Custom React hooks (useAuth, useWebSocket)
-│   │   ├── lib/           # Utilities and API client
-│   │   └── pages/         # Application pages
-│   └── package.json
-├── server/                # Express Backend (TypeScript)
-│   ├── routes.ts          # API routes with enhanced error handling
-│   ├── storage.ts         # Database layer
-│   ├── websocket.ts       # WebSocket manager with heartbeat
-│   └── index.ts           # Server entry point
-├── shared/                # Shared types and schemas
-│   └── schema.ts          # Drizzle ORM schemas
-├── start.sh               # Automated startup script
-└── package.json           # Root package configuration
-```
-
-## 🚀 **Quick Start**
-
-### Prerequisites
-- Node.js 18+
-- npm or yarn
-- Git
-
-### Automated Setup (Recommended)
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/your-username/BiznesYordam.uz.git
-cd BiznesYordam.uz
-```
-
-2. **Run the automated startup script**
-```bash
-./start.sh
-```
-
-This script will automatically:
-- ✅ Check Node.js and npm versions
-- ✅ Install all dependencies
-- ✅ Setup environment configuration
-- ✅ Initialize database with schema
-- ✅ Seed initial data
-- ✅ Build the application
-- ✅ Start the development server
-- ✅ Perform health checks
-
-### Manual Setup
-
-1. **Install dependencies**
 ```bash
 npm install
-cd client && npm install && cd ..
-```
-
-2. **Environment Setup**
-```bash
-# Copy environment file
-cp env.example .env
-
-# Configure your database and settings
-DATABASE_URL=postgresql://username:password@host:port/database
-SESSION_SECRET=your-ultra-secure-session-key
-NODE_ENV=development
-```
-
-3. **Database Setup**
-```bash
-# Push schema to database
-npm run db:push
-
-# Seed initial data
-npm run seed
-```
-
-4. **Start Development Server**
-```bash
+cp .env.example .env.local   # Supabase va to'lov kalitlarini kiriting
 npm run dev
 ```
 
-5. **Build for Production**
-```bash
-npm run build
-npm start
+## Ma'lumotlar bazasi
+
+1. Yangi Supabase loyihasi yarating.
+2. SQL Editor'da `supabase/schema.sql` ni ishga tushiring — jadvallar, RLS siyosatlari va
+   `auth.users` uchun profil yaratish trigger'ini o'rnatadi.
+3. Ixtiyoriy: `supabase/seed.sql` — namunaviy kurs katalogini (7 yo'nalish, 2 tasi to'liq
+   dastur bilan) yuklaydi.
+4. **Authentication → Sign In / Providers** bo'limida **Phone** provider'ni yoqing (email
+   emas — ro'yxatdan o'tish faqat telefon raqam + parol orqali). SMS orqali tasdiqlashni
+   talab qilmaslik uchun **Authentication → Sign In / Providers → Phone → Enable phone
+   confirmations**'ni o'chirib qo'ying (aks holda har bir ro'yxatdan o'tishda SMS OTP
+   provayderi — Twilio, Eskiz.uz va h.k. — sozlangan bo'lishi kerak bo'ladi).
+
+## Papka strukturasi
+
+```
+app/[locale]/            — 3 tilli sahifalar (App Router)
+  page.tsx                — Landing
+  courses/                — Kurslar katalogi va kurs sahifasi
+  courses/[slug]/lessons/[lessonId]/ — Dars sahifasi (video + test + progress)
+  pricing/                 — Narxlar (alohida kurs / obuna)
+  (auth)/login, register/  — Autentifikatsiya
+  dashboard/                — Foydalanuvchi kabineti
+app/api/payments/          — Click/Payme checkout va webhook route'lari
+app/api/lessons/complete/  — Darsni yakunlash + progress yozish
+lib/lms/access.ts          — getLessonAccess, isLessonLocked, completeLesson
+lib/payments/               — Click/Payme integratsiya logikasi
+lib/supabase/                — Supabase client/server/middleware
+i18n/                        — next-intl routing va konfiguratsiya
+messages/{uz,ru,en}.json    — Barcha UI matnlari
+supabase/schema.sql         — To'liq SQL sxema (RLS bilan)
+supabase/seed.sql            — Namunaviy kurs katalogi
 ```
 
-## 📋 **Available Scripts**
+## Kirish modeli: Hybrid (Obuna + Standalone Lifetime)
 
-| Command | Description |
-|---------|-------------|
-| `./start.sh` | Automated startup with all setup steps |
-| `npm run dev` | Start development servers (client + server) |
-| `npm run build` | Build for production |
-| `npm start` | Start production server |
-| `npm run db:push` | Push schema to database |
-| `npm run db:generate` | Generate migrations |
-| `npm run seed` | Seed database with initial data |
-| `npm run db:studio` | Open Drizzle Studio |
-| `npm run check` | TypeScript type checking |
+Ikki bosqichli kirish darajasi bor — bittasi cheklovsiz, ikkinchisi kursga xos, umrbod:
 
-## 🌐 **Production Deployment**
+- **Start** — obuna (`SUBSCRIPTION_PRICE`, `lib/pricing.ts`) barcha kurslarning video
+  darslari + community (Q&A)'siga cheklovsiz kirish beradi. Live darslar va mentor
+  feedback KIRMAYDI. Obuna tugasa (`subscriptions.current_period_end` o'tsa), kirish
+  darhol yopiladi — bu har bir so'rovda live tekshiriladi (`getLessonAccess`,
+  `has_course_access` SQL funksiyasi), alohida cron kerak emas.
+- **VIP** — bitta kursni to'liq sotib olish (`courses.price`, `enrollments` jadvaliga
+  yozuv) shu kursga UMRBOD to'liq kirish beradi: video + community + live darslar +
+  mentor feedback. Obuna keyinroq tugasa ham, sotib olingan kurs yopilmaydi.
 
-### Render.com (Current)
-```yaml
-services:
-  - type: web
-    name: biznes-yordam
-    env: node
-    plan: starter
-    branch: main
-    buildCommand: npm install && npm run build
-    startCommand: npm start
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: DATABASE_URL
-        sync: false
-      - key: SESSION_SECRET
-        generateValue: true
-```
+`lib/lms/access.ts`:
+- **`getLessonAccess`** — foydalanuvchining `courseId` uchun kirish darajasini
+  qaytaradi (`accessLevel: "start" | "vip" | null`) — enrollment (VIP) har doim faol
+  obunadan (start) ustun turadi.
+- **`isLessonLocked`** — avvalgi dars (`order_index - 1`) tugallanmagan yoki uning testi
+  o'tilmagan bo'lsa, joriy darsni bloklaydi (ketma-ket ochilish start va VIP'da bir xil).
+- **`completeLesson`** — `user_progress` jadvaliga yozadi va keyingi darsni qaytaradi.
 
-### Environment Variables
-```bash
-# Required
-DATABASE_URL=postgresql://...
-SESSION_SECRET=your-secret-key
-NODE_ENV=production
+## CRM / Downsell (`/admin/leads`)
 
-# Optional
-FRONTEND_ORIGIN=https://yourdomain.com
-CORS_ORIGIN=https://yourdomain.com
-PORT=5000
-```
+Obunachi (start) — operator uchun issiq lid: `profiles.lead_status` orqali kuzatiladi
+("Qiziqdi" → "VIP taklif qilindi" → "Downsell → obuna sotib oldi"), `operator_call_logs`
+jadvaliga har bir qo'ng'iroq eslatmasi yoziladi. **"Upgrade to VIP with Subscription
+Credit"** tugmasi (`upgradeToVipWithCredit`, `lib/lms/admin-actions.ts`) mijozning oxirgi
+obuna to'lovini tanlangan VIP kurs narxidan avtomatik ayiradi, `payments`'ga `provider:
+'manual'` yozuv qo'shadi va kursga darhol VIP kirish beradi. Dashboard'da har bir
+obunachiga doimiy downsell banner (`components/profile/downsell-banner.tsx`) va obuna
+tugashiga ≤3 kun qolganda eslatma popup (`components/profile/expiry-popup.tsx`)
+ko'rsatiladi.
 
-## 📊 **Tech Stack**
+## Video xavfsizligi
 
-### Frontend
-- **React 18** - Modern UI library
-- **TypeScript** - Type safety
-- **Vite** - Fast build tool
-- **Tailwind CSS** - Utility-first styling
-- **Radix UI** - Headless components
-- **TanStack Query** - Data fetching
-- **Lucide React** - Icon library
-- **WebSocket** - Real-time communication
+Har bir video ustida talabaning telefon raqami + qisqa ID'si shaffof holatda (opacity
+0.4) 5 soniyada bir joy almashtirib turadi (`components/course/video-watermark.tsx`) —
+ekran yozib olib tarqatishni to'xtatmaydi, lekin har qanday sizib chiqqan yozuvni
+qaysi akkaunt orqali bo'lganini aniqlashtiradi. To'liq DRM/token-asosida striming
+(Bunny.net Stream, VdoCipher) yoki hech bo'lmasa domenga bog'langan embedding (Vimeo Pro)
+— bular pullik video-hosting xizmatlari va real API kalitlari talab qiladi, shuning
+uchun Supabase/to'lovlar kabi loyihaning oxirida ulanadi; hozircha video havolasi
+to'g'ridan-to'g'ri (`lessons.video_url`) saqlanadi.
 
-### Backend
-- **Express.js** - Web framework
-- **TypeScript** - Type safety
-- **Drizzle ORM** - Type-safe database queries
-- **PostgreSQL** - Production database
-- **SQLite** - Development fallback
-- **WebSocket** - Real-time communication
-- **bcryptjs** - Password hashing
-- **Zod** - Schema validation
+## To'lov oqimi
 
-### Infrastructure
-- **PostgreSQL** - Primary database
-- **Express Session** - Authentication
-- **CORS** - Cross-origin requests
-- **Rate Limiting** - API protection
-- **WebSocket** - Real-time features
-- **File Upload** - Document sharing
+1. Foydalanuvchi "Sotib olish" tugmasini bosadi → `POST /api/payments/{click|payme}` —
+   `payments` jadvalida `pending` yozuv yaratiladi, checkout havolasi qaytariladi.
+2. Foydalanuvchi Click/Payme'ning o'z sahifasida to'lovni yakunlaydi.
+3. Click/Payme `POST /api/payments/{click|payme}/webhook` orqali serverga qaytadi →
+   to'lov `paid` deb belgilanadi va `grantAccessForPayment` orqali `enrollments` yoki
+   `subscriptions` jadvaliga yozuv qo'shiladi.
 
-## 🎯 **Business Tiers**
+Ishlab chiqarishga chiqarishdan oldin `.env.local`'ga haqiqiy Click/Payme merchant
+ma'lumotlarini kiriting (`CLICK_SERVICE_ID`, `CLICK_MERCHANT_ID`, `CLICK_SECRET_KEY`,
+`PAYME_MERCHANT_ID`, `PAYME_SECRET_KEY`).
 
-| Tier | Features | Commission |
-|------|----------|------------|
-| **Starter Pro** | Basic dashboard, product management | 30% |
-| **Business Standard** | + Profit analytics, full reports | 25% |
-| **Professional Plus** | + Trend hunter, advanced analytics | 20% |
-| **Enterprise Elite** | + Premium features, priority support | 15% |
+## Jonli darslar (Google Meet)
 
-## 🛡️ **Security Features**
+Faqat VIP (kursni to'liq sotib olgan) talabalar uchun — obunachilar (start) kira olmaydi,
+bu tashqi Zoom emas, balki platforma ichida joylashgan:
 
-- ✅ Session-based authentication with secure cookies
-- ✅ Role-based access control (admin, partner, customer)
-- ✅ CORS protection with configurable origins
-- ✅ Rate limiting (100 requests per 15 minutes)
-- ✅ Input validation & sanitization with Zod
-- ✅ SQL injection prevention with Drizzle ORM
-- ✅ XSS protection
-- ✅ Audit logging for all actions
-- ✅ Password hashing with bcryptjs
-- ✅ Secure WebSocket connections
+1. Admin `/admin/live-sessions`'da kurs + sana/vaqt bo'yicha dars yaratadi va Google Meet
+   havolasini ([meet.google.com/new](https://meet.google.com/new) orqali qo'lda
+   yaratilgan) joylaydi.
+2. Talaba `/live`'da o'ziga tegishli (sotib olgan/VIP) darslar jadvalini ko'radi va
+   "Darsga kirish" tugmasi orqali Meet'ga o'tadi. Obunachi (start) uchun shu kurs
+   darslari qulflangan holda, "VIP'ga o'ting" havolasi bilan ko'rsatiladi
+   (`getLockedSessionsForSubscriber`, `lib/lms/live-sessions.ts`).
+3. Har bir dars sahifasida jonli Savol-Javob taxtasi bor (`components/live/session-qa.tsx`)
+   — talaba istalgan vaqt savol yozadi, admin `/admin/live-sessions/[id]`'da javob beradi,
+   ikkala tomon ham Supabase Realtime orqali sahifani yangilamasdan ko'radi.
+4. Kirish huquqi `has_live_session_access` SQL funksiyasi orqali RLS darajasida
+   tekshiriladi — faqat `enrollments`ga qaraydi (VIP), obunani (start) qasddan hisobga
+   olmaydi.
 
-## 📈 **Performance Optimizations**
+Google Meet havolasini avtomatik yaratish (Google Calendar API orqali) keyingi bosqichda
+qo'shilishi mumkin — hozircha admin havolani qo'lda joylaydi, bu ko'pchilik kichik
+platformalar uchun yetarli va OAuth sozlamalarini talab qilmaydi.
 
-- ✅ Database connection pooling (20 connections)
-- ✅ Query optimization with indexes
-- ✅ Frontend code splitting
-- ✅ Image lazy loading
-- ✅ Caching strategies
-- ✅ Gzip compression
-- ✅ WebSocket heartbeat monitoring
-- ✅ Real-time message delivery
-- ✅ File upload optimization
+## Referal dasturi
 
-## 💬 **Real-time Chat Features**
+Ustoz.ai'dagi "Targ'ibotchilar" dasturiga o'xshash: har bir foydalanuvchi o'z referal
+havolasiga ega (`/register?ref=CODE`), profil sahifasida ko'rsatiladi. Do'st shu havola
+orqali ro'yxatdan o'tsa, `redeemReferral` (`lib/lms/referral-actions.ts`) chaqiriladi va
+`referrals` jadvaliga yozuv qo'shiladi. Mukofot bosqichlari: **10 do'st → 1 oy**, **50 do'st
+→ 6 oy**, **100 do'st → 1 yil** bepul Premium obuna (avtomatik ravishda `subscriptions`
+jadvaliga yoziladi).
 
-- ✅ WebSocket-powered messaging
-- ✅ File uploads and sharing
-- ✅ Typing indicators
-- ✅ Online/offline status
-- ✅ Message history
-- ✅ Real-time notifications
-- ✅ Heartbeat monitoring
-- ✅ Auto-reconnection
-- ✅ Message validation
-- ✅ Admin-partner communication
+## Xavfsizlik: to'lov summasi
 
-## 🔧 **Recent Improvements**
+To'lov summasi hech qachon frontend'dan ishonch bilan qabul qilinmaydi — `resolvePurchase`
+(`lib/payments/resolve-amount.ts`) uni har doim serverda, `courses` jadvalidagi haqiqiy narx
+yoki `SUBSCRIPTION_PRICE` konstantasi asosida qayta hisoblaydi. Bu devtools orqali narxni
+o'zgartirib yuborish imkoniyatini yopadi.
 
-### Authentication & Security
-- ✅ Enhanced error handling with error codes
-- ✅ Improved session management
-- ✅ Better validation with detailed error messages
-- ✅ Audit logging for all user actions
-- ✅ Secure logout with session cleanup
+## Xavfsizlik: test javoblari
 
-### WebSocket Communication
-- ✅ Heartbeat monitoring (30s intervals)
-- ✅ Auto-reconnection with exponential backoff
-- ✅ Connection status tracking
-- ✅ Message validation and sanitization
-- ✅ File upload support in chat
-- ✅ Typing indicators
-- ✅ Online status tracking
+Ilgari `quiz_questions.correct_index` RLS orqali hammaga ochiq edi va to'g'ri javob
+brauzerga to'g'ridan-to'g'ri yuborilardi — istalgan foydalanuvchi buni ko'ra olardi.
+Endi: (1) RLS `has_quiz_access()` funksiyasi orqali faqat kursga kirish huquqi bor
+foydalanuvchiga ochiq, (2) `correct_index` hech qachon brauzerga yuborilmaydi — baholash
+`POST /api/lessons/quiz/submit`da serverda amalga oshadi va natija `user_progress`ga
+yoziladi, `completeLesson` esa mijozdan kelgan bayroqqa emas, shu saqlangan natijaga
+ishonadi.
 
-### Database & Storage
-- ✅ SQLite fallback for development
-- ✅ Automatic table creation
-- ✅ Better error handling
-- ✅ Connection pooling
-- ✅ Query optimization
+## Muddatli to'lov (installment)
 
-### UI/UX Improvements
-- ✅ Fixed TypeScript compatibility issues
-- ✅ Enhanced chat interface
-- ✅ Better responsive design
-- ✅ Improved error messages
-- ✅ Loading states and feedback
+Biznes-rejaning 11.3/9.7-bo'limlariga muvofiq — "2 bo'lakka" (50%+50%, barcha tariflarda)
+va "3 bo'lakka" (40% boshlang'ich + qolgani, faqat Standard/Pro):
 
-### Development Experience
-- ✅ Automated startup script
-- ✅ Comprehensive environment configuration
-- ✅ Better build process
-- ✅ Health checks
-- ✅ Development tools integration
-
-## 🤝 **Contributing**
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📞 **Support & Contact**
-
-- **Email:** admin@biznes-yordam.uz
-- **Telegram:** @biznes_yordam_support
-- **Website:** [BiznesYordam.uz](https://biznes-yordam.onrender.com)
-
-## 📄 **License**
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-**⚡ Built with ❤️ for Uzbekistan's entrepreneurial ecosystem**
-
-*Empowering businesses to thrive in the digital marketplace*
-
-## 🚀 **Quick Access**
-
-After starting the application:
-
-- **Main Site:** http://localhost:5000
-- **Admin Panel:** http://localhost:5000/admin-panel
-- **Partner Dashboard:** http://localhost:5000/partner-dashboard
-- **Partner Registration:** http://localhost:5000/partner-registration
-
-### Default Login Credentials:
-- **Admin:** admin / BiznesYordam2024!
-- **Partner:** testpartner / Partner2024!
+1. Xaridda foydalanuvchi rejani tanlaydi → `createInstallmentPlan`
+   (`lib/payments/installments.ts`) `installment_plans` + to'liq `installment_payments`
+   jadvalini oldindan yaratadi (har biri o'z summasi va muddati bilan, 30 kunlik oraliqda).
+2. Birinchi to'lov (boshlang'ich) darhol Click/Payme orqali to'lanadi va kursga kirish
+   ochiladi (odatdagi xaridga o'xshab).
+3. Keyingi to'lovlar — `/dashboard`da "Keyingi to'lov" kartochkasi orqali, xuddi shunday
+   Click/Payme checkout bilan.
+4. Agar muddat o'tib ketsa-yu to'lov qilinmasa, `getLessonAccess` (`lib/lms/access.ts`)
+   kursni avtomatik bloklaydi — cron kerak emas, tekshiruv har safar `due_date`ni real
+   vaqtda solishtiradi.
