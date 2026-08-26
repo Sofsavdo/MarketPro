@@ -23,6 +23,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/payments" className="text-slate-400 hover:text-white">
           To&apos;lovlar
         </Link>
+        <Link href="/admin/installments" className="text-slate-400 hover:text-white">
+          Muddatli to&apos;lovlar
+        </Link>
         <Link href="/admin/waitlist" className="text-slate-400 hover:text-white">
           Kutish ro&apos;yxati
         </Link>
