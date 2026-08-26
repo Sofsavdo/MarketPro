@@ -1,4 +1,5 @@
 import { getTranslations, getLocale } from "next-intl/server";
+import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,11 +10,16 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ShieldCheck, Sparkles, Layers, Languages, ArrowRight } from "lucide-react";
+import { ShieldCheck, Sparkles, Layers, Languages, ArrowRight, ImageOff } from "lucide-react";
 import { getPublishedCourses, localizedField } from "@/lib/courses";
 import { formatSom } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
 import { InstructorBadge } from "@/components/course/instructor-badge";
+
+// Public, identical for every visitor — cache it instead of hitting
+// Supabase on every request. 5 minutes is plenty fresh for a course catalog
+// that changes a handful of times a week from the admin panel.
+export const revalidate = 300;
 
 export default async function HomePage() {
   const t = await getTranslations();
@@ -106,7 +112,22 @@ export default async function HomePage() {
 
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {courses.map((course, i) => (
-              <Card key={course.id} className="flex flex-col justify-between">
+              <Card key={course.id} className="flex flex-col justify-between overflow-hidden">
+                <div className="relative aspect-video w-full bg-slate-800">
+                  {course.cover_url ? (
+                    <Image
+                      src={course.cover_url}
+                      alt=""
+                      fill
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <ImageOff className="h-8 w-8 text-slate-600" />
+                    </div>
+                  )}
+                </div>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <Badge variant={course.is_published ? "default" : "outline"}>

@@ -74,6 +74,7 @@ export async function toggleCoursePublished(courseId: string, isPublished: boole
   const admin = await createAdminClient();
   await admin.from("courses").update({ is_published: isPublished }).eq("id", courseId);
   revalidatePath("/admin");
+  revalidatePath("/[locale]", "page");
   revalidatePath("/[locale]/courses", "page");
 }
 
@@ -104,6 +105,8 @@ export async function updateCourse(courseId: string, formData: FormData) {
     .eq("id", courseId);
 
   revalidatePath(`/admin/courses/${courseId}`);
+  revalidatePath("/[locale]", "page");
+  revalidatePath("/[locale]/courses", "page");
 }
 
 export async function createCourse(formData: FormData) {
@@ -146,6 +149,8 @@ export async function createCourse(formData: FormData) {
   if (error || !course) throw new Error(error?.message ?? "Kurs yaratilmadi");
 
   revalidatePath("/admin");
+  revalidatePath("/[locale]", "page");
+  revalidatePath("/[locale]/courses", "page");
   redirect(`/admin/courses/${course.id}`);
 }
 

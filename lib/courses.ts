@@ -1,8 +1,15 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createPublicClient } from "@/lib/supabase/server";
 import type { Locale } from "@/i18n/routing";
 
+/**
+ * Uses the cookie-free public client deliberately — this list is the same
+ * for everyone (courses RLS already allows anyone to read it), and the
+ * homepage/catalog pages that call this are the ones we want to actually
+ * cache (see `revalidate` on those pages) rather than hit Supabase on every
+ * request.
+ */
 export async function getPublishedCourses() {
-  const supabase = await createClient();
+  const supabase = await createPublicClient();
   const { data } = await supabase
     .from("courses")
     .select("*")

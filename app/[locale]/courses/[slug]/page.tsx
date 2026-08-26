@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
+import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -71,6 +72,18 @@ export default async function CourseDetailPage({
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-16">
+      {course.cover_url && (
+        <div className="relative mb-8 aspect-[21/9] w-full overflow-hidden rounded-lg bg-slate-800">
+          <Image
+            src={course.cover_url}
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 1024px, 100vw"
+            priority
+            className="object-cover"
+          />
+        </div>
+      )}
       <Badge variant={course.is_published ? "default" : "outline"}>
         {course.is_published
           ? t("home.coursesSection.badgePopular")
@@ -160,11 +173,12 @@ export default async function CourseDetailPage({
                       >
                         <span className="relative flex h-12 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-slate-800">
                           {lesson.thumbnail_url ? (
-                            // eslint-disable-next-line @next/next/no-img-element -- Supabase Storage URL, not an optimizable local asset
-                            <img
+                            <Image
                               src={lesson.thumbnail_url}
                               alt=""
-                              className="h-full w-full object-cover"
+                              fill
+                              sizes="80px"
+                              className="object-cover"
                             />
                           ) : (
                             <PlayCircle className="h-5 w-5 text-slate-600" />
