@@ -49,7 +49,9 @@
       "from": "from",
       "months": "mo",
       "viewCourse": "View course",
-      "empty": "No courses available yet"
+      "empty": "No courses available yet",
+      "perMonth": "mo",
+      "orVip": "or VIP (lifetime):"
     },
     "pricingTeaser": {
       "title": "A single course or a full subscription",
