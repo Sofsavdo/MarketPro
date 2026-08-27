@@ -368,11 +368,14 @@ alter table public.referrals enable row level security;
 alter table public.installment_plans enable row level security;
 alter table public.installment_payments enable row level security;
 
+drop policy if exists "Users see their own referrals" on public.referrals;
 create policy "Users see their own referrals" on public.referrals
   for select using (auth.uid() = referrer_id);
 
+drop policy if exists "Users see their own installment plans" on public.installment_plans;
 create policy "Users see their own installment plans" on public.installment_plans
   for select using (auth.uid() = user_id);
+drop policy if exists "Users see their own installment payments" on public.installment_payments;
 create policy "Users see their own installment payments" on public.installment_payments
   for select using (
     exists (
@@ -381,8 +384,10 @@ create policy "Users see their own installment payments" on public.installment_p
     )
   );
 
+drop policy if exists "Profiles are self-readable" on public.profiles;
 create policy "Profiles are self-readable" on public.profiles
   for select using (auth.uid() = id);
+drop policy if exists "Profiles are self-updatable" on public.profiles;
 create policy "Profiles are self-updatable" on public.profiles
   for update using (auth.uid() = id);
 
@@ -390,10 +395,13 @@ create policy "Profiles are self-updatable" on public.profiles
 -- readable regardless of publish state — unpublished rows power the "coming
 -- soon" catalog cards and waitlist pages. Modules/lessons/quiz content stay
 -- gated to published courses, since that's the actual curriculum.
+drop policy if exists "Course metadata is public" on public.courses;
 create policy "Course metadata is public" on public.courses
   for select using (true);
+drop policy if exists "Modules of published courses are public" on public.modules;
 create policy "Modules of published courses are public" on public.modules
   for select using (exists (select 1 from public.courses c where c.id = course_id and c.is_published));
+drop policy if exists "Lesson metadata is public, video/content gated in app layer" on public.lessons;
 create policy "Lesson metadata is public, video/content gated in app layer" on public.lessons
   for select using (exists (select 1 from public.courses c where c.id = course_id and c.is_published));
 
@@ -435,26 +443,35 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public;
 
+drop policy if exists "Quiz answers require course access" on public.quiz_questions;
 create policy "Quiz answers require course access" on public.quiz_questions
   for select using (public.has_quiz_access(lesson_id));
 
+drop policy if exists "Lesson materials require course access" on public.lesson_materials;
 create policy "Lesson materials require course access" on public.lesson_materials
   for select using (public.has_quiz_access(lesson_id));
 
+drop policy if exists "Users see their own enrollments" on public.enrollments;
 create policy "Users see their own enrollments" on public.enrollments
   for select using (auth.uid() = user_id);
+drop policy if exists "Users see their own subscriptions" on public.subscriptions;
 create policy "Users see their own subscriptions" on public.subscriptions
   for select using (auth.uid() = user_id);
+drop policy if exists "Users see their own progress" on public.user_progress;
 create policy "Users see their own progress" on public.user_progress
   for select using (auth.uid() = user_id);
+drop policy if exists "Users can upsert their own progress" on public.user_progress;
 create policy "Users can upsert their own progress" on public.user_progress
   for insert with check (auth.uid() = user_id);
+drop policy if exists "Users can update their own progress" on public.user_progress;
 create policy "Users can update their own progress" on public.user_progress
   for update using (auth.uid() = user_id);
+drop policy if exists "Users see their own payments" on public.payments;
 create policy "Users see their own payments" on public.payments
   for select using (auth.uid() = user_id);
 
 alter table public.waitlist enable row level security;
+drop policy if exists "Anyone can join the waitlist" on public.waitlist;
 create policy "Anyone can join the waitlist" on public.waitlist
   for insert with check (true);
 
@@ -487,11 +504,14 @@ $$ language plpgsql security definer set search_path = public;
 alter table public.live_sessions enable row level security;
 alter table public.session_questions enable row level security;
 
+drop policy if exists "Users can view sessions they have access to" on public.live_sessions;
 create policy "Users can view sessions they have access to" on public.live_sessions
   for select using (public.has_live_session_access(id));
 
+drop policy if exists "Users can view questions for accessible sessions" on public.session_questions;
 create policy "Users can view questions for accessible sessions" on public.session_questions
   for select using (public.has_live_session_access(session_id));
+drop policy if exists "Users can post questions on accessible sessions" on public.session_questions;
 create policy "Users can post questions on accessible sessions" on public.session_questions
   for insert with check (auth.uid() = user_id and public.has_live_session_access(session_id));
 
@@ -520,10 +540,13 @@ create index if not exists idx_course_reviews_course on public.course_reviews (c
 
 alter table public.course_reviews enable row level security;
 
+drop policy if exists "Course reviews are public" on public.course_reviews;
 create policy "Course reviews are public" on public.course_reviews
   for select using (true);
+drop policy if exists "Only course-access holders can review" on public.course_reviews;
 create policy "Only course-access holders can review" on public.course_reviews
   for insert with check (auth.uid() = user_id and public.has_course_access(course_id));
+drop policy if exists "Users can update their own review" on public.course_reviews;
 create policy "Users can update their own review" on public.course_reviews
   for update using (auth.uid() = user_id);
 
@@ -544,8 +567,10 @@ create index if not exists idx_lesson_comments_lesson on public.lesson_comments 
 
 alter table public.lesson_comments enable row level security;
 
+drop policy if exists "Lesson comments require course access" on public.lesson_comments;
 create policy "Lesson comments require course access" on public.lesson_comments
   for select using (public.has_quiz_access(lesson_id));
+drop policy if exists "Users can post comments if they have access" on public.lesson_comments;
 create policy "Users can post comments if they have access" on public.lesson_comments
   for insert with check (auth.uid() = user_id and public.has_quiz_access(lesson_id));
 
@@ -565,6 +590,7 @@ create table if not exists public.certificates (
 
 alter table public.certificates enable row level security;
 
+drop policy if exists "Users see their own certificates" on public.certificates;
 create policy "Users see their own certificates" on public.certificates
   for select using (auth.uid() = user_id);
 
@@ -613,8 +639,10 @@ insert into storage.buckets (id, name, public)
 values ('lesson-thumbnails', 'lesson-thumbnails', true)
 on conflict (id) do nothing;
 
+drop policy if exists "Course covers are publicly readable" on storage.objects;
 create policy "Course covers are publicly readable" on storage.objects
   for select using (bucket_id = 'course-covers');
 
+drop policy if exists "Lesson thumbnails are publicly readable" on storage.objects;
 create policy "Lesson thumbnails are publicly readable" on storage.objects
   for select using (bucket_id = 'lesson-thumbnails');
