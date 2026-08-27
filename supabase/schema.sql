@@ -517,8 +517,21 @@ create policy "Users can post questions on accessible sessions" on public.sessio
 
 -- Required for the live Q&A board (components/live/session-qa.tsx) to receive
 -- new questions and instructor answers via supabase-js .channel(...).on("postgres_changes", ...)
--- without the student having to refresh the page.
-alter publication supabase_realtime add table public.session_questions;
+-- without the student having to refresh the page. `alter publication ... add
+-- table` has no `if not exists` form, so re-running this file against a
+-- database that already has it would fail — guarded the same way the
+-- policies above are.
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime'
+      and schemaname = 'public'
+      and tablename = 'session_questions'
+  ) then
+    alter publication supabase_realtime add table public.session_questions;
+  end if;
+end $$;
 
 -- ============================================================
 -- course_reviews — public star rating + comment, one per (course, user),
