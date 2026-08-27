@@ -203,6 +203,7 @@ export interface Database {
           subscription_plan: "monthly" | "yearly" | null;
           installment_payment_id: string | null;
           promo_code: string | null;
+          referral_click_token: string | null;
           created_at: string;
         },
         {
@@ -217,6 +218,7 @@ export interface Database {
           subscription_plan?: "monthly" | "yearly" | null;
           installment_payment_id?: string | null;
           promo_code?: string | null;
+          referral_click_token?: string | null;
         }
       >;
       installment_plans: Table<

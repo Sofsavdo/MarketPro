@@ -328,9 +328,16 @@ create table if not exists public.payments (
   -- 'paid' (see the Click/Payme webhook handlers) — never at checkout time,
   -- so an abandoned or failed checkout doesn't burn a redemption.
   promo_code text,
+  -- The Sofsavdo blogger-referral click token captured from `?ref=` at
+  -- landing (see proxy.ts / lib/constants.ts#SOFSAVDO_REF_COOKIE), if the
+  -- buyer arrived via a blogger's Sofsavdo link. Reported back to Sofsavdo's
+  -- conversion webhook once this payment reaches 'paid' — see
+  -- lib/payments/sofsavdo-integration.ts, called from grantAccessForPayment.
+  referral_click_token text,
   created_at timestamptz not null default now()
 );
 alter table public.payments add column if not exists tier text check (tier in ('start', 'standard', 'pro'));
+alter table public.payments add column if not exists referral_click_token text;
 
 -- ============================================================
 -- waitlist — email/phone capture for not-yet-published courses
