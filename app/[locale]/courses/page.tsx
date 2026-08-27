@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getPublishedCourses, localizedField } from "@/lib/courses";
 import { formatSom } from "@/lib/utils";
-import { SUBSCRIPTION_PRICE } from "@/lib/pricing";
+import { computeMonthlyInstallment } from "@/lib/pricing";
 import type { Locale } from "@/i18n/routing";
 import { InstructorBadge } from "@/components/course/instructor-badge";
 
@@ -69,15 +69,11 @@ export default async function CoursesPage() {
             </CardHeader>
             <CardContent className="flex items-center justify-between pt-0">
               <div className="text-sm text-slate-400">
-                <p>
-                  {t("home.coursesSection.from")}{" "}
-                  <span className="font-semibold text-white">
-                    {formatSom(SUBSCRIPTION_PRICE.monthly, locale)}
-                  </span>
-                  /{t("home.coursesSection.perMonth")}
-                </p>
+                <p className="font-semibold text-white">{formatSom(course.price, locale)}</p>
                 <p className="text-xs">
-                  {t("home.coursesSection.orVip")} {formatSom(course.price, locale)}
+                  {t("course.orMonthly", {
+                    amount: formatSom(computeMonthlyInstallment(course.price), locale),
+                  })}
                 </p>
               </div>
               <Button asChild size="sm" variant={course.is_published ? "default" : "outline"}>
