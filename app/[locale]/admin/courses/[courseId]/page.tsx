@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CheckCircle2 } from "lucide-react";
 import {
   updateCourse,
   createModule,
@@ -16,10 +17,13 @@ import {
 
 export default async function AdminCourseEditPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ courseId: string }>;
+  searchParams: Promise<{ saved?: string }>;
 }) {
   const { courseId } = await params;
+  const { saved } = await searchParams;
   const supabase = await createAdminClient();
   const { data: course } = await supabase
     .from("courses")
@@ -49,6 +53,12 @@ export default async function AdminCourseEditPage({
   return (
     <div>
       <h1 className="text-2xl font-bold text-white">{course.title_uz}</h1>
+
+      {saved === "1" && (
+        <div className="mt-4 flex items-center gap-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
+          <CheckCircle2 className="h-4 w-4 shrink-0" /> Saqlandi!
+        </div>
+      )}
 
       <form action={updateCourseWithId} className="mt-8 max-w-2xl space-y-6">
         <div className="grid gap-4 sm:grid-cols-3">

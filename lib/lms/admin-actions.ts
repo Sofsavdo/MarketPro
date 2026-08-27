@@ -109,6 +109,11 @@ export async function updateCourse(courseId: string, formData: FormData) {
   revalidatePath(`/admin/courses/${courseId}`);
   revalidatePath("/[locale]", "page");
   revalidatePath("/[locale]/courses", "page");
+  // The form submit itself gave the admin no feedback that anything
+  // happened (revalidatePath alone re-renders the same page with the same
+  // values, which looks identical to "nothing saved") — redirecting with a
+  // marker the page reads to show a confirmation banner fixes that.
+  redirect(`/admin/courses/${courseId}?saved=1`);
 }
 
 export async function createCourse(formData: FormData) {

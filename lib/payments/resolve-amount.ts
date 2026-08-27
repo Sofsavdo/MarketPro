@@ -125,7 +125,14 @@ export async function resolvePurchase(params: {
   return null;
 }
 
-async function resolvePromoCode(admin: Awaited<ReturnType<typeof createAdminClient>>, code: string) {
+/**
+ * Exported so lib/lms/promo-actions.ts can offer a live discount preview in
+ * the purchase dialog (validate a typed code and show the discounted price)
+ * without duplicating this lookup — the actual checkout still always
+ * re-resolves through resolvePurchase above, so a stale/tampered client
+ * preview can never affect what's actually charged.
+ */
+export async function resolvePromoCode(admin: Awaited<ReturnType<typeof createAdminClient>>, code: string) {
   const { data: promo } = await admin
     .from("promo_codes")
     .select("code, discount_percent, max_uses, used_count, expires_at, active")
