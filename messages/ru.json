@@ -128,9 +128,9 @@
     "waitlistJoin": "Записаться",
     "waitlistDone": "Спасибо! Мы сообщим вам, когда курс откроется.",
     "instructorLabel": "Преподаватель",
-    "planFull": "Полностью",
-    "planTwoPart": "2 части",
-    "planThreePart": "3 части",
+    "planFull": "Полностью, сразу",
+    "planTwoPart": "2 платежа (50% + 50%)",
+    "planThreePart": "3 платежа (40% + 30% + 30%)",
     "upgradeToVipTitle": "Перейти на VIP",
     "vipTitle": "VIP доступ (навсегда)",
     "vipIncludes": "Видеоуроки + сообщество + живые уроки + личная обратная связь ментора — навсегда.",
@@ -152,7 +152,9 @@
     },
     "certificateReady": "Поздравляем! Вы завершили курс на 100%.",
     "downloadCertificate": "Скачать сертификат",
-    "promoCodePlaceholder": "Промокод (необязательно)"
+    "promoCodePlaceholder": "Промокод (необязательно)",
+    "buyFrom": "Купить от",
+    "installmentHint": "Между платежами 30 дней. При просрочке доступ к курсу временно приостанавливается."
   },
   "lesson": {
     "completeButton": "Завершить тему",

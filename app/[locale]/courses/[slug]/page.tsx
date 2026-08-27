@@ -4,7 +4,6 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock, PlayCircle } from "lucide-react";
 import { getCourseBySlug, getCourseModulesWithLessons, localizedField } from "@/lib/courses";
 import { getLessonAccess, isLessonLocked } from "@/lib/lms/access";
@@ -16,6 +15,13 @@ import { WaitlistForm } from "@/components/course/waitlist-form";
 import { InstructorBadge } from "@/components/course/instructor-badge";
 import { CourseReviews } from "@/components/course/course-reviews";
 import { submitCourseReview } from "@/lib/lms/reviews-actions";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default async function CourseDetailPage({
   params,
@@ -127,24 +133,43 @@ export default async function CourseDetailPage({
         </div>
       ) : (
         access.accessLevel !== "vip" && (
-          <Card className="mt-8 max-w-md border-amber-500/40">
-            <CardHeader>
-              <CardTitle className="text-base">
+          <div className="mt-6 flex flex-wrap items-center gap-3 rounded-lg border border-amber-500/40 bg-amber-500/5 px-4 py-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-white">
                 {access.accessLevel === "start" ? t("course.upgradeToVipTitle") : t("course.vipTitle")}
-              </CardTitle>
-              <p className="text-sm text-slate-400">{t("course.vipIncludes")}</p>
-              <p className="text-2xl font-bold text-amber-500">{formatSom(course.price, locale)}</p>
-            </CardHeader>
-            <CardContent className="pt-0">
-              {user ? (
-                <PurchaseButtons courseId={course.id} />
-              ) : (
-                <Button asChild className="w-full">
-                  <Link href="/login">{t("course.loginToBuy")}</Link>
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+              </p>
+              <p className="text-xs text-slate-400">{t("course.vipIncludes")}</p>
+            </div>
+            {user ? (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    {t("course.buyFrom")} {formatSom(course.price, locale)}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>
+                      {access.accessLevel === "start"
+                        ? t("course.upgradeToVipTitle")
+                        : t("course.vipTitle")}
+                    </DialogTitle>
+                    <p className="text-sm text-slate-400">{t("course.vipIncludes")}</p>
+                  </DialogHeader>
+                  <p className="mt-2 text-2xl font-bold text-amber-500">
+                    {formatSom(course.price, locale)}
+                  </p>
+                  <div className="mt-4">
+                    <PurchaseButtons courseId={course.id} />
+                  </div>
+                </DialogContent>
+              </Dialog>
+            ) : (
+              <Button asChild size="sm">
+                <Link href="/login">{t("course.loginToBuy")}</Link>
+              </Button>
+            )}
+          </div>
         )
       )}
 

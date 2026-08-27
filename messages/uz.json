@@ -128,9 +128,9 @@
     "waitlistJoin": "Ro'yxatga yozilish",
     "waitlistDone": "Rahmat! Kurs ochilganda sizga xabar beramiz.",
     "instructorLabel": "Ustoz",
-    "planFull": "To'liq",
-    "planTwoPart": "2 bo'lak",
-    "planThreePart": "3 bo'lak",
+    "planFull": "Bir martada to'liq",
+    "planTwoPart": "2 marta (50% + 50%)",
+    "planThreePart": "3 marta (40% + 30% + 30%)",
     "upgradeToVipTitle": "VIP'ga o'ting",
     "vipTitle": "VIP kirish (umrbod)",
     "vipIncludes": "Video darslar + Community + Live darslar + Shaxsiy mentor feedback — umrbod.",
@@ -152,7 +152,9 @@
     },
     "certificateReady": "Tabriklaymiz! Kursni 100% yakunladingiz.",
     "downloadCertificate": "Sertifikatni yuklab olish",
-    "promoCodePlaceholder": "Promo-kod (ixtiyoriy)"
+    "promoCodePlaceholder": "Promo-kod (ixtiyoriy)",
+    "buyFrom": "Sotib olish —",
+    "installmentHint": "Har bir bo'lak orasida 30 kun. Muddati o'tsa, kursga kirish vaqtincha to'xtatiladi."
   },
   "lesson": {
     "completeButton": "Mavzuni yakunlash",

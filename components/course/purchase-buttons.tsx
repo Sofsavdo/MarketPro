@@ -59,6 +59,7 @@ export function PurchaseButtons({ courseId }: { courseId: string }) {
           </button>
         ))}
       </div>
+      {plan !== "full" && <p className="text-xs text-slate-500">{t("installmentHint")}</p>}
 
       <input
         type="text"
