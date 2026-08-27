@@ -136,6 +136,25 @@ begin
   end if;
 end $$;
 
+-- One-time price correction to match the official IZDOSH Academy business
+-- plan (Aug 2026). Each update only fires while the row still holds the
+-- earlier placeholder price for that slug, so it never overwrites prices an
+-- admin has since edited in the admin panel. Safe to re-run.
+update public.courses set price_start = 1490000, price_standard = 2490000, price_pro = 3490000
+  where slug = 'uzum-market' and price_start = 3490000 and price_standard = 4890000 and price_pro = 6280000;
+update public.courses set price_start = 3990000, price_standard = 5990000, price_pro = 7990000
+  where slug = 'marketplace-business' and price_start = 7990000 and price_standard = 11190000 and price_pro = 14380000;
+update public.courses set price_start = 790000, price_standard = 1490000, price_pro = 1990000
+  where slug = 'china-sourcing' and price_start = 1990000 and price_standard = 2790000 and price_pro = 3580000;
+update public.courses set price_start = 590000, price_standard = 950000, price_pro = 1390000
+  where slug = 'landing-page' and price_start = 2000000 and price_standard = 2800000 and price_pro = 3600000;
+update public.courses set price_start = 690000, price_standard = 1150000, price_pro = 1690000
+  where slug = 'telegram-bot' and price_start = 2000000 and price_standard = 2800000 and price_pro = 3600000;
+update public.courses set price_start = 1590000, price_standard = 2790000, price_pro = 4290000
+  where slug = 'vibecoding' and price_start = 4290000 and price_standard = 6010000 and price_pro = 7720000;
+update public.courses set price_start = 1990000, price_standard = 3290000, price_pro = 4990000
+  where slug = 'startup-mvp' and price_start = 4990000 and price_standard = 6990000 and price_pro = 8980000;
+
 create table if not exists public.modules (
   id uuid primary key default gen_random_uuid(),
   course_id uuid not null references public.courses (id) on delete cascade,
