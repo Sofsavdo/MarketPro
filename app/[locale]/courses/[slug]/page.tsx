@@ -156,11 +156,8 @@ export default async function CourseDetailPage({
                     </DialogTitle>
                     <p className="text-sm text-slate-400">{t("course.vipIncludes")}</p>
                   </DialogHeader>
-                  <p className="mt-2 text-2xl font-bold text-amber-500">
-                    {formatSom(course.price, locale)}
-                  </p>
-                  <div className="mt-4">
-                    <PurchaseButtons courseId={course.id} />
+                  <div className="mt-2">
+                    <PurchaseButtons courseId={course.id} price={course.price} locale={locale} />
                   </div>
                 </DialogContent>
               </Dialog>
