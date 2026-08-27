@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { markInstallmentPaid } from "@/lib/payments/installments";
+import { reportSofsavdoConversion, SOFSAVDO_COMMISSION_RATE } from "@/lib/payments/sofsavdo-integration";
 
 /**
  * Called from the Click/Payme webhook handlers once a payment is confirmed
@@ -77,6 +78,24 @@ export async function grantAccessForPayment(paymentId: string) {
       },
       { onConflict: "user_id,course_id" },
     );
+
+    if (payment.referral_click_token) {
+      const { data: course } = await supabase
+        .from("courses")
+        .select("title_uz")
+        .eq("id", payment.course_id)
+        .maybeSingle();
+
+      // Fire-and-forget — reportSofsavdoConversion never throws (see its own
+      // comment), so this can't fail the payment it's reporting on.
+      await reportSofsavdoConversion({
+        clickToken: payment.referral_click_token,
+        externalPaymentId: payment.id,
+        amountSom: payment.amount,
+        commissionSom: Math.round(payment.amount * SOFSAVDO_COMMISSION_RATE),
+        planName: course?.title_uz ?? "Izdosh kursi",
+      });
+    }
   }
 }
 

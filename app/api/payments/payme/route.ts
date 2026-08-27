@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { buildPaymeCheckoutUrl } from "@/lib/payments/payme";
 import { resolvePurchase } from "@/lib/payments/resolve-amount";
+import { SOFSAVDO_REF_COOKIE } from "@/lib/constants";
 
 // POST /api/payments/payme — called by the buy button to start a checkout.
 // The Payme JSON-RPC callback lives separately at /api/payments/payme/webhook.
@@ -37,6 +38,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "invalid_purchase" }, { status: 400 });
   }
 
+  const referralClickToken = courseId
+    ? (request.cookies.get(SOFSAVDO_REF_COOKIE)?.value ?? null)
+    : null;
+
   const admin = await createAdminClient();
   const { data: payment, error } = await admin
     .from("payments")
@@ -51,6 +56,7 @@ export async function POST(request: NextRequest) {
       subscription_plan: subscriptionPlan ?? null,
       installment_payment_id: resolved.installmentPaymentId,
       promo_code: resolved.promoCode,
+      referral_click_token: referralClickToken,
     })
     .select("id")
     .single();

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { buildClickCheckoutUrl } from "@/lib/payments/click";
 import { resolvePurchase } from "@/lib/payments/resolve-amount";
+import { SOFSAVDO_REF_COOKIE } from "@/lib/constants";
 
 // POST /api/payments/click — called by the buy button to start a checkout.
 // The Click callback (Prepare/Complete) lives separately at
@@ -38,6 +39,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "invalid_purchase" }, { status: 400 });
   }
 
+  // Only a course purchase can be attributed to a Sofsavdo blogger — each
+  // Sofsavdo "Product" maps to one Izdosh course, so a subscription (which
+  // spans every course) doesn't have a single Product to credit.
+  const referralClickToken = courseId
+    ? (request.cookies.get(SOFSAVDO_REF_COOKIE)?.value ?? null)
+    : null;
+
   const admin = await createAdminClient();
   const { data: payment, error } = await admin
     .from("payments")
@@ -52,6 +60,7 @@ export async function POST(request: NextRequest) {
       subscription_plan: subscriptionPlan ?? null,
       installment_payment_id: resolved.installmentPaymentId,
       promo_code: resolved.promoCode,
+      referral_click_token: referralClickToken,
     })
     .select("id")
     .single();
