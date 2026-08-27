@@ -79,22 +79,38 @@ export async function grantAccessForPayment(paymentId: string) {
       { onConflict: "user_id,course_id" },
     );
 
-    if (payment.referral_click_token) {
-      const { data: course } = await supabase
-        .from("courses")
-        .select("title_uz")
-        .eq("id", payment.course_id)
-        .maybeSingle();
+    const courseId = payment.course_id;
+    const referralClickToken = payment.referral_click_token;
+    if (referralClickToken) {
+      // Deliberately NOT awaited: this function runs inside grantAccessForPayment, which the
+      // Click/Payme webhook route handlers await directly before sending their HTTP response —
+      // Click and Payme both expect that response quickly, so blocking it on an outbound network
+      // call to Sofsavdo (which can take up to reportSofsavdoConversion's own 10s timeout) risks
+      // delaying or failing a payment provider's webhook over a side effect that has nothing to
+      // do with whether the payment itself succeeded. Safe to fire-and-forget like this because
+      // this process is a long-running Railway service, not a serverless function that freezes at
+      // response time — the promise keeps running after this request returns. Every failure mode
+      // (the course lookup, the report call itself) is caught here so nothing here can ever
+      // surface as an unhandled rejection.
+      void (async () => {
+        try {
+          const { data: course } = await supabase
+            .from("courses")
+            .select("title_uz")
+            .eq("id", courseId)
+            .maybeSingle();
 
-      // Fire-and-forget — reportSofsavdoConversion never throws (see its own
-      // comment), so this can't fail the payment it's reporting on.
-      await reportSofsavdoConversion({
-        clickToken: payment.referral_click_token,
-        externalPaymentId: payment.id,
-        amountSom: payment.amount,
-        commissionSom: Math.round(payment.amount * SOFSAVDO_COMMISSION_RATE),
-        planName: course?.title_uz ?? "Izdosh kursi",
-      });
+          await reportSofsavdoConversion({
+            clickToken: referralClickToken,
+            externalPaymentId: payment.id,
+            amountSom: payment.amount,
+            commissionSom: Math.round(payment.amount * SOFSAVDO_COMMISSION_RATE),
+            planName: course?.title_uz ?? "Izdosh kursi",
+          });
+        } catch (err) {
+          console.error(`Sofsavdo conversion report failed for payment ${payment.id}:`, err);
+        }
+      })();
     }
   }
 }
