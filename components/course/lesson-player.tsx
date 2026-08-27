@@ -7,7 +7,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, FileText, Presentation, Image as ImageIcon, Link as LinkIcon, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { VideoWatermark } from "@/components/course/video-watermark";
+import { VideoWatermark, BrandWatermark } from "@/components/course/video-watermark";
 
 const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
 
@@ -143,6 +143,7 @@ export function LessonPlayer({
                 onEnded={() => setVideoWatched(true)}
                 onError={() => setVideoError(true)}
               />
+              <BrandWatermark />
               {watermarkText && <VideoWatermark text={watermarkText} />}
             </>
           )}

@@ -55,3 +55,21 @@ export function VideoWatermark({ text }: { text: string }) {
     </div>
   );
 }
+
+/**
+ * A fixed, non-moving "IZDOSH.uz" brand mark in the bottom-left corner —
+ * always shown, independent of the moving anti-leak tag above. That tag
+ * still needs to carry the student's own identifier to stay traceable if a
+ * recording leaks (that's its whole point, see VideoWatermark); this one is
+ * pure branding, the same idea as a TV channel bug or YouTube's logo overlay.
+ */
+export function BrandWatermark() {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute bottom-2 left-2 z-10 select-none whitespace-nowrap rounded bg-black/30 px-2 py-1 text-xs font-semibold tracking-wide text-white/70"
+    >
+      IZDOSH<span className="text-amber-400">.uz</span>
+    </div>
+  );
+}
