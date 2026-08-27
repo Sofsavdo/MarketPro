@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { uploadImage } from "@/lib/supabase/storage";
 import { revokeAccessForPayment } from "@/lib/payments/grant-access";
+import { createInstallmentPlan, markInstallmentPaid } from "@/lib/payments/installments";
+import { INSTALLMENT_MONTHS } from "@/lib/pricing";
 
 function slugify(input: string) {
   return input
@@ -189,6 +191,9 @@ export async function updateLesson(lessonId: string, formData: FormData) {
     .eq("id", lessonId);
 
   revalidatePath(`/admin/lessons/${lessonId}`);
+  // Same "Saqlash gave no feedback" gap as updateCourse — see that
+  // function's own comment.
+  redirect(`/admin/lessons/${lessonId}?saved=1`);
 }
 
 export async function createModule(courseId: string, formData: FormData) {
@@ -586,11 +591,24 @@ export async function declineInstallmentLead(leadId: string) {
 }
 
 /**
- * Grants VIP access once the operator has formalized the 12-month
- * installment deal by phone (nasiya) — actual monthly collection happens
- * outside this app for now (manual Click links, or Atmos auto-debit once
- * that's wired up), so this just records the sale and unlocks the course,
- * the same "manual" payment pattern as upgradeToVipWithCredit.
+ * Grants access once the operator has formalized the 12-month installment
+ * deal by phone (nasiya) — and, critically, actually creates the
+ * installment_plans/installment_payments schedule so the rest of the app's
+ * installment machinery has something real to work with: the dashboard's
+ * "next payment due" reminder, the student's own ability to pay each
+ * scheduled month via Click/Payme (installmentPaymentId in
+ * resolvePurchase), and — most importantly — hasOverdueInstallment()
+ * (lib/lms/access.ts), the Cash Flow Himoyasi (business plan §9.7) check
+ * that blocks access again if a payment is missed. Recording only a lump
+ * "paid in full" payment with no schedule, as this used to do, made that
+ * safety net a no-op: there was never a plan for it to find, so access
+ * could never be revoked for non-payment.
+ *
+ * The operator collected month 1 on the call that closed this deal — that's
+ * the "manual" payment recorded here, linked to installment #1, which is
+ * marked paid immediately. Installments 2-12 stay 'pending' for the student
+ * to pay via their dashboard, or for the operator to mark paid by hand
+ * (markInstallmentPaymentPaid) if collected outside the app.
  */
 export async function convertInstallmentLead(
   leadId: string,
@@ -598,18 +616,31 @@ export async function convertInstallmentLead(
   courseId: string,
   tier: "start" | "standard" | "pro",
   totalAmount: number,
+  monthlyAmount: number,
 ) {
   await requireAdmin();
   const admin = await createAdminClient();
 
+  const { installments } = await createInstallmentPlan({
+    userId,
+    courseId,
+    totalAmount,
+    monthlyAmount,
+    installmentsCount: INSTALLMENT_MONTHS,
+  });
+  const firstInstallment = installments[0];
+  if (!firstInstallment) throw new Error("could_not_create_installment_schedule");
+
   await admin.from("payments").insert({
     user_id: userId,
     provider: "manual",
-    amount: totalAmount,
+    amount: firstInstallment.amount,
     status: "paid",
     course_id: courseId,
     tier,
+    installment_payment_id: firstInstallment.id,
   });
+  await markInstallmentPaid(firstInstallment.id);
 
   await admin.from("enrollments").upsert(
     { user_id: userId, course_id: courseId, source: "purchase", tier },
@@ -618,6 +649,21 @@ export async function convertInstallmentLead(
 
   await admin.from("installment_leads").update({ status: "converted" }).eq("id", leadId);
 
+  revalidatePath("/admin/installments");
+  revalidatePath("/dashboard");
+}
+
+/**
+ * An operator recording a month collected outside the app (cash, a
+ * manually-sent Click link, a bank transfer) — the counterpart to a
+ * student paying a scheduled installment themselves through their
+ * dashboard (grantAccessForPayment → markInstallmentPaid). Both paths
+ * converge on the same installment_payments row, so hasOverdueInstallment()
+ * sees the payment either way.
+ */
+export async function markInstallmentPaymentPaid(installmentPaymentId: string) {
+  await requireAdmin();
+  await markInstallmentPaid(installmentPaymentId);
   revalidatePath("/admin/installments");
 }
 

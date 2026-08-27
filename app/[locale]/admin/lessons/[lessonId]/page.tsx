@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CheckCircle2 } from "lucide-react";
 import {
   updateLesson,
   addQuizQuestion,
@@ -22,10 +23,13 @@ const FILE_TYPE_LABELS: Record<string, string> = {
 
 export default async function AdminLessonEditPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ lessonId: string }>;
+  searchParams: Promise<{ saved?: string }>;
 }) {
   const { lessonId } = await params;
+  const { saved } = await searchParams;
   const supabase = await createAdminClient();
   const { data: lesson } = await supabase
     .from("lessons")
@@ -67,6 +71,12 @@ export default async function AdminLessonEditPage({
         </Link>
       )}
       <h1 className="mt-2 text-2xl font-bold text-white">{lesson.title_uz}</h1>
+
+      {saved === "1" && (
+        <div className="mt-4 flex items-center gap-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
+          <CheckCircle2 className="h-4 w-4 shrink-0" /> Saqlandi!
+        </div>
+      )}
 
       <form action={updateLessonWithId} className="mt-8 max-w-2xl space-y-6">
         <div className="grid gap-4 sm:grid-cols-3">

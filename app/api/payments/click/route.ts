@@ -17,11 +17,10 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { courseId, tier, subscriptionPlan, installmentsCount, installmentPaymentId, promoCode } = body as {
+  const { courseId, tier, subscriptionPlan, installmentPaymentId, promoCode } = body as {
     courseId?: string;
     tier?: "start" | "standard" | "pro";
     subscriptionPlan?: "monthly" | "yearly";
-    installmentsCount?: 2 | 3;
     installmentPaymentId?: string;
     promoCode?: string;
   };
@@ -31,7 +30,6 @@ export async function POST(request: NextRequest) {
     courseId,
     tier,
     subscriptionPlan,
-    installmentsCount,
     installmentPaymentId,
     promoCode,
   });

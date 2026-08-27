@@ -1,13 +1,19 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { SUBSCRIPTION_PRICE } from "@/lib/pricing";
-import { createInstallmentPlan } from "@/lib/payments/installments";
 
 /**
  * The client only tells us *what* the user wants to buy (a course, or a
  * subscription plan) — never trust the amount it sends, since a tampered
  * request could otherwise pay any price it likes. This resolves the real
- * price server-side, and for a new installment purchase also creates the
- * plan + schedule so the returned amount is just the first installment.
+ * price server-side.
+ *
+ * There's no self-serve "pay in N installments at checkout" option here —
+ * that flow was retired (see lib/lms/installment-lead-actions.ts's own
+ * comment) in favor of a lead an operator formalizes by phone
+ * (convertInstallmentLead in admin-actions.ts, which creates the actual
+ * installment_plans/installment_payments schedule). Once that schedule
+ * exists, a student pays each scheduled month through installmentPaymentId
+ * below — that's the only installment-related path this function handles.
  */
 export async function resolvePurchase(params: {
   userId: string;
@@ -15,7 +21,6 @@ export async function resolvePurchase(params: {
   /** Which of the 3 tariffs — required whenever courseId is set. */
   tier?: "start" | "standard" | "pro";
   subscriptionPlan?: "monthly" | "yearly";
-  installmentsCount?: 2 | 3;
   /** Paying a specific already-scheduled installment instead of starting a new purchase. */
   installmentPaymentId?: string;
   /** A code the buyer typed at checkout — only applies to a fresh course/subscription purchase, not an installment or an already-scheduled payment. */
@@ -55,12 +60,7 @@ export async function resolvePurchase(params: {
     };
   }
 
-  // Only applies to a full one-time payment (course or subscription) — not
-  // an installment plan, since discounting one installment but not the rest
-  // would make the plan's schedule inconsistent with its stated total.
-  const promo = params.promoCode && !params.installmentsCount
-    ? await resolvePromoCode(admin, params.promoCode)
-    : null;
+  const promo = params.promoCode ? await resolvePromoCode(admin, params.promoCode) : null;
 
   if (params.subscriptionPlan) {
     const amount = SUBSCRIPTION_PRICE[params.subscriptionPlan] ?? null;
@@ -95,22 +95,6 @@ export async function resolvePurchase(params: {
     // default to 0 on creation) must never be purchasable for free — treat
     // it the same as an invalid purchase rather than silently charging 0.
     if (!Number.isFinite(totalAmount) || totalAmount <= 0) return null;
-
-    if (params.installmentsCount) {
-      const { firstInstallmentId, firstInstallmentAmount } = await createInstallmentPlan({
-        userId: params.userId,
-        courseId: params.courseId,
-        totalAmount,
-        installmentsCount: params.installmentsCount,
-      });
-      return {
-        amount: firstInstallmentAmount,
-        tier: params.tier,
-        installmentPaymentId: firstInstallmentId,
-        promoCode: null,
-        discountAmount: 0,
-      };
-    }
 
     const discountAmount = promo ? Math.round((totalAmount * promo.discount_percent) / 100) : 0;
     return {
