@@ -60,7 +60,7 @@ export function PurchaseButtons({
     <div className="flex flex-col gap-4">
       <div>
         <p className="text-2xl font-bold text-amber-500">{formatSom(price, locale)}</p>
-        <p className="text-sm text-slate-400">
+        <p className="text-base font-medium text-slate-300">
           {t("orMonthly", { amount: formatSom(monthlyAmount, locale) })}
         </p>
       </div>

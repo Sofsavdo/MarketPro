@@ -26,6 +26,18 @@ export async function submitInstallmentLead(courseId: string) {
     .maybeSingle();
   if (!course || !course.is_published) throw new Error("invalid_course");
 
+  // Avoid piling up duplicate leads if a student taps the button more than
+  // once (double-click, revisiting the page) — an open request for this
+  // course is enough until an operator acts on it.
+  const { data: existing } = await supabase
+    .from("installment_leads")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("course_id", courseId)
+    .in("status", ["new", "contacted"])
+    .maybeSingle();
+  if (existing) return;
+
   const monthlyAmount = computeMonthlyInstallment(course.price);
   const totalAmount = monthlyAmount * 12;
 
