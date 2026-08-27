@@ -128,9 +128,9 @@
     "waitlistJoin": "Join waitlist",
     "waitlistDone": "Thanks! We'll let you know when the course opens.",
     "instructorLabel": "Instructor",
-    "planFull": "Full",
-    "planTwoPart": "2 parts",
-    "planThreePart": "3 parts",
+    "planFull": "Pay in full",
+    "planTwoPart": "2 payments (50% + 50%)",
+    "planThreePart": "3 payments (40% + 30% + 30%)",
     "upgradeToVipTitle": "Upgrade to VIP",
     "vipTitle": "VIP access (lifetime)",
     "vipIncludes": "Video lessons + community + live classes + personal mentor feedback — for life.",
@@ -152,7 +152,9 @@
     },
     "certificateReady": "Congratulations! You've completed 100% of the course.",
     "downloadCertificate": "Download certificate",
-    "promoCodePlaceholder": "Promo code (optional)"
+    "promoCodePlaceholder": "Promo code (optional)",
+    "buyFrom": "Buy from",
+    "installmentHint": "30 days between payments. Course access pauses if a payment is missed."
   },
   "lesson": {
     "completeButton": "Complete lesson",
