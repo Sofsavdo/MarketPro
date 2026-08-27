@@ -92,6 +92,18 @@ async function hasOverdueInstallment(userId: string, courseId: string): Promise<
 }
 
 /**
+ * Whether a lesson is open for free preview to someone with no course
+ * access at all. The very first lesson of a course (order_index 0) is
+ * always free to watch, regardless of the `is_free_preview` flag — a
+ * course must always have something visible to hook an unregistered
+ * visitor, and requiring an admin to remember to check that box on the
+ * opening lesson is an easy way to accidentally lock a whole course.
+ */
+export function isFreePreview(lesson: { order_index: number; is_free_preview: boolean }): boolean {
+  return lesson.order_index === 0 || lesson.is_free_preview;
+}
+
+/**
  * A lesson is locked when the user lacks course access, or when the
  * immediately preceding lesson (order_index - 1) within the same course
  * has not been completed yet. The first lesson of a course (order_index 0)

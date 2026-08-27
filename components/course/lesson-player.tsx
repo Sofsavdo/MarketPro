@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, FileText, Presentation, Image as ImageIcon, Link as LinkIcon, Download } from "lucide-react";
+import { CheckCircle2, XCircle, FileText, Presentation, Image as ImageIcon, Link as LinkIcon, Download, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { VideoWatermark, BrandWatermark } from "@/components/course/video-watermark";
 
@@ -44,6 +44,9 @@ export function LessonPlayer({
   materials = [],
   watermarkText,
   thumbnailUrl,
+  prevLessonId,
+  nextLessonId,
+  nextLocked,
 }: {
   courseId: string;
   courseSlug: string;
@@ -58,6 +61,11 @@ export function LessonPlayer({
   watermarkText?: string;
   /** Shown as the player's poster image before playback starts. */
   thumbnailUrl?: string;
+  /** Adjacent lessons in course order, for the prev/next nav row below. */
+  prevLessonId?: string;
+  nextLessonId?: string;
+  /** Whether the next lesson is still locked for this user. */
+  nextLocked?: boolean;
 }) {
   const t = useTranslations("lesson");
   const router = useRouter();
@@ -249,6 +257,32 @@ export function LessonPlayer({
         <p className="flex items-center gap-2 text-emerald-400">
           <CheckCircle2 className="h-5 w-5" /> {t("lessonCompleted")}
         </p>
+      )}
+
+      {(prevLessonId || nextLessonId) && (
+        <div className="flex items-center justify-between gap-3 border-t border-slate-800 pt-6">
+          {prevLessonId ? (
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/courses/${courseSlug}/lessons/${prevLessonId}`}>
+                <ChevronLeft className="h-4 w-4" /> {t("prevLesson")}
+              </Link>
+            </Button>
+          ) : (
+            <span />
+          )}
+          {nextLessonId &&
+            (nextLocked ? (
+              <Button size="sm" variant="outline" disabled className="gap-1.5">
+                <Lock className="h-3.5 w-3.5" /> {t("nextLesson")}
+              </Button>
+            ) : (
+              <Button asChild size="sm">
+                <Link href={`/courses/${courseSlug}/lessons/${nextLessonId}`}>
+                  {t("nextLesson")} <ChevronRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            ))}
+        </div>
       )}
     </div>
   );

@@ -3,7 +3,7 @@ import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { ChevronLeft, Lock } from "lucide-react";
 import { getCourseBySlug, localizedField } from "@/lib/courses";
-import { getLessonAccess, isLessonLocked } from "@/lib/lms/access";
+import { getLessonAccess, isLessonLocked, isFreePreview } from "@/lib/lms/access";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import type { Locale } from "@/i18n/routing";
 import { LessonPlayer } from "@/components/course/lesson-player";
@@ -45,7 +45,7 @@ export default async function LessonPage({
   // first lesson was unopenable for exactly the students it's meant to hook.
   const locked = access.hasCourseAccess
     ? await isLessonLocked(user.id, course.id, lesson.order_index)
-    : !lesson.is_free_preview;
+    : !isFreePreview(lesson);
 
   const { data: questions } = await supabase
     .from("quiz_questions")
@@ -75,6 +75,25 @@ export default async function LessonPage({
         .select("id, comment, created_at, user_id")
         .eq("lesson_id", lesson.id)
         .order("created_at", { ascending: true });
+
+  // Sequential prev/next navigation: order_index is unique and continuous
+  // across the whole course (spans module boundaries — see seed.sql), so a
+  // simple neighbor lookup by order_index is enough, no per-module logic
+  // needed.
+  const { data: navLessons } = await supabase
+    .from("lessons")
+    .select("id, order_index, is_free_preview")
+    .eq("course_id", course.id)
+    .order("order_index", { ascending: true });
+  const navIndex = (navLessons ?? []).findIndex((l) => l.id === lesson.id);
+  const prevLesson = navIndex > 0 ? navLessons![navIndex - 1] : null;
+  const nextLesson =
+    navIndex >= 0 && navIndex < (navLessons?.length ?? 0) - 1 ? navLessons![navIndex + 1] : null;
+  const nextLocked = nextLesson
+    ? access.hasCourseAccess
+      ? await isLessonLocked(user.id, course.id, nextLesson.order_index)
+      : !isFreePreview(nextLesson)
+    : false;
   const commenterIds = [...new Set((commentRows ?? []).map((c) => c.user_id))];
   const commenterAdmin = commenterIds.length ? await createAdminClient() : null;
   const { data: commenterProfiles } = commenterAdmin
@@ -128,6 +147,9 @@ export default async function LessonPage({
           }))}
           watermarkText={user.phone ? `${user.phone} · ${user.id.slice(0, 8)}` : undefined}
           thumbnailUrl={lesson.thumbnail_url ?? undefined}
+          prevLessonId={prevLesson?.id}
+          nextLessonId={nextLesson?.id}
+          nextLocked={nextLocked}
         />
       )}
 

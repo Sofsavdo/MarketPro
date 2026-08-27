@@ -50,8 +50,7 @@
       "months": "oy",
       "viewCourse": "Kursni ko'rish",
       "empty": "Hozircha kurs mavjud emas",
-      "perMonth": "oy",
-      "orVip": "yoki VIP (umrbod):"
+      "perMonth": "oy"
     },
     "pricingTeaser": {
       "title": "Alohida kurs yoki to'liq obuna",
@@ -84,15 +83,12 @@
     "tabSubscription": "Obuna",
     "choosePlan": "Tanlash",
     "monthly": "Oylik",
-    "yearly": "Yillik",
-    "yearlyDiscount": "2 oy bepul",
-    "subscriptionTitle": "Barcha kurslarga to'liq kirish",
-    "subscriptionDesc": "Barcha yo'nalishlarning video darslari + community'ga cheklovsiz kirish. Live darslar va mentor feedback kirmaydi — bular faqat kursni to'liq (VIP) sotib olganlarga.",
+    "subscriptionTitle": "Barcha kurslarga oylik kirish",
+    "subscriptionDesc": "1 oy davomida barcha yo'nalishlarning video darslari va community'siga kirish. Live darslar bunga kirmaydi.",
     "subscriptionCta": "Obuna bo'lish",
     "mostPopular": "Eng ko'p tanlanadigan",
     "guaranteeNote": "Barcha tariflarda: birinchi 2 darsdan keyin 100% pul qaytarish kafolati",
-    "vipTitle": "Kursni sotib oling — VIP, umrbod",
-    "vipDesc": "Har bir yo'nalishda 3 ta tarif — narxi va imkoniyati farq qiladi. Bir marta to'lang, tanlagan tarifingiz umrbod sizniki bo'lib qoladi.",
+    "tiersDesc": "Har bir yo'nalishda 3 ta tarif — narxi va imkoniyati farq qiladi. Bir marta to'lang, tanlagan tarifingiz umrbod sizniki bo'lib qoladi.",
     "featVideo": "Video darslar",
     "featMaterials": "Qo'shimcha materiallar",
     "featCommunity": "Community",
@@ -137,9 +133,8 @@
     "waitlistJoin": "Ro'yxatga yozilish",
     "waitlistDone": "Rahmat! Kurs ochilganda sizga xabar beramiz.",
     "instructorLabel": "Ustoz",
-    "upgradeToVipTitle": "VIP'ga o'ting",
-    "vipTitle": "VIP kirish (umrbod)",
-    "vipIncludes": "Video darslar + Community + Live darslar + Shaxsiy mentor feedback — umrbod.",
+    "upgradeTierTitle": "Tarifni oshirish",
+    "buyTitle": "Kursni sotib oling",
     "reviews": {
       "title": "Sharhlar",
       "yourRating": "Sizning bahoyingiz",
@@ -174,7 +169,8 @@
   },
   "lesson": {
     "completeButton": "Mavzuni yakunlash",
-    "nextLesson": "Keyingi mavzu",
+    "nextLesson": "Keyingisi",
+    "prevLesson": "Oldingisi",
     "locked": "Bu mavzu qulflangan",
     "lockedDesc": "Ochish uchun avvalgi mavzuni va uning testini tugating.",
     "backToCourse": "Kursga qaytish",
@@ -204,7 +200,7 @@
     "downsellCta": "Operator bilan bog'lanish",
     "expiryPopupTitle": "Obunangiz tugashiga {days} kun qoldi",
     "expiryPopupToday": "Obunangiz bugun tugaydi",
-    "expiryPopupDesc": "Kirishni davom ettirish uchun obunani uzaytiring, yoki kursni to'liq (VIP) sotib olib umrbod kirish oling.",
+    "expiryPopupDesc": "Kirishni davom ettirish uchun obunani uzaytiring, yoki kursni tarif bilan sotib olib umrbod kirish oling.",
     "expiryPopupRenew": "Obunani uzaytirish",
     "streak": "{count} kunlik seriya",
     "upsellTitle": "Keyingi qadam",
@@ -283,8 +279,7 @@
     "waitingAnswer": "Javob kutilmoqda...",
     "noAccess": "Bu darsga kirish huquqingiz yo'q — kursni tegishli tarifda sotib oling yoki obuna bo'ling.",
     "you": "siz",
-    "vipOnly": "Faqat VIP",
-    "upgradeToVip": "VIP'ga o'ting"
+    "upgradeToVip": "Tarifni oshirish"
   },
   "referral": {
     "title": "Do'stlarni taklif qiling",

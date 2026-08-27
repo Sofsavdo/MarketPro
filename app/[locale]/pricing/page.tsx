@@ -50,25 +50,14 @@ export default async function PricingPage() {
             <CardTitle>{t("pricing.subscriptionTitle")}</CardTitle>
             <CardDescription>{t("pricing.subscriptionDesc")}</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-6 pt-0 sm:grid-cols-2">
-            <div className="rounded-xl border border-slate-800 p-5">
+          <CardContent className="pt-0">
+            <div className="max-w-xs rounded-xl border border-slate-800 p-5">
               <p className="text-sm text-slate-400">{t("pricing.monthly")}</p>
               <p className="mt-1 text-3xl font-bold text-white">
                 {formatSom(SUBSCRIPTION_PRICE.monthly, locale)}
               </p>
               <div className="mt-4">
                 <SubscribeButtons plan="monthly" isLoggedIn={!!user} />
-              </div>
-            </div>
-            <div className="rounded-xl border border-amber-500/40 p-5">
-              <p className="text-sm text-slate-400">
-                {t("pricing.yearly")} · <span className="text-amber-400">{t("pricing.yearlyDiscount")}</span>
-              </p>
-              <p className="mt-1 text-3xl font-bold text-white">
-                {formatSom(SUBSCRIPTION_PRICE.yearly, locale)}
-              </p>
-              <div className="mt-4">
-                <SubscribeButtons plan="yearly" isLoggedIn={!!user} />
               </div>
             </div>
           </CardContent>
@@ -80,7 +69,7 @@ export default async function PricingPage() {
       {/* Three lifetime tariffs — buy one course outright, tiered by how much live/mentor access it includes */}
       <div className="mt-16">
         <h2 className="text-xl font-semibold text-white">{t("pricing.tabCourses")}</h2>
-        <p className="mt-1 text-sm text-slate-400">{t("pricing.vipDesc")}</p>
+        <p className="mt-1 text-sm text-slate-400">{t("pricing.tiersDesc")}</p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
           {(["start", "standard", "pro"] as const).map((tier) => (

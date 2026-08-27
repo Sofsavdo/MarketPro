@@ -50,8 +50,7 @@
       "months": "mo",
       "viewCourse": "View course",
       "empty": "No courses available yet",
-      "perMonth": "mo",
-      "orVip": "or VIP (lifetime):"
+      "perMonth": "mo"
     },
     "pricingTeaser": {
       "title": "A single course or a full subscription",
@@ -84,15 +83,12 @@
     "tabSubscription": "Subscription",
     "choosePlan": "Choose",
     "monthly": "Monthly",
-    "yearly": "Yearly",
-    "yearlyDiscount": "2 months free",
-    "subscriptionTitle": "Full access to every course",
-    "subscriptionDesc": "Unlimited access to every track's video lessons + community. Live classes and mentor feedback aren't included — those come with buying a course outright (VIP).",
+    "subscriptionTitle": "One month of access to every course",
+    "subscriptionDesc": "1 month of access to every track's video lessons and community. Live classes aren't included.",
     "subscriptionCta": "Subscribe",
     "mostPopular": "Most popular",
     "guaranteeNote": "On every plan: 100% refund guarantee after the first 2 lessons",
-    "vipTitle": "Buy the course — VIP, for life",
-    "vipDesc": "3 tariffs per track — different price, different features. Pay once, your chosen tariff is yours for life.",
+    "tiersDesc": "3 tariffs per track — different price, different features. Pay once, your chosen tariff is yours for life.",
     "featVideo": "Video lessons",
     "featMaterials": "Extra materials",
     "featCommunity": "Community",
@@ -137,9 +133,8 @@
     "waitlistJoin": "Join waitlist",
     "waitlistDone": "Thanks! We'll let you know when the course opens.",
     "instructorLabel": "Instructor",
-    "upgradeToVipTitle": "Upgrade to VIP",
-    "vipTitle": "VIP access (lifetime)",
-    "vipIncludes": "Video lessons + community + live classes + personal mentor feedback — for life.",
+    "upgradeTierTitle": "Upgrade tariff",
+    "buyTitle": "Buy this course",
     "reviews": {
       "title": "Reviews",
       "yourRating": "Your rating",
@@ -174,7 +169,8 @@
   },
   "lesson": {
     "completeButton": "Complete lesson",
-    "nextLesson": "Next lesson",
+    "nextLesson": "Next",
+    "prevLesson": "Previous",
     "locked": "This lesson is locked",
     "lockedDesc": "Finish the previous lesson and its quiz to unlock it.",
     "backToCourse": "Back to course",
@@ -204,7 +200,7 @@
     "downsellCta": "Talk to an operator",
     "expiryPopupTitle": "Your subscription expires in {days} days",
     "expiryPopupToday": "Your subscription expires today",
-    "expiryPopupDesc": "Renew to keep your access, or buy the course outright (VIP) for lifetime access.",
+    "expiryPopupDesc": "Renew to keep your access, or buy the course outright for lifetime access.",
     "expiryPopupRenew": "Renew subscription",
     "streak": "{count}-day streak",
     "upsellTitle": "What's next",
@@ -283,8 +279,7 @@
     "waitingAnswer": "Waiting for an answer...",
     "noAccess": "You don't have access to this class — buy the course at the right plan or subscribe.",
     "you": "you",
-    "vipOnly": "VIP only",
-    "upgradeToVip": "Upgrade to VIP"
+    "upgradeToVip": "Upgrade tariff"
   },
   "referral": {
     "title": "Invite friends",
