@@ -13,6 +13,7 @@ import {
 import { ShieldCheck, Sparkles, Layers, Languages, ArrowRight, ImageOff } from "lucide-react";
 import { getPublishedCourses, localizedField } from "@/lib/courses";
 import { formatSom } from "@/lib/utils";
+import { SUBSCRIPTION_PRICE } from "@/lib/pricing";
 import type { Locale } from "@/i18n/routing";
 import { InstructorBadge } from "@/components/course/instructor-badge";
 
@@ -156,12 +157,18 @@ export default async function HomePage() {
                   )}
                 </CardHeader>
                 <CardContent className="flex items-center justify-between pt-0">
-                  <p className="text-sm text-slate-400">
-                    {t("home.coursesSection.from")}{" "}
-                    <span className="font-semibold text-white">
-                      {formatSom(course.price, locale)}
-                    </span>
-                  </p>
+                  <div className="text-sm text-slate-400">
+                    <p>
+                      {t("home.coursesSection.from")}{" "}
+                      <span className="font-semibold text-white">
+                        {formatSom(SUBSCRIPTION_PRICE.monthly, locale)}
+                      </span>
+                      /{t("home.coursesSection.perMonth")}
+                    </p>
+                    <p className="text-xs">
+                      {t("home.coursesSection.orVip")} {formatSom(course.price, locale)}
+                    </p>
+                  </div>
                   <Button asChild size="sm" variant={course.is_published ? "default" : "outline"}>
                     <Link href={`/courses/${course.slug}`}>
                       {t("home.coursesSection.viewCourse")}

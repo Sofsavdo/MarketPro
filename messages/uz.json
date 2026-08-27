@@ -49,7 +49,9 @@
       "from": "dan boshlab",
       "months": "oy",
       "viewCourse": "Kursni ko'rish",
-      "empty": "Hozircha kurs mavjud emas"
+      "empty": "Hozircha kurs mavjud emas",
+      "perMonth": "oy",
+      "orVip": "yoki VIP (umrbod):"
     },
     "pricingTeaser": {
       "title": "Alohida kurs yoki to'liq obuna",
