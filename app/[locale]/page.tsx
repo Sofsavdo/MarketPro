@@ -88,7 +88,7 @@ export default async function HomePage() {
         <h2 className="text-center text-3xl font-bold text-white">{t("home.features.title")}</h2>
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((f) => (
-            <Card key={f.title}>
+            <Card key={f.title} className="flex h-full flex-col">
               <CardHeader>
                 <f.icon className="h-8 w-8 text-amber-500" />
                 <CardTitle className="mt-2 text-base">{f.title}</CardTitle>
@@ -142,7 +142,7 @@ export default async function HomePage() {
                       {course.duration_months} {t("home.coursesSection.months")}
                     </span>
                   </div>
-                  <CardTitle className="mt-3">
+                  <CardTitle className="mt-3 line-clamp-1">
                     {localizedField(course, "title", locale)}
                   </CardTitle>
                   <CardDescription className="line-clamp-2">
