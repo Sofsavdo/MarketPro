@@ -158,14 +158,18 @@ export default async function HomePage() {
                 </CardHeader>
                 <CardContent className="flex items-center justify-between pt-0">
                   <div>
-                    <p className="text-sm text-slate-400">
-                      {t("home.coursesSection.from")} {formatSom(course.price_start, locale)}
-                    </p>
-                    <p className="text-base font-semibold text-amber-400">
-                      {t("course.orMonthly", {
-                        amount: formatSom(computeMonthlyInstallment(course.price_start), locale),
-                      })}
-                    </p>
+                    {course.price_start > 0 && (
+                      <>
+                        <p className="text-sm text-slate-400">
+                          {t("home.coursesSection.from")} {formatSom(course.price_start, locale)}
+                        </p>
+                        <p className="text-base font-semibold text-amber-400">
+                          {t("course.orMonthly", {
+                            amount: formatSom(computeMonthlyInstallment(course.price_start), locale),
+                          })}
+                        </p>
+                      </>
+                    )}
                   </div>
                   <Button asChild size="sm" variant={course.is_published ? "default" : "outline"}>
                     <Link href={`/courses/${course.slug}`}>

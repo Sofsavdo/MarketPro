@@ -91,6 +91,11 @@ export async function resolvePurchase(params: {
     } as const;
     const totalAmount = priceByTier[params.tier];
 
+    // A course an admin published before setting real per-tier prices (they
+    // default to 0 on creation) must never be purchasable for free — treat
+    // it the same as an invalid purchase rather than silently charging 0.
+    if (!Number.isFinite(totalAmount) || totalAmount <= 0) return null;
+
     if (params.installmentsCount) {
       const { firstInstallmentId, firstInstallmentAmount } = await createInstallmentPlan({
         userId: params.userId,

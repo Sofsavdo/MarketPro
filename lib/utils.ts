@@ -12,8 +12,18 @@ const CURRENCY_SUFFIX: Record<Locale, string> = {
   en: "UZS",
 };
 
+/**
+ * Formats a price as "1 490 000 so'm" (uz-UZ grouping). Guards against
+ * non-finite input (undefined/null/NaN — e.g. a course row whose price
+ * columns haven't been migrated/set yet) because Intl.NumberFormat doesn't
+ * throw on those, it silently renders the literal word for "not a number"
+ * in the target locale — "son emas so'm" in Uzbek — which looks like
+ * garbled text to a student rather than an obvious error, and is exactly
+ * the kind of thing that must never render on a page handling real money.
+ */
 export function formatSom(amount: number, locale: Locale = "uz") {
-  return `${new Intl.NumberFormat("uz-UZ").format(amount)} ${CURRENCY_SUFFIX[locale]}`;
+  const safeAmount = Number.isFinite(amount) ? amount : 0;
+  return `${new Intl.NumberFormat("uz-UZ").format(safeAmount)} ${CURRENCY_SUFFIX[locale]}`;
 }
 
 const INTL_LOCALE: Record<Locale, string> = {

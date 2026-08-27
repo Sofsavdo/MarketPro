@@ -23,5 +23,6 @@ export const INSTALLMENT_MULTIPLIER = 1.43;
 export const INSTALLMENT_MONTHS = 12;
 
 export function computeMonthlyInstallment(coursePrice: number): number {
-  return Math.round((coursePrice * INSTALLMENT_MULTIPLIER) / INSTALLMENT_MONTHS);
+  const safePrice = Number.isFinite(coursePrice) ? coursePrice : 0;
+  return Math.round((safePrice * INSTALLMENT_MULTIPLIER) / INSTALLMENT_MONTHS);
 }
