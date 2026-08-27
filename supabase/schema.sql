@@ -282,9 +282,24 @@ create table if not exists public.installment_plans (
   user_id uuid not null references auth.users (id) on delete cascade,
   course_id uuid not null references public.courses (id) on delete cascade,
   total_amount int not null,
-  installments_count int not null check (installments_count in (2, 3)),
+  -- Was (2, 3) — the self-serve 2/3-part checkout split that's since been
+  -- retired in favor of the 12-month lead-to-operator flow (see
+  -- convertInstallmentLead in admin-actions.ts). Widened rather than
+  -- narrowed so an already-existing 2/3-part plan from before the retirement
+  -- still satisfies the constraint.
+  installments_count int not null check (installments_count between 2 and 12),
   created_at timestamptz not null default now()
 );
+do $$
+begin
+  if exists (
+    select 1 from pg_constraint where conname = 'installment_plans_installments_count_check'
+  ) then
+    alter table public.installment_plans drop constraint installment_plans_installments_count_check;
+  end if;
+  alter table public.installment_plans
+    add constraint installment_plans_installments_count_check check (installments_count between 2 and 12);
+end $$;
 
 create table if not exists public.installment_payments (
   id uuid primary key default gen_random_uuid(),

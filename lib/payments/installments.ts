@@ -2,32 +2,36 @@ import { createAdminClient } from "@/lib/supabase/server";
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
-// Business plan §11.3: 2-part plans split 50/50; 3-part plans require a 40%
-// down payment (§9.7's "kamida 40%" cash-flow rule) with the rest split
-// evenly over the remaining installments.
-function splitAmount(totalAmount: number, installmentsCount: 2 | 3): number[] {
-  if (installmentsCount === 2) {
-    const first = Math.round(totalAmount / 2);
-    return [first, totalAmount - first];
-  }
-
-  const first = Math.ceil((totalAmount * 40) / 100);
-  const remaining = totalAmount - first;
-  const second = Math.round(remaining / 2);
-  return [first, second, remaining - second];
+/**
+ * Splits totalAmount into `count` monthly installments, each equal to
+ * monthlyAmount except the last, which absorbs whatever rounding remainder
+ * is left so the schedule always sums to exactly totalAmount (never more,
+ * never less, regardless of how monthlyAmount was rounded upstream — see
+ * computeMonthlyInstallment in lib/pricing.ts, the source of both figures).
+ */
+function buildSchedule(totalAmount: number, monthlyAmount: number, count: number): number[] {
+  const amounts = Array(count - 1).fill(monthlyAmount);
+  const last = totalAmount - monthlyAmount * (count - 1);
+  return [...amounts, last];
 }
 
 /**
- * Creates the installment plan and its full payment schedule up front, and
- * returns the id of installment #1 (the down payment) so the caller can
- * create a Click/Payme `payments` row against it immediately.
+ * Creates a 12-month installment plan and its full payment schedule for a
+ * course purchase an operator has formalized by phone (see
+ * convertInstallmentLead in admin-actions.ts, the only caller) — totalAmount
+ * and monthlyAmount are whatever was already agreed with the student at
+ * lead-submission time (lib/lms/installment-lead-actions.ts), not
+ * recomputed here. Returns every scheduled installment in order so the
+ * caller can mark the first one paid (the operator just collected it) and
+ * link a manual payment record to it.
  */
 export async function createInstallmentPlan(params: {
   userId: string;
   courseId: string;
   totalAmount: number;
-  installmentsCount: 2 | 3;
-}): Promise<{ planId: string; firstInstallmentId: string; firstInstallmentAmount: number }> {
+  monthlyAmount: number;
+  installmentsCount: number;
+}): Promise<{ planId: string; installments: { id: string; sequenceNumber: number; amount: number }[] }> {
   const admin = await createAdminClient();
 
   const { data: plan, error } = await admin
@@ -43,7 +47,7 @@ export async function createInstallmentPlan(params: {
 
   if (error || !plan) throw new Error("could_not_create_installment_plan");
 
-  const amounts = splitAmount(params.totalAmount, params.installmentsCount);
+  const amounts = buildSchedule(params.totalAmount, params.monthlyAmount, params.installmentsCount);
   const now = Date.now();
 
   const rows = amounts.map((amount, i) => ({
@@ -65,12 +69,18 @@ export async function createInstallmentPlan(params: {
 
   return {
     planId: plan.id,
-    firstInstallmentId: installments[0].id,
-    firstInstallmentAmount: installments[0].amount,
+    installments: installments.map((i) => ({
+      id: i.id,
+      sequenceNumber: i.sequence_number,
+      amount: i.amount,
+    })),
   };
 }
 
-/** Marks one scheduled installment paid once its Click/Payme payment succeeds. */
+/** Marks one scheduled installment paid — a real Click/Payme payment
+ * succeeding (see grantAccessForPayment), or an operator recording a
+ * manually-collected month (see markInstallmentPaymentPaid in
+ * admin-actions.ts). */
 export async function markInstallmentPaid(installmentPaymentId: string) {
   const admin = await createAdminClient();
   await admin

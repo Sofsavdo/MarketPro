@@ -227,14 +227,14 @@ export interface Database {
           user_id: string;
           course_id: string;
           total_amount: number;
-          installments_count: 2 | 3;
+          installments_count: number;
           created_at: string;
         },
         {
           user_id: string;
           course_id: string;
           total_amount: number;
-          installments_count: 2 | 3;
+          installments_count: number;
         }
       >;
       installment_payments: Table<

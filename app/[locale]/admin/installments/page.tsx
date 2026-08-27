@@ -6,6 +6,7 @@ import {
   markInstallmentLeadContacted,
   declineInstallmentLead,
   convertInstallmentLead,
+  markInstallmentPaymentPaid,
 } from "@/lib/lms/admin-actions";
 
 const LEAD_STATUS_LABELS: Record<string, string> = {
@@ -112,6 +113,7 @@ export default async function AdminInstallmentsPage() {
                     lead.course_id,
                     lead.tier,
                     lead.total_amount,
+                    lead.monthly_amount,
                   )}
                 >
                   <Button type="submit" size="sm">
@@ -174,9 +176,18 @@ export default async function AdminInstallmentsPage() {
                         <span>#{ip.sequence_number}</span>
                         <span>{formatSom(ip.amount)}</span>
                       </div>
-                      <div className="mt-1">
-                        {formatDate(ip.due_date)} —{" "}
-                        {overdue ? "muddati o'tgan" : ip.status === "paid" ? "to'langan" : "kutilmoqda"}
+                      <div className="mt-1 flex items-center justify-between gap-2">
+                        <span>
+                          {formatDate(ip.due_date)} —{" "}
+                          {overdue ? "muddati o'tgan" : ip.status === "paid" ? "to'langan" : "kutilmoqda"}
+                        </span>
+                        {ip.status === "pending" && (
+                          <form action={markInstallmentPaymentPaid.bind(null, ip.id)}>
+                            <Button type="submit" variant="outline" size="sm" className="h-6 px-2 text-[11px]">
+                              To&apos;landi
+                            </Button>
+                          </form>
+                        )}
                       </div>
                     </div>
                   );
