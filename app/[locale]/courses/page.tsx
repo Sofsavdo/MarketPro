@@ -57,8 +57,10 @@ export default async function CoursesPage() {
                   {course.duration_months} {t("home.coursesSection.months")}
                 </span>
               </div>
-              <CardTitle className="mt-3">{localizedField(course, "title", locale)}</CardTitle>
-              <CardDescription>{localizedField(course, "description", locale)}</CardDescription>
+              <CardTitle className="mt-3 line-clamp-1">{localizedField(course, "title", locale)}</CardTitle>
+              <CardDescription className="line-clamp-2">
+                {localizedField(course, "description", locale)}
+              </CardDescription>
               {course.instructor_name && (
                 <InstructorBadge
                   name={course.instructor_name}
