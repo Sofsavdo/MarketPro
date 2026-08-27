@@ -517,6 +517,30 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public;
 
+-- A student can only review a course after finishing every one of its
+-- lessons — see course_reviews' insert policy below. Returns false for a
+-- course with zero lessons rather than vacuously true, since "completed"
+-- should never be satisfiable for a course nobody could actually finish.
+create or replace function public.has_completed_course(p_course_id uuid)
+returns boolean as $$
+declare
+  v_total int;
+  v_completed int;
+begin
+  select count(*) into v_total from public.lessons where course_id = p_course_id;
+  if v_total = 0 then
+    return false;
+  end if;
+
+  select count(*) into v_completed
+  from public.user_progress up
+  join public.lessons l on l.id = up.lesson_id
+  where l.course_id = p_course_id and up.user_id = auth.uid() and up.completed = true;
+
+  return v_completed >= v_total;
+end;
+$$ language plpgsql security definer set search_path = public;
+
 create or replace function public.has_quiz_access(p_lesson_id uuid)
 returns boolean as $$
 declare
@@ -659,9 +683,11 @@ end $$;
 
 -- ============================================================
 -- course_reviews — public star rating + comment, one per (course, user),
--- only from someone who actually has access (audit §3: "eng katta bo'shliq"
--- — social proof is the single cheapest trust/conversion lever the catalog
--- was missing).
+-- only from someone who actually finished the course (audit §3: "eng katta
+-- bo'shliq" — social proof is the single cheapest trust/conversion lever
+-- the catalog was missing). Moderated: a submitted review starts 'pending'
+-- and only becomes publicly visible once an admin approves it — see
+-- app/[locale]/admin/reviews and lib/lms/admin-actions.ts.
 -- ============================================================
 create table if not exists public.course_reviews (
   id uuid primary key default gen_random_uuid(),
@@ -669,23 +695,42 @@ create table if not exists public.course_reviews (
   user_id uuid not null references auth.users (id) on delete cascade,
   rating int not null check (rating between 1 and 5),
   comment text,
+  status text not null default 'pending' check (status in ('pending', 'approved')),
   created_at timestamptz not null default now(),
   unique (course_id, user_id)
 );
+alter table public.course_reviews add column if not exists status text not null default 'pending';
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'course_reviews_status_check'
+  ) then
+    alter table public.course_reviews
+      add constraint course_reviews_status_check check (status in ('pending', 'approved'));
+  end if;
+end $$;
 
 create index if not exists idx_course_reviews_course on public.course_reviews (course_id, created_at desc);
 
 alter table public.course_reviews enable row level security;
 
+-- Publicly visible once approved; a reviewer can also always see their own
+-- (still-pending) review, so submitting one doesn't look like it vanished.
 drop policy if exists "Course reviews are public" on public.course_reviews;
-create policy "Course reviews are public" on public.course_reviews
-  for select using (true);
+drop policy if exists "Approved reviews are public, own review always visible" on public.course_reviews;
+create policy "Approved reviews are public, own review always visible" on public.course_reviews
+  for select using (status = 'approved' or auth.uid() = user_id);
 drop policy if exists "Only course-access holders can review" on public.course_reviews;
-create policy "Only course-access holders can review" on public.course_reviews
-  for insert with check (auth.uid() = user_id and public.has_course_access(course_id));
+drop policy if exists "Only students who finished the course can review" on public.course_reviews;
+create policy "Only students who finished the course can review" on public.course_reviews
+  for insert with check (auth.uid() = user_id and public.has_completed_course(course_id));
+-- `with check` pins status = 'pending' on any student-initiated update — a
+-- student re-editing their rating/comment can never smuggle 'approved'
+-- through this policy; only the admin actions below (service-role client,
+-- bypasses RLS entirely) can actually publish a review.
 drop policy if exists "Users can update their own review" on public.course_reviews;
 create policy "Users can update their own review" on public.course_reviews
-  for update using (auth.uid() = user_id);
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id and status = 'pending');
 
 -- ============================================================
 -- lesson_comments — a discussion thread under each lesson, separate from

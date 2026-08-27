@@ -35,6 +35,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <Link href="/admin/promo-codes" className="text-slate-400 hover:text-white">
           Promo-kodlar
         </Link>
+        <Link href="/admin/reviews" className="text-slate-400 hover:text-white">
+          Sharhlar
+        </Link>
         <Link href="/dashboard" className="ml-auto text-slate-400 hover:text-white">
           ← Saytga qaytish
         </Link>

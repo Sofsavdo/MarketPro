@@ -142,7 +142,9 @@
       "submit": "Sharh qoldirish",
       "update": "Sharhni yangilash",
       "anon": "Talaba",
-      "empty": "Hozircha sharhlar yo'q. Birinchi bo'ling!"
+      "empty": "Hozircha sharhlar yo'q. Birinchi bo'ling!",
+      "pendingNotice": "Sharhingiz qabul qilindi va admin tomonidan tekshirilmoqda. Tasdiqlangach, boshqalarga ko'rinadi.",
+      "verified": "Kursni tugatgan"
     },
     "comments": {
       "title": "Muhokama",

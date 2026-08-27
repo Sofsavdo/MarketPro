@@ -620,3 +620,44 @@ export async function convertInstallmentLead(
 
   revalidatePath("/admin/installments");
 }
+
+// ============================================================
+// Course review moderation — a review only becomes publicly visible once
+// an admin approves it (course_reviews RLS: 'pending' by default, and a
+// student's own update can never set it to 'approved' themselves). See
+// app/[locale]/admin/reviews and components/course/course-reviews.tsx.
+// ============================================================
+
+export async function approveCourseReview(reviewId: string) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+  const { data: review } = await admin
+    .from("course_reviews")
+    .update({ status: "approved" })
+    .eq("id", reviewId)
+    .select("course_id")
+    .single();
+
+  revalidatePath("/admin/reviews");
+  if (review) {
+    const { data: course } = await admin.from("courses").select("slug").eq("id", review.course_id).maybeSingle();
+    if (course) revalidatePath(`/[locale]/courses/${course.slug}`, "page");
+  }
+}
+
+export async function deleteCourseReview(reviewId: string) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+  const { data: review } = await admin
+    .from("course_reviews")
+    .delete()
+    .eq("id", reviewId)
+    .select("course_id")
+    .single();
+
+  revalidatePath("/admin/reviews");
+  if (review) {
+    const { data: course } = await admin.from("courses").select("slug").eq("id", review.course_id).maybeSingle();
+    if (course) revalidatePath(`/[locale]/courses/${course.slug}`, "page");
+  }
+}

@@ -142,7 +142,9 @@
       "submit": "Leave a review",
       "update": "Update review",
       "anon": "Student",
-      "empty": "No reviews yet. Be the first!"
+      "empty": "No reviews yet. Be the first!",
+      "pendingNotice": "Your review is in — an admin is reviewing it. Once approved, everyone will see it.",
+      "verified": "Finished the course"
     },
     "comments": {
       "title": "Discussion",
