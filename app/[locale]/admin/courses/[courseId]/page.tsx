@@ -109,19 +109,34 @@ export default async function AdminCourseEditPage({
             defaultValue={course.instructor_avatar_url ?? ""}
           />
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field
-            label="Muddat (oy)"
-            name="duration_months"
-            type="number"
-            defaultValue={String(course.duration_months)}
-          />
-          <Field
-            label="Narxi (VIP, umrbod kirish)"
-            name="price"
-            type="number"
-            defaultValue={String(course.price)}
-          />
+        <Field
+          label="Muddat (oy)"
+          name="duration_months"
+          type="number"
+          defaultValue={String(course.duration_months)}
+        />
+        <div>
+          <Label>Tarif narxlari (umrbod kirish)</Label>
+          <div className="mt-1.5 grid gap-4 sm:grid-cols-3">
+            <Field
+              label="Start"
+              name="price_start"
+              type="number"
+              defaultValue={String(course.price_start)}
+            />
+            <Field
+              label="Standart"
+              name="price_standard"
+              type="number"
+              defaultValue={String(course.price_standard)}
+            />
+            <Field
+              label="Pro"
+              name="price_pro"
+              type="number"
+              defaultValue={String(course.price_pro)}
+            />
+          </div>
         </div>
         <Button type="submit">Saqlash</Button>
       </form>

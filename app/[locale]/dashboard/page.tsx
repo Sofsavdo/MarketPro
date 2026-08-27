@@ -40,15 +40,16 @@ export default async function DashboardPage() {
 
   const { data: enrollments } = await supabase
     .from("enrollments")
-    .select("course_id")
+    .select("course_id, tier")
     .eq("user_id", user.id);
-  const vipCourseIds = new Set((enrollments ?? []).map((e) => e.course_id));
+  const purchasedTierByCourse = new Map((enrollments ?? []).map((e) => [e.course_id, e.tier]));
 
   // A subscription grants "start" access to every published course without
   // an enrollment row per course — so subscribers must see the full catalog
   // here (marked "start"), not "no courses yet", or their dashboard would
   // look broken despite paying for it. A course they *also* bought outright
-  // shows as VIP instead, since that's the better access they hold for it.
+  // shows its purchased tier instead, since that's the better access they
+  // hold for it.
   const { data: subscriberCourses } = subscription
     ? await supabase
         .from("courses")
@@ -57,12 +58,16 @@ export default async function DashboardPage() {
         .order("order_index", { ascending: true })
     : { data: null };
 
-  const courseAccess: { courseId: string; accessLevel: "start" | "vip" }[] = subscription
-    ? (subscriberCourses ?? []).map((c) => ({
-        courseId: c.id,
-        accessLevel: vipCourseIds.has(c.id) ? ("vip" as const) : ("start" as const),
-      }))
-    : [...vipCourseIds].map((courseId) => ({ courseId, accessLevel: "vip" as const }));
+  const courseAccess: { courseId: string; accessLevel: "start" | "standard" | "pro" }[] =
+    subscription
+      ? (subscriberCourses ?? []).map((c) => ({
+          courseId: c.id,
+          accessLevel: purchasedTierByCourse.get(c.id) ?? "start",
+        }))
+      : [...purchasedTierByCourse.entries()].map(([courseId, tier]) => ({
+          courseId,
+          accessLevel: tier,
+        }));
 
   const courseIds = courseAccess.map((c) => c.courseId);
 
@@ -181,8 +186,8 @@ export default async function DashboardPage() {
                 <CardHeader>
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle>{localizedField(course, "title", locale)}</CardTitle>
-                    <Badge variant={accessLevel === "vip" ? "default" : "outline"}>
-                      {accessLevel === "vip" ? "VIP" : t("dashboard.accessStart")}
+                    <Badge variant={accessLevel === "start" ? "outline" : "default"}>
+                      {t(`course.tier${accessLevel.charAt(0).toUpperCase()}${accessLevel.slice(1)}`)}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -216,7 +221,7 @@ export default async function DashboardPage() {
                     </div>
                   )}
 
-                  {accessLevel === "start" && (
+                  {accessLevel !== "pro" && (
                     <p className="rounded-lg border border-dashed border-slate-800 p-2 text-center text-xs text-slate-500">
                       {t("dashboard.startAccessNote")}{" "}
                       <Link href={`/courses/${course.slug}`} className="text-amber-400 hover:underline">

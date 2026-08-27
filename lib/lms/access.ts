@@ -5,12 +5,14 @@ import { todayInTashkent } from "@/lib/utils";
 export interface LessonAccess {
   hasCourseAccess: boolean;
   /**
-   * "start" = subscription only (video + community, no live, no mentor).
-   * "vip" = this specific course was bought outright (everything, for
-   * life). null = no access at all. A user can hold "start" on every
-   * course via subscription while also holding "vip" on the one or two
-   * they've actually purchased — this reflects the *best* access they have
-   * for THIS course, so a VIP purchase always wins over a bare subscription.
+   * "start" via a bare subscription = video + community only, no live, no
+   * mentor. "start"/"standard"/"pro" via a direct course purchase = that
+   * tariff, for life, for this course (see courses.price_start in
+   * schema.sql for what each unlocks). null = no access at all. A user can
+   * hold subscription "start" on every course while also holding a
+   * purchased tier on the one or two they've bought outright — this
+   * reflects the *best* access they have for THIS course, so a purchase
+   * always wins over a bare subscription.
    */
   accessLevel: AccessLevel | null;
   source: "subscription" | "purchase" | "none";
@@ -19,9 +21,9 @@ export interface LessonAccess {
 /**
  * Whether the current user can access `courseId` at all — via an active
  * subscription ("start" access, covers every course) or a direct one-time
- * purchase (enrollment, "vip" access) of that specific course. A purchase
- * always wins: buying the course grants lifetime VIP regardless of whether
- * the subscription later lapses.
+ * purchase (enrollment, start/standard/pro tariff) of that specific
+ * course. A purchase always wins: buying the course grants that lifetime
+ * tier regardless of whether the subscription later lapses.
  */
 export async function getLessonAccess(
   userId: string | null,
@@ -35,7 +37,7 @@ export async function getLessonAccess(
 
   const { data: enrollment } = await supabase
     .from("enrollments")
-    .select("id")
+    .select("tier")
     .eq("user_id", userId)
     .eq("course_id", courseId)
     .maybeSingle();
@@ -44,7 +46,7 @@ export async function getLessonAccess(
     if (await hasOverdueInstallment(userId, courseId)) {
       return { hasCourseAccess: false, accessLevel: null, source: "none" };
     }
-    return { hasCourseAccess: true, accessLevel: "vip", source: "purchase" };
+    return { hasCourseAccess: true, accessLevel: enrollment.tier, source: "purchase" };
   }
 
   const { data: subscription } = await supabase

@@ -100,7 +100,9 @@ export async function updateCourse(courseId: string, formData: FormData) {
       instructor_name: String(formData.get("instructor_name") ?? "") || null,
       instructor_avatar_url: String(formData.get("instructor_avatar_url") ?? "") || null,
       duration_months: Number(formData.get("duration_months") ?? 1),
-      price: Number(formData.get("price") ?? 0),
+      price_start: Number(formData.get("price_start") ?? 0),
+      price_standard: Number(formData.get("price_standard") ?? 0),
+      price_pro: Number(formData.get("price_pro") ?? 0),
     })
     .eq("id", courseId);
 
@@ -139,7 +141,9 @@ export async function createCourse(formData: FormData) {
       description_en: String(formData.get("description_en") ?? ""),
       cover_url: coverUrl,
       duration_months: Number(formData.get("duration_months") ?? 1),
-      price: Number(formData.get("price") ?? 0),
+      price_start: 0,
+      price_standard: 0,
+      price_pro: 0,
       order_index: count ?? 0,
       is_published: false,
     })
@@ -393,12 +397,15 @@ export async function createLiveSession(formData: FormData) {
   // local time (usually UTC on hosting), which would silently shift every
   // scheduled class by 5 hours. Uzbekistan doesn't observe DST, so a fixed
   // +05:00 offset is always correct.
+  const requiredTier = formData.get("required_tier") === "pro" ? "pro" : "standard";
+
   await admin.from("live_sessions").insert({
     course_id: String(formData.get("course_id") ?? ""),
     title: String(formData.get("title") ?? ""),
     meet_url: String(formData.get("meet_url") ?? ""),
     scheduled_at: new Date(`${scheduledDate}T${scheduledTime}:00+05:00`).toISOString(),
     duration_minutes: Number(formData.get("duration_minutes") ?? 60),
+    required_tier: requiredTier,
   });
 
   revalidatePath("/admin/live-sessions");
@@ -501,7 +508,7 @@ export async function upgradeToVipWithCredit(userId: string, formData: FormData)
 
   const { data: course } = await admin
     .from("courses")
-    .select("price")
+    .select("price_pro")
     .eq("id", courseId)
     .maybeSingle();
   if (!course) throw new Error("course_not_found");
@@ -516,8 +523,11 @@ export async function upgradeToVipWithCredit(userId: string, formData: FormData)
     .limit(1)
     .maybeSingle();
 
-  const credit = Math.min(lastSubPayment?.amount ?? 0, course.price);
-  const finalAmount = course.price - credit;
+  // Downsell always credits toward Pro — the closest match to what
+  // "upgrade from your subscription" has always meant here (live classes +
+  // mentor feedback included).
+  const credit = Math.min(lastSubPayment?.amount ?? 0, course.price_pro);
+  const finalAmount = course.price_pro - credit;
 
   await admin.from("payments").insert({
     user_id: userId,
@@ -526,10 +536,11 @@ export async function upgradeToVipWithCredit(userId: string, formData: FormData)
     discount_amount: credit,
     status: "paid",
     course_id: courseId,
+    tier: "pro",
   });
 
   await admin.from("enrollments").upsert(
-    { user_id: userId, course_id: courseId, source: "downsell_credit" },
+    { user_id: userId, course_id: courseId, source: "downsell_credit", tier: "pro" },
     { onConflict: "user_id,course_id" },
   );
 
@@ -588,7 +599,13 @@ export async function declineInstallmentLead(leadId: string) {
  * that's wired up), so this just records the sale and unlocks the course,
  * the same "manual" payment pattern as upgradeToVipWithCredit.
  */
-export async function convertInstallmentLead(leadId: string, userId: string, courseId: string, totalAmount: number) {
+export async function convertInstallmentLead(
+  leadId: string,
+  userId: string,
+  courseId: string,
+  tier: "start" | "standard" | "pro",
+  totalAmount: number,
+) {
   await requireAdmin();
   const admin = await createAdminClient();
 
@@ -598,10 +615,11 @@ export async function convertInstallmentLead(leadId: string, userId: string, cou
     amount: totalAmount,
     status: "paid",
     course_id: courseId,
+    tier,
   });
 
   await admin.from("enrollments").upsert(
-    { user_id: userId, course_id: courseId, source: "purchase" },
+    { user_id: userId, course_id: courseId, source: "purchase", tier },
     { onConflict: "user_id,course_id" },
   );
 

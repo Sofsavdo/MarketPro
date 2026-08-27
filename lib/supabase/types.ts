@@ -1,11 +1,12 @@
 export type SubscriptionStatus = "active" | "expired" | "canceled" | "trialing";
 export type AccessSource = "subscription" | "purchase" | "none";
 /**
- * Hybrid access model: "start" (subscription) is video + community only;
- * "vip" (bought the course outright) adds live sessions + mentor feedback,
- * for that course, for life. See the note on `courses` in schema.sql.
+ * Three lifetime, one-time-purchase tariffs per course — see the note on
+ * courses.price_start in schema.sql. A monthly subscription grants "start"
+ * access to every course but expires if not renewed; buying "standard" or
+ * "pro" outright is permanent and adds live classes (2x/3x per week).
  */
-export type AccessLevel = "start" | "vip";
+export type AccessLevel = "start" | "standard" | "pro";
 export type PaymentProvider = "click" | "payme" | "manual";
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 export type LeadStatus = "new_lead" | "vip_offered" | "downsell_subscribed";
@@ -70,7 +71,9 @@ export interface Database {
           instructor_name: string | null;
           instructor_avatar_url: string | null;
           duration_months: number;
-          price: number;
+          price_start: number;
+          price_standard: number;
+          price_pro: number;
           is_published: boolean;
           order_index: number;
           created_at: string;
@@ -159,9 +162,16 @@ export interface Database {
           user_id: string;
           course_id: string;
           source: "purchase" | "downsell_credit";
+          tier: AccessLevel;
           created_at: string;
         },
-        { user_id: string; course_id: string; source?: "purchase" | "downsell_credit" }
+        {
+          user_id: string;
+          course_id: string;
+          source?: "purchase" | "downsell_credit";
+          tier?: AccessLevel;
+        },
+        { tier?: AccessLevel }
       >;
       subscriptions: Table<
         {
@@ -189,6 +199,7 @@ export interface Database {
           discount_amount: number;
           status: PaymentStatus;
           course_id: string | null;
+          tier: AccessLevel | null;
           subscription_plan: "monthly" | "yearly" | null;
           installment_payment_id: string | null;
           promo_code: string | null;
@@ -202,6 +213,7 @@ export interface Database {
           discount_amount?: number;
           status?: PaymentStatus;
           course_id?: string | null;
+          tier?: AccessLevel | null;
           subscription_plan?: "monthly" | "yearly" | null;
           installment_payment_id?: string | null;
           promo_code?: string | null;
@@ -269,6 +281,7 @@ export interface Database {
           meet_url: string;
           scheduled_at: string;
           duration_minutes: number;
+          required_tier: "standard" | "pro";
           created_at: string;
         },
         {
@@ -277,6 +290,7 @@ export interface Database {
           meet_url: string;
           scheduled_at: string;
           duration_minutes?: number;
+          required_tier?: "standard" | "pro";
         }
       >;
       session_questions: Table<
@@ -338,6 +352,7 @@ export interface Database {
           id: string;
           user_id: string;
           course_id: string;
+          tier: AccessLevel;
           monthly_amount: number;
           total_amount: number;
           status: "new" | "contacted" | "converted" | "declined";
@@ -346,6 +361,7 @@ export interface Database {
         {
           user_id: string;
           course_id: string;
+          tier: AccessLevel;
           monthly_amount: number;
           total_amount: number;
           status?: "new" | "contacted" | "converted" | "declined";

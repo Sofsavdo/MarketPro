@@ -27,7 +27,7 @@ export default async function AdminCoursesPage() {
           <thead>
             <tr className="border-b border-slate-800 text-left text-slate-400">
               <th className="py-2 pr-4">Nomi</th>
-              <th className="py-2 pr-4">Narxi (VIP, umrbod)</th>
+              <th className="py-2 pr-4">Narxlar (Start / Standart / Pro)</th>
               <th className="py-2 pr-4">Holat</th>
               <th className="py-2 pr-4"></th>
             </tr>
@@ -36,7 +36,10 @@ export default async function AdminCoursesPage() {
             {(courses ?? []).map((course) => (
               <tr key={course.id} className="border-b border-slate-900">
                 <td className="py-3 pr-4 text-white">{course.title_uz}</td>
-                <td className="py-3 pr-4 text-slate-400">{formatSom(course.price)}</td>
+                <td className="py-3 pr-4 text-slate-400">
+                  {formatSom(course.price_start)} / {formatSom(course.price_standard)} /{" "}
+                  {formatSom(course.price_pro)}
+                </td>
                 <td className="py-3 pr-4">
                   <Badge variant={course.is_published ? "default" : "outline"}>
                     {course.is_published ? "Chop etilgan" : "Qoralama"}

@@ -1,6 +1,7 @@
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { localizedField } from "@/lib/courses";
 import type { Locale } from "@/i18n/routing";
+import type { AccessLevel } from "@/lib/supabase/types";
 
 export interface UpcomingSession {
   id: string;
@@ -9,43 +10,7 @@ export interface UpcomingSession {
   title: string;
   scheduled_at: string;
   duration_minutes: number;
-}
-
-/**
- * Sessions the current user can join — RLS (has_live_session_access) already
- * restricts rows to courses the user bought outright (VIP access; a bare
- * subscription never unlocks live sessions), this just joins in the course
- * title and orders by start time.
- */
-export async function getUpcomingSessionsForUser(locale: Locale): Promise<UpcomingSession[]> {
-  const supabase = await createClient();
-
-  const { data: sessions } = await supabase
-    .from("live_sessions")
-    .select("*")
-    .gt("scheduled_at", new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString())
-    .order("scheduled_at", { ascending: true });
-
-  if (!sessions?.length) return [];
-
-  const courseIds = [...new Set(sessions.map((s) => s.course_id))];
-  const { data: courses } = await supabase
-    .from("courses")
-    .select("id, title_uz, title_ru, title_en")
-    .in("id", courseIds);
-  const courseById = new Map((courses ?? []).map((c) => [c.id, c]));
-
-  return sessions.map((s) => {
-    const course = courseById.get(s.course_id);
-    return {
-      id: s.id,
-      course_id: s.course_id,
-      course_title: course ? localizedField(course, "title", locale) : "",
-      title: s.title,
-      scheduled_at: s.scheduled_at,
-      duration_minutes: s.duration_minutes,
-    };
-  });
+  required_tier: "standard" | "pro";
 }
 
 export interface LockedSession {
@@ -53,65 +18,76 @@ export interface LockedSession {
   courseTitle: string;
   title: string;
   scheduled_at: string;
+  required_tier: "standard" | "pro";
 }
 
+const TIER_RANK: Record<AccessLevel, number> = { start: 0, standard: 1, pro: 2 };
+const LIVE_TIER_RANK = { standard: 1, pro: 2 } as const;
+
 /**
- * Live sessions the user's active subscription grants "start" (video only)
- * access to but not VIP — used to show a locked "VIP'ga o'ting" upsell
- * card instead of just silently omitting them the way RLS does. Only
- * meaningful for someone with an active subscription; returns [] otherwise
- * (no reason to tease a non-subscriber with sessions they can't preview at
- * all — the course page already sells VIP directly).
+ * The schedule (title, day/time) is visible to anyone with course access at
+ * any tier — RLS's can_view_live_session already restricts rows that way —
+ * but *joining* one still requires an enrollment tier that meets the
+ * session's required_tier (a bare subscription never qualifies, since it
+ * only ever grants "start"). Split here into what the caller can actually
+ * join versus what they can only see is happening, so /live can show a
+ * locked "upgrade" card instead of a dead link.
  */
-export async function getLockedSessionsForSubscriber(locale: Locale): Promise<LockedSession[]> {
+export async function getLiveSessionsForUser(
+  locale: Locale,
+): Promise<{ joinable: UpcomingSession[]; locked: LockedSession[] }> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return [];
+  if (!user) return { joinable: [], locked: [] };
 
-  const { data: subscription } = await supabase
-    .from("subscriptions")
-    .select("status, current_period_end")
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .gt("current_period_end", new Date().toISOString())
-    .maybeSingle();
-  if (!subscription) return [];
-
-  const { data: enrollments } = await supabase
-    .from("enrollments")
-    .select("course_id")
-    .eq("user_id", user.id);
-  const vipCourseIds = new Set((enrollments ?? []).map((e) => e.course_id));
-
-  const admin = await createAdminClient();
-  const { data: sessions } = await admin
+  const { data: sessions } = await supabase
     .from("live_sessions")
-    .select("course_id, title, scheduled_at")
+    .select("*")
     .gt("scheduled_at", new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString())
     .order("scheduled_at", { ascending: true });
 
-  const locked = (sessions ?? []).filter((s) => !vipCourseIds.has(s.course_id));
-  if (!locked.length) return [];
+  if (!sessions?.length) return { joinable: [], locked: [] };
 
-  const courseIds = [...new Set(locked.map((s) => s.course_id))];
-  const { data: courses } = await admin
-    .from("courses")
-    .select("id, slug, title_uz, title_ru, title_en")
-    .in("id", courseIds);
+  const courseIds = [...new Set(sessions.map((s) => s.course_id))];
+  const [{ data: courses }, { data: enrollments }] = await Promise.all([
+    supabase.from("courses").select("id, slug, title_uz, title_ru, title_en").in("id", courseIds),
+    supabase.from("enrollments").select("course_id, tier").eq("user_id", user.id).in("course_id", courseIds),
+  ]);
   const courseById = new Map((courses ?? []).map((c) => [c.id, c]));
+  const tierByCourse = new Map((enrollments ?? []).map((e) => [e.course_id, e.tier]));
 
-  return locked
-    .map((s) => {
-      const course = courseById.get(s.course_id);
-      if (!course) return null;
-      return {
+  const joinable: UpcomingSession[] = [];
+  const locked: LockedSession[] = [];
+
+  for (const s of sessions) {
+    const course = courseById.get(s.course_id);
+    if (!course) continue;
+
+    const ownedTier = tierByCourse.get(s.course_id);
+    const canJoin = !!ownedTier && TIER_RANK[ownedTier] >= LIVE_TIER_RANK[s.required_tier];
+
+    if (canJoin) {
+      joinable.push({
+        id: s.id,
+        course_id: s.course_id,
+        course_title: localizedField(course, "title", locale),
+        title: s.title,
+        scheduled_at: s.scheduled_at,
+        duration_minutes: s.duration_minutes,
+        required_tier: s.required_tier,
+      });
+    } else {
+      locked.push({
         courseSlug: course.slug,
         courseTitle: localizedField(course, "title", locale),
         title: s.title,
         scheduled_at: s.scheduled_at,
-      };
-    })
-    .filter((s): s is LockedSession => s !== null);
+        required_tier: s.required_tier,
+      });
+    }
+  }
+
+  return { joinable, locked };
 }

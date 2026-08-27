@@ -11,7 +11,10 @@ import { computeMonthlyInstallment } from "@/lib/pricing";
  * server-side from the course's current price rather than trusted from the
  * client, same reasoning as lib/payments/resolve-amount.ts.
  */
-export async function submitInstallmentLead(courseId: string) {
+export async function submitInstallmentLead(
+  courseId: string,
+  tier: "start" | "standard" | "pro",
+) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -21,7 +24,7 @@ export async function submitInstallmentLead(courseId: string) {
   const admin = await createAdminClient();
   const { data: course } = await admin
     .from("courses")
-    .select("price, is_published")
+    .select("price_start, price_standard, price_pro, is_published")
     .eq("id", courseId)
     .maybeSingle();
   if (!course || !course.is_published) throw new Error("invalid_course");
@@ -38,12 +41,18 @@ export async function submitInstallmentLead(courseId: string) {
     .maybeSingle();
   if (existing) return;
 
-  const monthlyAmount = computeMonthlyInstallment(course.price);
+  const priceByTier = {
+    start: course.price_start,
+    standard: course.price_standard,
+    pro: course.price_pro,
+  } as const;
+  const monthlyAmount = computeMonthlyInstallment(priceByTier[tier]);
   const totalAmount = monthlyAmount * 12;
 
   await supabase.from("installment_leads").insert({
     user_id: user.id,
     course_id: courseId,
+    tier,
     monthly_amount: monthlyAmount,
     total_amount: totalAmount,
   });
