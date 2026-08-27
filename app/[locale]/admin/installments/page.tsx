@@ -13,6 +13,12 @@ const LEAD_STATUS_LABELS: Record<string, string> = {
   contacted: "Bog'lanildi",
 };
 
+const TIER_LABELS: Record<string, string> = {
+  start: "Start",
+  standard: "Standart",
+  pro: "Pro",
+};
+
 export default async function AdminInstallmentsPage() {
   const supabase = await createAdminClient();
 
@@ -83,6 +89,7 @@ export default async function AdminInstallmentsPage() {
                     <span className="text-slate-500">— {courseById.get(lead.course_id)}</span>
                   </p>
                   <Badge variant="outline">{LEAD_STATUS_LABELS[lead.status]}</Badge>
+                  <Badge>{TIER_LABELS[lead.tier]}</Badge>
                 </div>
                 <p className="mt-1 text-xs text-slate-500">
                   {profile?.phone ?? "—"} · oyiga {formatSom(lead.monthly_amount)} × 12 = jami{" "}
@@ -103,11 +110,12 @@ export default async function AdminInstallmentsPage() {
                     lead.id,
                     lead.user_id,
                     lead.course_id,
+                    lead.tier,
                     lead.total_amount,
                   )}
                 >
                   <Button type="submit" size="sm">
-                    VIP kirish berish
+                    Kirish berish
                   </Button>
                 </form>
                 <form action={declineInstallmentLead.bind(null, lead.id)}>

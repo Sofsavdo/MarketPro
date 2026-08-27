@@ -26,8 +26,9 @@ export default async function AdminLiveSessionsPage() {
     <div>
       <h1 className="text-2xl font-bold text-white">Jonli darslar (Google Meet)</h1>
       <p className="mt-1 text-sm text-slate-500">
-        Kursni sotib olgan (VIP) talabalar uchun jadval bo&apos;yicha guruh darslari — obunachilar
-        (start) live darsga kirolmaydi. Google Meet havolasini{" "}
+        Kursni Standart yoki Pro tarifda sotib olgan talabalar uchun jadval bo&apos;yicha guruh
+        darslari — obunachilar va Start tarifidagilar live darsga kirolmaydi, lekin jadvalni
+        ko&apos;radi. Google Meet havolasini{" "}
         <a
           href="https://meet.google.com/new"
           target="_blank"
@@ -67,6 +68,18 @@ export default async function AdminLiveSessionsPage() {
             <Label htmlFor="meet_url">Google Meet havolasi</Label>
             <Input id="meet_url" name="meet_url" placeholder="https://meet.google.com/xxx-xxxx-xxx" required />
           </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="required_tier">Qaysi tarif kira oladi</Label>
+            <select
+              id="required_tier"
+              name="required_tier"
+              defaultValue="standard"
+              className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+            >
+              <option value="standard">Standart va Pro</option>
+              <option value="pro">Faqat Pro</option>
+            </select>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="scheduled_date">Sana</Label>
@@ -92,6 +105,7 @@ export default async function AdminLiveSessionsPage() {
               <th className="py-2 pr-4">Sana/vaqt</th>
               <th className="py-2 pr-4">Kurs</th>
               <th className="py-2 pr-4">Mavzu</th>
+              <th className="py-2 pr-4">Tarif</th>
               <th className="py-2 pr-4"></th>
             </tr>
           </thead>
@@ -103,6 +117,9 @@ export default async function AdminLiveSessionsPage() {
                 </td>
                 <td className="py-3 pr-4 text-white">{courseById.get(s.course_id) ?? "—"}</td>
                 <td className="py-3 pr-4 text-slate-300">{s.title}</td>
+                <td className="py-3 pr-4 text-slate-300">
+                  {s.required_tier === "pro" ? "Faqat Pro" : "Standart+"}
+                </td>
                 <td className="py-3 pr-4">
                   <div className="flex items-center gap-3">
                     <Link href={`/admin/live-sessions/${s.id}`} className="text-amber-400 hover:underline">
@@ -119,7 +136,7 @@ export default async function AdminLiveSessionsPage() {
             ))}
             {!sessions?.length && (
               <tr>
-                <td colSpan={4} className="py-8 text-center text-slate-500">
+                <td colSpan={5} className="py-8 text-center text-slate-500">
                   Hozircha dars rejalashtirilmagan
                 </td>
               </tr>

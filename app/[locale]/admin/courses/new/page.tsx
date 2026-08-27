@@ -37,15 +37,11 @@ export default function AdminNewCoursePage() {
             className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-300 file:mr-3 file:rounded-md file:border-0 file:bg-amber-500 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-950 hover:file:bg-amber-400"
           />
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Muddat (oy)" name="duration_months" type="number" defaultValue="1" />
-          <Field
-            label="Narxi (VIP, umrbod kirish — 2 000 000 – 8 000 000)"
-            name="price"
-            type="number"
-            defaultValue="0"
-          />
-        </div>
+        <Field label="Muddat (oy)" name="duration_months" type="number" defaultValue="1" />
+        <p className="text-xs text-slate-500">
+          Tarif narxlari (Start/Standart/Pro) kurs yaratilgandan keyin tahrirlash sahifasida
+          belgilanadi.
+        </p>
         <Button type="submit">Kursni yaratish</Button>
       </form>
     </div>

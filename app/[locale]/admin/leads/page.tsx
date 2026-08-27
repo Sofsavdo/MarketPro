@@ -60,7 +60,7 @@ export default async function AdminLeadsPage({
 
   const { data: courses } = await admin
     .from("courses")
-    .select("id, title_uz, price")
+    .select("id, title_uz")
     .eq("is_published", true)
     .order("order_index", { ascending: true });
 

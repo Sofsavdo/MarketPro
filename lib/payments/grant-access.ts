@@ -53,11 +53,27 @@ export async function grantAccessForPayment(paymentId: string) {
   }
 
   if (payment.course_id) {
+    // A user can already hold a lower tier on this course (e.g. bought
+    // Start, later upgrades to Pro) — upsert must never downgrade what
+    // they already have, so take the higher of the two ranks.
+    const TIER_RANK = { start: 0, standard: 1, pro: 2 } as const;
+    const { data: existing } = await supabase
+      .from("enrollments")
+      .select("tier")
+      .eq("user_id", payment.user_id)
+      .eq("course_id", payment.course_id)
+      .maybeSingle();
+
+    const newTier = payment.tier ?? "start";
+    const tier =
+      existing && TIER_RANK[existing.tier] > TIER_RANK[newTier] ? existing.tier : newTier;
+
     await supabase.from("enrollments").upsert(
       {
         user_id: payment.user_id,
         course_id: payment.course_id,
         source: "purchase",
+        tier,
       },
       { onConflict: "user_id,course_id" },
     );

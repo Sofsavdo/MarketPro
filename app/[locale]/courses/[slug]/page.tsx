@@ -132,11 +132,11 @@ export default async function CourseDetailPage({
           </div>
         </div>
       ) : (
-        access.accessLevel !== "vip" && (
+        access.accessLevel !== "pro" && (
           <div className="mt-6 flex flex-wrap items-center gap-3 rounded-lg border border-amber-500/40 bg-amber-500/5 px-4 py-3">
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-white">
-                {access.accessLevel === "start" ? t("course.upgradeToVipTitle") : t("course.vipTitle")}
+                {access.accessLevel ? t("course.upgradeToVipTitle") : t("course.vipTitle")}
               </p>
               <p className="text-xs text-slate-400">{t("course.vipIncludes")}</p>
             </div>
@@ -144,20 +144,26 @@ export default async function CourseDetailPage({
               <Dialog>
                 <DialogTrigger asChild>
                   <Button size="sm">
-                    {t("course.buyFrom")} {formatSom(course.price, locale)}
+                    {t("course.buyFrom")} {formatSom(course.price_start, locale)}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>
-                      {access.accessLevel === "start"
-                        ? t("course.upgradeToVipTitle")
-                        : t("course.vipTitle")}
+                      {access.accessLevel ? t("course.upgradeToVipTitle") : t("course.vipTitle")}
                     </DialogTitle>
                     <p className="text-sm text-slate-400">{t("course.vipIncludes")}</p>
                   </DialogHeader>
                   <div className="mt-2">
-                    <PurchaseButtons courseId={course.id} price={course.price} locale={locale} />
+                    <PurchaseButtons
+                      courseId={course.id}
+                      prices={{
+                        start: course.price_start,
+                        standard: course.price_standard,
+                        pro: course.price_pro,
+                      }}
+                      locale={locale}
+                    />
                   </div>
                 </DialogContent>
               </Dialog>

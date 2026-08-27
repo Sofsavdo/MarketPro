@@ -10,14 +10,14 @@
 with course as (
   insert into public.courses
     (slug, title_uz, title_ru, title_en, description_uz, description_ru, description_en,
-     duration_months, price, is_published, order_index)
+     duration_months, price_start, price_standard, price_pro, is_published, order_index)
   values (
     'uzum-market',
     'Uzum Market', 'Uzum Market', 'Uzum Market',
     'Mustaqil ravishda Uzum Market do''konini ochish va boshqarish: mahsulot tanlash, listing, birinchi buyurtmalar, target reklama.',
     'Самостоятельное открытие и управление магазином на Uzum Market: выбор товара, листинг, первые заказы, таргетированная реклама.',
     'Independently launch and run an Uzum Market store: product selection, listing, first orders, targeted ads.',
-    1, 3490000, true, 1
+    1, 3490000, 4890000, 6280000, true, 1
   )
   returning id
 ),
@@ -72,14 +72,14 @@ select course_id, id, 'Oddiy KPI kuzatish', 'Отслеживание базов
 with course as (
   insert into public.courses
     (slug, title_uz, title_ru, title_en, description_uz, description_ru, description_en,
-     duration_months, price, is_published, order_index)
+     duration_months, price_start, price_standard, price_pro, is_published, order_index)
   values (
     'marketplace-business',
     'Marketplace Business', 'Marketplace Business', 'Marketplace Business',
     'Bir nechta marketplace (Uzum, Wildberries, Yandex)da to''liq biznes tizimini qurish va boshqarish: sourcing, narxlash, logistika, AI bilan ishlash, masshtablash.',
     'Построение и управление полноценным бизнесом на нескольких маркетплейсах (Uzum, Wildberries, Yandex): закупки, ценообразование, логистика, работа с AI, масштабирование.',
     'Build and run a full business across multiple marketplaces (Uzum, Wildberries, Yandex): sourcing, pricing, logistics, working with AI, and scaling.',
-    2, 7990000, true, 2
+    2, 7990000, 11190000, 14380000, true, 2
   )
   returning id
 ),
@@ -127,30 +127,30 @@ union all select course_id, id, 'To''liq biznes yig''indisi — yakuniy loyiha',
 -- ============================================================
 insert into public.courses
   (slug, title_uz, title_ru, title_en, description_uz, description_ru, description_en,
-   duration_months, price, is_published, order_index)
+   duration_months, price_start, price_standard, price_pro, is_published, order_index)
 values
   ('china-sourcing', 'China Sourcing', 'China Sourcing', 'China Sourcing',
    'Xitoydan mustaqil mahsulot topish, yetkazib beruvchi bilan muzokara, zakaz berish, logistika/bojxona asoslari.',
    'Самостоятельный поиск товара в Китае, переговоры с поставщиком, оформление заказа, основы логистики и таможни.',
    'Independently sourcing products from China, supplier negotiation, ordering, logistics and customs basics.',
-   1, 1990000, false, 3),
+   1, 1990000, 2790000, 3580000, false, 3),
   ('landing-page', 'Landing Page', 'Landing Page', 'Landing Page',
    'AI vositalari yordamida professional landing page''ni noldan yaratish va internetga jonli chiqarish.',
    'Создание профессионального лендинга с нуля с помощью AI и его публикация в интернете.',
    'Building a professional landing page from scratch with AI and deploying it live.',
-   1, 2000000, false, 4),
+   1, 2000000, 2800000, 3600000, false, 4),
   ('telegram-bot', 'Telegram Bot', 'Telegram Bot', 'Telegram Bot',
    'Biznes ehtiyoji uchun to''liq ishlaydigan Telegram bot yaratish va ishga tushirish.',
    'Создание и запуск полноценного Telegram-бота под бизнес-задачи.',
    'Building and launching a fully working Telegram bot for a business need.',
-   1, 2000000, false, 5),
+   1, 2000000, 2800000, 3600000, false, 5),
   ('vibecoding', 'VibeCoding', 'VibeCoding', 'VibeCoding',
    'AI yordamida real digital mahsulot yaratish: website, web app, bot, API, ma''lumotlar bazasi, deployment.',
    'Создание реального цифрового продукта с помощью AI: сайт, веб-приложение, бот, API, база данных, деплой.',
    'Building a real digital product with AI: website, web app, bot, API, database, deployment.',
-   2, 4290000, false, 6),
+   2, 4290000, 6010000, 7720000, false, 6),
   ('startup-mvp', 'Startup MVP', 'Startup MVP', 'Startup MVP',
    'O''z startup g''oyasini to''liq ishlaydigan, deploy qilingan MVP darajasiga olib chiqish.',
    'Доведение идеи стартапа до полноценного, задеплоенного MVP.',
    'Taking your startup idea to a fully working, deployed MVP.',
-   3, 4990000, false, 7);
+   3, 4990000, 6990000, 8980000, false, 7);

@@ -15,8 +15,9 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { courseId, subscriptionPlan, installmentsCount, installmentPaymentId, promoCode } = body as {
+  const { courseId, tier, subscriptionPlan, installmentsCount, installmentPaymentId, promoCode } = body as {
     courseId?: string;
+    tier?: "start" | "standard" | "pro";
     subscriptionPlan?: "monthly" | "yearly";
     installmentsCount?: 2 | 3;
     installmentPaymentId?: string;
@@ -26,6 +27,7 @@ export async function POST(request: NextRequest) {
   const resolved = await resolvePurchase({
     userId: user.id,
     courseId,
+    tier,
     subscriptionPlan,
     installmentsCount,
     installmentPaymentId,
@@ -45,6 +47,7 @@ export async function POST(request: NextRequest) {
       discount_amount: resolved.discountAmount,
       status: "pending",
       course_id: courseId ?? null,
+      tier: resolved.tier,
       subscription_plan: subscriptionPlan ?? null,
       installment_payment_id: resolved.installmentPaymentId,
       promo_code: resolved.promoCode,

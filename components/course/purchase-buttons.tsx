@@ -3,28 +3,38 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { formatSom } from "@/lib/utils";
+import { formatSom, cn } from "@/lib/utils";
 import { computeMonthlyInstallment } from "@/lib/pricing";
 import { submitInstallmentLead } from "@/lib/lms/installment-lead-actions";
 import type { Locale } from "@/i18n/routing";
 import { CheckCircle2 } from "lucide-react";
 
+type Tier = "start" | "standard" | "pro";
+
 export function PurchaseButtons({
   courseId,
-  price,
+  prices,
   locale,
 }: {
   courseId: string;
-  price: number;
+  prices: { start: number; standard: number; pro: number };
   locale: Locale;
 }) {
   const t = useTranslations("course");
+  const [tier, setTier] = useState<Tier>("standard");
   const [loading, setLoading] = useState<"click" | "payme" | null>(null);
   const [promoCode, setPromoCode] = useState("");
   const [leadSubmitting, setLeadSubmitting] = useState(false);
   const [leadSubmitted, setLeadSubmitted] = useState(false);
 
+  const price = prices[tier];
   const monthlyAmount = computeMonthlyInstallment(price);
+
+  const tierOptions: { value: Tier; label: string; desc: string }[] = [
+    { value: "start", label: t("tierStart"), desc: t("tierStartDesc") },
+    { value: "standard", label: t("tierStandard"), desc: t("tierStandardDesc") },
+    { value: "pro", label: t("tierPro"), desc: t("tierProDesc") },
+  ];
 
   async function pay(provider: "click" | "payme") {
     setLoading(provider);
@@ -34,6 +44,7 @@ export function PurchaseButtons({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           courseId,
+          tier,
           promoCode: promoCode.trim() || undefined,
         }),
       });
@@ -49,7 +60,7 @@ export function PurchaseButtons({
   async function requestInstallment() {
     setLeadSubmitting(true);
     try {
-      await submitInstallmentLead(courseId);
+      await submitInstallmentLead(courseId, tier);
       setLeadSubmitted(true);
     } finally {
       setLeadSubmitting(false);
@@ -58,6 +69,30 @@ export function PurchaseButtons({
 
   return (
     <div className="flex flex-col gap-4">
+      <div>
+        <p className="text-sm font-medium text-slate-300">{t("chooseTier")}</p>
+        <div className="mt-2 grid gap-2 sm:grid-cols-3">
+          {tierOptions.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setTier(opt.value)}
+              className={cn(
+                "rounded-lg border p-2.5 text-left text-xs transition-colors",
+                tier === opt.value
+                  ? "border-amber-500 bg-amber-500/10"
+                  : "border-slate-700 hover:border-slate-600",
+              )}
+            >
+              <p className={cn("font-semibold", tier === opt.value ? "text-amber-400" : "text-white")}>
+                {opt.label}
+              </p>
+              <p className="mt-0.5 text-slate-400">{opt.desc}</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div>
         <p className="text-2xl font-bold text-amber-500">{formatSom(price, locale)}</p>
         <p className="text-base font-medium text-slate-300">

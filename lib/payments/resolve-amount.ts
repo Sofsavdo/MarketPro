@@ -12,6 +12,8 @@ import { createInstallmentPlan } from "@/lib/payments/installments";
 export async function resolvePurchase(params: {
   userId: string;
   courseId?: string;
+  /** Which of the 3 tariffs — required whenever courseId is set. */
+  tier?: "start" | "standard" | "pro";
   subscriptionPlan?: "monthly" | "yearly";
   installmentsCount?: 2 | 3;
   /** Paying a specific already-scheduled installment instead of starting a new purchase. */
@@ -20,6 +22,7 @@ export async function resolvePurchase(params: {
   promoCode?: string;
 }): Promise<{
   amount: number;
+  tier: "start" | "standard" | "pro" | null;
   installmentPaymentId: string | null;
   promoCode: string | null;
   discountAmount: number;
@@ -45,6 +48,7 @@ export async function resolvePurchase(params: {
 
     return {
       amount: installment.amount,
+      tier: null,
       installmentPaymentId: installment.id,
       promoCode: null,
       discountAmount: 0,
@@ -64,22 +68,28 @@ export async function resolvePurchase(params: {
     const discountAmount = promo ? Math.round((amount * promo.discount_percent) / 100) : 0;
     return {
       amount: amount - discountAmount,
+      tier: null,
       installmentPaymentId: null,
       promoCode: promo?.code ?? null,
       discountAmount,
     };
   }
 
-  if (params.courseId) {
+  if (params.courseId && params.tier) {
     const { data: course } = await admin
       .from("courses")
-      .select("price, is_published")
+      .select("price_start, price_standard, price_pro, is_published")
       .eq("id", params.courseId)
       .maybeSingle();
 
     if (!course || !course.is_published) return null;
 
-    const totalAmount = course.price;
+    const priceByTier = {
+      start: course.price_start,
+      standard: course.price_standard,
+      pro: course.price_pro,
+    } as const;
+    const totalAmount = priceByTier[params.tier];
 
     if (params.installmentsCount) {
       const { firstInstallmentId, firstInstallmentAmount } = await createInstallmentPlan({
@@ -90,6 +100,7 @@ export async function resolvePurchase(params: {
       });
       return {
         amount: firstInstallmentAmount,
+        tier: params.tier,
         installmentPaymentId: firstInstallmentId,
         promoCode: null,
         discountAmount: 0,
@@ -99,6 +110,7 @@ export async function resolvePurchase(params: {
     const discountAmount = promo ? Math.round((totalAmount * promo.discount_percent) / 100) : 0;
     return {
       amount: totalAmount - discountAmount,
+      tier: params.tier,
       installmentPaymentId: null,
       promoCode: promo?.code ?? null,
       discountAmount,

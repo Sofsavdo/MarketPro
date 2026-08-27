@@ -92,7 +92,14 @@
     "mostPopular": "Eng ko'p tanlanadigan",
     "guaranteeNote": "Barcha tariflarda: birinchi 2 darsdan keyin 100% pul qaytarish kafolati",
     "vipTitle": "Kursni sotib oling — VIP, umrbod",
-    "vipDesc": "Video darslar + community + live darslar + shaxsiy mentor feedback. Bir marta to'lang, kurs sizniki bo'lib qoladi — obuna tugasa ham."
+    "vipDesc": "Har bir yo'nalishda 3 ta tarif — narxi va imkoniyati farq qiladi. Bir marta to'lang, tanlagan tarifingiz umrbod sizniki bo'lib qoladi.",
+    "featVideo": "Video darslar",
+    "featMaterials": "Qo'shimcha materiallar",
+    "featCommunity": "Community",
+    "featMentorGroup": "Mentor guruhda savollarga javob beradi",
+    "featLive2x": "Haftada 2 marta jonli dars mentor bilan",
+    "featLive3x": "Haftada 3 marta jonli dars mentor bilan",
+    "tierPickNote": "Tarifni kurs sahifasida tanlaysiz."
   },
   "auth": {
     "loginTitle": "Kirish",
@@ -156,7 +163,14 @@
     "installmentHint": "To'lovni bo'lib to'lashni xohlaysizmi? Pastdagi tugmani bosing — operatorimiz siz bilan bog'lanib, shartlarni rasmiylashtiradi.",
     "orMonthly": "{amount}/oy dan",
     "requestInstallment": "Muddatli to'lovga yozilish",
-    "installmentLeadSubmitted": "So'rovingiz qabul qilindi! Operatorimiz tez orada siz bilan bog'lanadi."
+    "installmentLeadSubmitted": "So'rovingiz qabul qilindi! Operatorimiz tez orada siz bilan bog'lanadi.",
+    "tierStart": "Start",
+    "tierStandard": "Standart",
+    "tierPro": "Pro",
+    "tierStartDesc": "Video darslar, materiallar, community. Mentor guruhda savollarga javob beradi.",
+    "tierStandardDesc": "Start + haftada 2 marta jonli dars mentor bilan.",
+    "tierProDesc": "Start + haftada 3 marta jonli dars mentor bilan.",
+    "chooseTier": "Tarifni tanlang"
   },
   "lesson": {
     "completeButton": "Mavzuni yakunlash",

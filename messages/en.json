@@ -92,7 +92,14 @@
     "mostPopular": "Most popular",
     "guaranteeNote": "On every plan: 100% refund guarantee after the first 2 lessons",
     "vipTitle": "Buy the course — VIP, for life",
-    "vipDesc": "Video lessons + community + live classes + personal mentor feedback. Pay once and the course is yours, even if your subscription lapses."
+    "vipDesc": "3 tariffs per track — different price, different features. Pay once, your chosen tariff is yours for life.",
+    "featVideo": "Video lessons",
+    "featMaterials": "Extra materials",
+    "featCommunity": "Community",
+    "featMentorGroup": "Mentor answers questions in the group",
+    "featLive2x": "Live mentor class 2x/week",
+    "featLive3x": "Live mentor class 3x/week",
+    "tierPickNote": "You pick the tariff on the course page."
   },
   "auth": {
     "loginTitle": "Log in",
@@ -156,7 +163,14 @@
     "installmentHint": "Want to pay in parts? Tap below — our operator will call you to arrange it.",
     "orMonthly": "{amount}/mo",
     "requestInstallment": "Request installment plan",
-    "installmentLeadSubmitted": "Request received! Our operator will contact you shortly."
+    "installmentLeadSubmitted": "Request received! Our operator will contact you shortly.",
+    "tierStart": "Start",
+    "tierStandard": "Standard",
+    "tierPro": "Pro",
+    "tierStartDesc": "Video lessons, materials, community. Mentor answers questions in the group.",
+    "tierStandardDesc": "Start + a live mentor class 2x/week.",
+    "tierProDesc": "Start + a live mentor class 3x/week.",
+    "chooseTier": "Choose a tariff"
   },
   "lesson": {
     "completeButton": "Complete lesson",

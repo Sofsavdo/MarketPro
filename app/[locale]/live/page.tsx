@@ -5,9 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Video, Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getUpcomingSessionsForUser, getLockedSessionsForSubscriber } from "@/lib/lms/live-sessions";
+import { getLiveSessionsForUser } from "@/lib/lms/live-sessions";
 import { formatDateTime } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
+
+const TIER_LABEL = { standard: "Standart", pro: "Pro" } as const;
 
 export default async function LiveSessionsPage() {
   const t = await getTranslations("live");
@@ -18,8 +20,7 @@ export default async function LiveSessionsPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const sessions = await getUpcomingSessionsForUser(locale);
-  const lockedSessions = await getLockedSessionsForSubscriber(locale);
+  const { joinable: sessions, locked: lockedSessions } = await getLiveSessionsForUser(locale);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-16">
@@ -32,7 +33,7 @@ export default async function LiveSessionsPage() {
             <Card className="transition-colors hover:border-amber-500/50">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <Badge variant="outline">VIP</Badge>
+                  <Badge variant="outline">{TIER_LABEL[s.required_tier]}</Badge>
                   <span className="text-xs text-slate-500">
                     {formatDateTime(s.scheduled_at, locale, {
                       dateStyle: "medium",
@@ -61,7 +62,7 @@ export default async function LiveSessionsPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <Badge variant="outline" className="gap-1">
-                  <Lock className="h-3 w-3" /> {t("vipOnly")}
+                  <Lock className="h-3 w-3" /> {TIER_LABEL[s.required_tier]}
                 </Badge>
                 <span className="text-xs text-slate-500">
                   {formatDateTime(s.scheduled_at, locale, { dateStyle: "medium", timeStyle: "short" })}

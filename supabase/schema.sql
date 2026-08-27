@@ -99,11 +99,42 @@ create table if not exists public.courses (
   instructor_name text,
   instructor_avatar_url text,
   duration_months int not null default 1,
-  price int not null default 0,
+  -- Three lifetime, one-time-purchase tariffs per course (audit-driven
+  -- redesign): Start = video lessons + materials + community + mentor
+  -- answers questions in the group (no live classes). Standard = Start +
+  -- live mentor class 2x/week. Pro = Start + live class 3x/week. A
+  -- separate monthly *subscription* (lib/pricing.ts#SUBSCRIPTION_PRICE)
+  -- grants Start-level access to every course at once but expires if not
+  -- renewed — these three prices are for buying one course outright,
+  -- forever. See enrollments.tier and live_sessions.required_tier.
+  price_start int not null default 0,
+  price_standard int not null default 0,
+  price_pro int not null default 0,
   is_published boolean not null default false,
   order_index int not null default 0,
   created_at timestamptz not null default now()
 );
+
+-- Migration for a database created before the 3-tariff redesign: add the
+-- new columns, backfill them from the old single `price` (every tier
+-- starts equal to the old price until the admin sets real per-tier
+-- pricing), then drop it. Safe to re-run — the inner block only fires
+-- once, while the old `price` column still exists.
+alter table public.courses add column if not exists price_start int not null default 0;
+alter table public.courses add column if not exists price_standard int not null default 0;
+alter table public.courses add column if not exists price_pro int not null default 0;
+
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'courses' and column_name = 'price'
+  ) then
+    update public.courses set price_start = price, price_standard = price, price_pro = price
+      where price_start = 0 and price_standard = 0 and price_pro = 0;
+    alter table public.courses drop column price;
+  end if;
+end $$;
 
 create table if not exists public.modules (
   id uuid primary key default gen_random_uuid(),
@@ -170,9 +201,30 @@ create table if not exists public.enrollments (
   user_id uuid not null references auth.users (id) on delete cascade,
   course_id uuid not null references public.courses (id) on delete cascade,
   source text not null default 'purchase' check (source in ('purchase', 'downsell_credit')),
+  -- Which of the three lifetime tariffs was bought — see the note on
+  -- courses.price_start above. 'standard'/'pro' is what unlocks
+  -- has_live_session_access; a downsell-credit grant (upgradeToVipWithCredit)
+  -- always lands on 'pro', the closest match to the old single-tier VIP.
+  tier text not null default 'start' check (tier in ('start', 'standard', 'pro')),
   created_at timestamptz not null default now(),
   unique (user_id, course_id)
 );
+
+-- Migration: enrollments created before the 3-tariff redesign only ever
+-- meant the old single full-VIP purchase (live + mentor included), so they
+-- backfill to 'pro' — the closest equivalent — not the 'start' default a
+-- genuinely new Start-tariff purchase would get.
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'enrollments' and column_name = 'tier'
+  ) then
+    alter table public.enrollments add column tier text not null default 'start'
+      check (tier in ('start', 'standard', 'pro'));
+    update public.enrollments set tier = 'pro';
+  end if;
+end $$;
 
 create table if not exists public.subscriptions (
   id uuid primary key default gen_random_uuid(),
@@ -246,6 +298,10 @@ create table if not exists public.payments (
   discount_amount int not null default 0,
   status text not null default 'pending' check (status in ('pending', 'paid', 'failed', 'refunded')),
   course_id uuid references public.courses (id),
+  -- Which tariff a course purchase was for — carried through to the
+  -- enrollment grant-access.ts creates once this payment reaches 'paid'.
+  -- Null for a subscription payment (subscriptions don't have tiers).
+  tier text check (tier in ('start', 'standard', 'pro')),
   subscription_plan text check (subscription_plan in ('monthly', 'yearly')),
   installment_payment_id uuid references public.installment_payments (id),
   -- The promo code text applied at checkout, if any. `used_count` on
@@ -255,6 +311,7 @@ create table if not exists public.payments (
   promo_code text,
   created_at timestamptz not null default now()
 );
+alter table public.payments add column if not exists tier text check (tier in ('start', 'standard', 'pro'));
 
 -- ============================================================
 -- waitlist — email/phone capture for not-yet-published courses
@@ -284,10 +341,10 @@ create table if not exists public.referrals (
 create index if not exists idx_referrals_referrer on public.referrals (referrer_id);
 
 -- ============================================================
--- live_sessions — scheduled group classes (Google Meet), VIP-only: only
--- someone who bought the course outright (an enrollments row) can join —
--- a bare subscription ("start" access) never unlocks live sessions, see
--- has_live_session_access below.
+-- live_sessions — scheduled group classes (Google Meet). Joining requires
+-- a 'standard' or 'pro' tariff purchase matching the session's
+-- required_tier — a bare subscription ("start" access) never unlocks live
+-- sessions, see has_live_session_access below.
 -- session_questions — live Q&A thread attached to each session
 -- ============================================================
 create table if not exists public.live_sessions (
@@ -297,8 +354,16 @@ create table if not exists public.live_sessions (
   meet_url text not null,
   scheduled_at timestamptz not null,
   duration_minutes int not null default 60,
+  -- Minimum tariff required to actually join (see has_live_session_access
+  -- below) — 'standard' buyers see and can join Standard-tier sessions,
+  -- 'pro' buyers see and can join both. The schedule itself (title, time)
+  -- is visible to anyone with course access at any tier, including a bare
+  -- subscription — only joining is gated, see can_view_live_session.
+  required_tier text not null default 'standard' check (required_tier in ('standard', 'pro')),
   created_at timestamptz not null default now()
 );
+alter table public.live_sessions add column if not exists required_tier text not null default 'standard'
+  check (required_tier in ('standard', 'pro'));
 
 create table if not exists public.session_questions (
   id uuid primary key default gen_random_uuid(),
@@ -476,13 +541,19 @@ create policy "Anyone can join the waitlist" on public.waitlist
   for insert with check (true);
 
 -- ============================================================
--- Live session access — VIP (bought the course) only. Deliberately does NOT
--- check subscriptions: a subscription is "start" access (video + community)
--- everywhere, and must never unlock live classes or mentor time — that's
--- the whole point of the hybrid model (subscription is the low-commitment
--- tier, buying the course outright is what earns live + mentor access).
+-- Live session access — split in two, deliberately:
+--   - can_view_live_session: the schedule (title, day/time) is visible to
+--     anyone with course access at ANY tier, including a bare subscription
+--     — so a subscriber can see live classes happen and what they're
+--     missing, same as the curriculum shows locked lessons rather than
+--     hiding them.
+--   - has_live_session_access: actually JOINING requires an enrollment
+--     ('standard' or 'pro' tariff) whose tier meets the session's
+--     required_tier — a subscription never satisfies this, regardless of
+--     tier, since a subscription only ever grants 'start'. 'pro' satisfies
+--     a 'standard'-required session too (it's the higher tier).
 -- ============================================================
-create or replace function public.has_live_session_access(p_session_id uuid)
+create or replace function public.can_view_live_session(p_session_id uuid)
 returns boolean as $$
 declare
   v_course_id uuid;
@@ -494,10 +565,37 @@ begin
     return false;
   end if;
 
-  return exists (
-    select 1 from public.enrollments e
-    where e.user_id = auth.uid() and e.course_id = v_course_id
-  );
+  return public.has_course_access(v_course_id);
+end;
+$$ language plpgsql security definer set search_path = public;
+
+create or replace function public.has_live_session_access(p_session_id uuid)
+returns boolean as $$
+declare
+  v_course_id uuid;
+  v_required_tier text;
+  v_enrollment_tier text;
+begin
+  select course_id, required_tier into v_course_id, v_required_tier
+  from public.live_sessions where id = p_session_id;
+
+  if v_course_id is null then
+    return false;
+  end if;
+
+  select tier into v_enrollment_tier
+  from public.enrollments
+  where user_id = auth.uid() and course_id = v_course_id;
+
+  if v_enrollment_tier is null or v_enrollment_tier = 'start' then
+    return false;
+  end if;
+
+  if v_required_tier = 'standard' then
+    return v_enrollment_tier in ('standard', 'pro');
+  end if;
+
+  return v_enrollment_tier = 'pro';
 end;
 $$ language plpgsql security definer set search_path = public;
 
@@ -506,7 +604,7 @@ alter table public.session_questions enable row level security;
 
 drop policy if exists "Users can view sessions they have access to" on public.live_sessions;
 create policy "Users can view sessions they have access to" on public.live_sessions
-  for select using (public.has_live_session_access(id));
+  for select using (public.can_view_live_session(id));
 
 drop policy if exists "Users can view questions for accessible sessions" on public.session_questions;
 create policy "Users can view questions for accessible sessions" on public.session_questions
@@ -642,11 +740,16 @@ create table if not exists public.installment_leads (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
   course_id uuid not null references public.courses (id) on delete cascade,
+  -- Which tariff the displayed monthly/total amount was computed from —
+  -- the operator formalizes access to this tier once the deal is done.
+  tier text not null default 'pro' check (tier in ('start', 'standard', 'pro')),
   monthly_amount int not null,
   total_amount int not null,
   status text not null default 'new' check (status in ('new', 'contacted', 'converted', 'declined')),
   created_at timestamptz not null default now()
 );
+alter table public.installment_leads add column if not exists tier text not null default 'pro'
+  check (tier in ('start', 'standard', 'pro'));
 
 create index if not exists idx_installment_leads_status
   on public.installment_leads (status, created_at desc);

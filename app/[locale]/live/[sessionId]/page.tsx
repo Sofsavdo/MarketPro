@@ -30,7 +30,29 @@ export default async function LiveSessionDetailPage({
     .eq("id", sessionId)
     .maybeSingle();
 
-  if (!session) {
+  // The SELECT policy (can_view_live_session) deliberately lets anyone with
+  // *any* course access see this row exists — the schedule is meant to be
+  // visible to subscribers too, so they can see what they're missing. But
+  // actually joining still requires an enrollment tier meeting the
+  // session's required_tier, which RLS does NOT enforce here, so it has to
+  // be checked explicitly before the meet_url/Join button ever renders.
+  const { data: enrollment } = session
+    ? await supabase
+        .from("enrollments")
+        .select("tier")
+        .eq("user_id", user.id)
+        .eq("course_id", session.course_id)
+        .maybeSingle()
+    : { data: null };
+
+  const TIER_RANK = { start: 0, standard: 1, pro: 2 } as const;
+  const LIVE_TIER_RANK = { standard: 1, pro: 2 } as const;
+  const canJoin =
+    !!session &&
+    !!enrollment &&
+    TIER_RANK[enrollment.tier] >= LIVE_TIER_RANK[session.required_tier];
+
+  if (!session || !canJoin) {
     return (
       <div className="mx-auto max-w-xl px-4 py-24 text-center">
         <p className="text-slate-400">{t("noAccess")}</p>
@@ -60,7 +82,7 @@ export default async function LiveSessionDetailPage({
       </Link>
 
       <div className="mt-4 flex items-center gap-2">
-        <Badge variant="outline">VIP</Badge>
+        <Badge variant="outline">{session.required_tier === "pro" ? "Pro" : "Standart"}</Badge>
         <span className="text-sm text-slate-500">
           {course && localizedField(course, "title", locale)}
         </span>
