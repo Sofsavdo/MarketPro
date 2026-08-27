@@ -8,12 +8,18 @@ export async function POST(request: NextRequest) {
     phone?: string;
   };
 
-  if (!courseId || !email) {
+  const trimmedEmail = email?.trim() ?? "";
+  // Loose but real check — this list is a marketing/sales contact list an
+  // operator later emails by hand, so a garbage string here isn't just
+  // untidy data, it's a lead nobody can actually reach.
+  if (!courseId || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
 
   const admin = await createAdminClient();
-  const { error } = await admin.from("waitlist").insert({ course_id: courseId, email, phone });
+  const { error } = await admin
+    .from("waitlist")
+    .insert({ course_id: courseId, email: trimmedEmail, phone: phone?.trim() || null });
 
   if (error) {
     return NextResponse.json({ error: "could_not_join" }, { status: 500 });

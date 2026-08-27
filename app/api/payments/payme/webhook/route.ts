@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { verifyPaymeAuth, PaymeError, type PaymeRpcRequest } from "@/lib/payments/payme";
-import { grantAccessForPayment } from "@/lib/payments/grant-access";
+import { grantAccessForPayment, revokeAccessForPayment } from "@/lib/payments/grant-access";
 
 function rpcResult(id: number | string, result: unknown) {
   return NextResponse.json({ jsonrpc: "2.0", id, result });
@@ -87,7 +87,14 @@ export async function POST(request: NextRequest) {
         .maybeSingle();
       if (!payment) return rpcError(rpc.id, PaymeError.TRANSACTION_NOT_FOUND, "Transaction not found");
 
+      // Payme can call this on a transaction that already completed
+      // (PerformTransaction ran, access was granted) — a real refund or
+      // chargeback initiated from Payme's side, not just an admin decision.
+      // Only revoke in that case; canceling a transaction that never got
+      // past "created" never granted anything to undo.
+      const wasPaid = payment.status === "paid";
       await admin.from("payments").update({ status: "refunded" }).eq("id", payment.id);
+      if (wasPaid) await revokeAccessForPayment(payment.id);
 
       return rpcResult(rpc.id, {
         transaction: payment.id,
