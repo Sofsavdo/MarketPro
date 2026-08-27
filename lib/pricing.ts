@@ -1,14 +1,17 @@
 // Subscription pricing — grants "start" access (video + community, no live,
-// no mentor) to every published course. VIP (lifetime, full) access to one
-// specific course is bought separately at that course's own `price` — see
-// the access-model note on the `courses` table in supabase/schema.sql.
+// no mentor) to every published course, for as long as it's renewed each
+// month. Lifetime access to one specific course, at any of its 3 tariffs,
+// is bought separately — see the access-model note on the `courses` table
+// in supabase/schema.sql. `yearly` is kept for existing subscriptions and
+// webhook/API compatibility even though the pricing page only offers
+// monthly now.
 export const SUBSCRIPTION_PRICE = {
   monthly: 999_000,
   yearly: 9_990_000, // 10 months' worth — 2 months free
 } as const;
 
 /**
- * A VIP course purchase can be paid two ways: full price up front (Click/
+ * A course tariff can be paid two ways: full price up front (Click/
  * Payme/Atmos, instant access), or a 12-month installment plan an operator
  * formalizes by phone after the student registers interest (see
  * lib/lms/installment-lead-actions.ts) — no self-serve online 2/3-part

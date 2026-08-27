@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Lock, PlayCircle } from "lucide-react";
 import { getCourseBySlug, getCourseModulesWithLessons, localizedField } from "@/lib/courses";
-import { getLessonAccess, isLessonLocked } from "@/lib/lms/access";
+import { getLessonAccess, isLessonLocked, isFreePreview } from "@/lib/lms/access";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { formatSom, cn } from "@/lib/utils";
 import type { Locale } from "@/i18n/routing";
@@ -133,13 +133,10 @@ export default async function CourseDetailPage({
         </div>
       ) : (
         access.accessLevel !== "pro" && (
-          <div className="mt-6 flex flex-wrap items-center gap-3 rounded-lg border border-amber-500/40 bg-amber-500/5 px-4 py-3">
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-white">
-                {access.accessLevel ? t("course.upgradeToVipTitle") : t("course.vipTitle")}
-              </p>
-              <p className="text-xs text-slate-400">{t("course.vipIncludes")}</p>
-            </div>
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-500/40 bg-amber-500/5 px-4 py-3">
+            <p className="text-sm font-medium text-white">
+              {access.accessLevel ? t("course.upgradeTierTitle") : t("course.buyTitle")}
+            </p>
             {user ? (
               <Dialog>
                 <DialogTrigger asChild>
@@ -150,9 +147,8 @@ export default async function CourseDetailPage({
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>
-                      {access.accessLevel ? t("course.upgradeToVipTitle") : t("course.vipTitle")}
+                      {access.accessLevel ? t("course.upgradeTierTitle") : t("course.buyTitle")}
                     </DialogTitle>
-                    <p className="text-sm text-slate-400">{t("course.vipIncludes")}</p>
                   </DialogHeader>
                   <div className="mt-2">
                     <PurchaseButtons
@@ -189,7 +185,7 @@ export default async function CourseDetailPage({
                   {mod.lessons.map((lesson) => {
                     const locked = access.hasCourseAccess
                       ? lockMap.get(lesson.id)
-                      : !lesson.is_free_preview;
+                      : !isFreePreview(lesson);
                     return (
                       <Link
                         key={lesson.id}
@@ -222,7 +218,7 @@ export default async function CourseDetailPage({
                         <span className="min-w-0 flex-1 truncate text-slate-200">
                           {localizedField(lesson, "title", locale)}
                         </span>
-                        {lesson.is_free_preview && (
+                        {isFreePreview(lesson) && (
                           <Badge variant="outline" className="hidden shrink-0 sm:inline-flex">
                             {t("course.freePreview")}
                           </Badge>

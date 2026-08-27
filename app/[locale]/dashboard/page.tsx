@@ -221,11 +221,11 @@ export default async function DashboardPage() {
                     </div>
                   )}
 
-                  {accessLevel !== "pro" && (
+                  {accessLevel === "start" && (
                     <p className="rounded-lg border border-dashed border-slate-800 p-2 text-center text-xs text-slate-500">
                       {t("dashboard.startAccessNote")}{" "}
                       <Link href={`/courses/${course.slug}`} className="text-amber-400 hover:underline">
-                        {t("course.upgradeToVipTitle")}
+                        {t("course.upgradeTierTitle")}
                       </Link>
                     </p>
                   )}
