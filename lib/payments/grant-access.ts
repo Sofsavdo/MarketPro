@@ -79,3 +79,34 @@ export async function grantAccessForPayment(paymentId: string) {
     );
   }
 }
+
+/**
+ * The refund counterpart to grantAccessForPayment — undoes whatever a paid
+ * payment granted. Shared by the admin's manual "Qaytarish" button and by
+ * Payme's CancelTransaction webhook (a real refund/chargeback initiated
+ * from Payme's side, not just an admin decision), so a refund issued either
+ * way actually revokes access instead of only flipping the payment's status
+ * while the student keeps what they paid for.
+ */
+export async function revokeAccessForPayment(paymentId: string) {
+  const supabase = await createAdminClient();
+
+  const { data: payment } = await supabase.from("payments").select("*").eq("id", paymentId).single();
+  if (!payment) return;
+
+  if (payment.course_id) {
+    await supabase
+      .from("enrollments")
+      .delete()
+      .eq("user_id", payment.user_id)
+      .eq("course_id", payment.course_id);
+  }
+
+  if (payment.subscription_plan) {
+    await supabase
+      .from("subscriptions")
+      .update({ status: "canceled" })
+      .eq("user_id", payment.user_id)
+      .eq("status", "active");
+  }
+}

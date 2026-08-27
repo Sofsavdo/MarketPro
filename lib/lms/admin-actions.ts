@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { uploadImage } from "@/lib/supabase/storage";
+import { revokeAccessForPayment } from "@/lib/payments/grant-access";
 
 function slugify(input: string) {
   return input
@@ -451,22 +452,7 @@ export async function refundPayment(paymentId: string) {
   if (!payment || payment.status !== "paid") return;
 
   await admin.from("payments").update({ status: "refunded" }).eq("id", paymentId);
-
-  if (payment.course_id) {
-    await admin
-      .from("enrollments")
-      .delete()
-      .eq("user_id", payment.user_id)
-      .eq("course_id", payment.course_id);
-  }
-
-  if (payment.subscription_plan) {
-    await admin
-      .from("subscriptions")
-      .update({ status: "canceled" })
-      .eq("user_id", payment.user_id)
-      .eq("status", "active");
-  }
+  await revokeAccessForPayment(paymentId);
 
   revalidatePath("/admin/payments");
 }
