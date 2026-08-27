@@ -551,6 +551,7 @@ export async function upgradeToVipWithCredit(userId: string, formData: FormData)
 }
 
 export async function createPromoCode(formData: FormData) {
+  await requireAdmin();
   const admin = await createAdminClient();
 
   const code = String(formData.get("code") ?? "").trim().toUpperCase();
@@ -573,6 +574,7 @@ export async function createPromoCode(formData: FormData) {
 }
 
 export async function togglePromoCode(promoCodeId: string, active: boolean) {
+  await requireAdmin();
   const admin = await createAdminClient();
   await admin.from("promo_codes").update({ active: !active }).eq("id", promoCodeId);
   revalidatePath("/admin/promo-codes");

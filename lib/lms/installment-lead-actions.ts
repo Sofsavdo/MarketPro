@@ -29,6 +29,16 @@ export async function submitInstallmentLead(
     .maybeSingle();
   if (!course || !course.is_published) throw new Error("invalid_course");
 
+  const priceByTier = {
+    start: course.price_start,
+    standard: course.price_standard,
+    pro: course.price_pro,
+  } as const;
+  // Same reasoning as resolvePurchase: a course published before its
+  // per-tier prices are set (they default to 0) must not generate a "0
+  // so'm" installment lead for an operator to call about.
+  if (!Number.isFinite(priceByTier[tier]) || priceByTier[tier] <= 0) throw new Error("invalid_course");
+
   // Avoid piling up duplicate leads if a student taps the button more than
   // once (double-click, revisiting the page) — an open request for this
   // course is enough until an operator acts on it.
@@ -41,11 +51,6 @@ export async function submitInstallmentLead(
     .maybeSingle();
   if (existing) return;
 
-  const priceByTier = {
-    start: course.price_start,
-    standard: course.price_standard,
-    pro: course.price_pro,
-  } as const;
   const monthlyAmount = computeMonthlyInstallment(priceByTier[tier]);
   const totalAmount = monthlyAmount * 12;
 

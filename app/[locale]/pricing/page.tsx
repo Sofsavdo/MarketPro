@@ -24,11 +24,19 @@ export default async function PricingPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const courses = await getPublishedCourses();
+  // Despite the name, getPublishedCourses() returns every course (including
+  // unpublished "coming soon" ones, which the catalog pages also show) — but
+  // an unsold, not-yet-priced course must not drag the "starting from"
+  // teaser here down to 0, so this is scoped to courses actually on sale.
+  const sellableCourses = (await getPublishedCourses()).filter(
+    (c) => c.is_published && c.price_start > 0,
+  );
   const tierStartingPrice = {
-    start: courses.length ? Math.min(...courses.map((c) => c.price_start)) : null,
-    standard: courses.length ? Math.min(...courses.map((c) => c.price_standard)) : null,
-    pro: courses.length ? Math.min(...courses.map((c) => c.price_pro)) : null,
+    start: sellableCourses.length ? Math.min(...sellableCourses.map((c) => c.price_start)) : null,
+    standard: sellableCourses.length
+      ? Math.min(...sellableCourses.map((c) => c.price_standard))
+      : null,
+    pro: sellableCourses.length ? Math.min(...sellableCourses.map((c) => c.price_pro)) : null,
   };
 
   return (

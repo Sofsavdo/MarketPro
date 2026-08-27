@@ -2,6 +2,14 @@ import { createClient, createPublicClient } from "@/lib/supabase/server";
 import type { Locale } from "@/i18n/routing";
 
 /**
+ * Despite the name (kept for the "catalog data" mental model), this returns
+ * EVERY course — published and unpublished/"coming soon" alike — since the
+ * homepage and /courses catalog intentionally show both (unpublished ones
+ * with a waitlist form, per the business plan's sales-funnel design). A
+ * caller that wants only purchasable courses must filter on `is_published`
+ * itself — see the "starting from" price teaser on the pricing page for an
+ * example of that going wrong when it isn't.
+ *
  * Uses the cookie-free public client deliberately — this list is the same
  * for everyone (courses RLS already allows anyone to read it), and the
  * homepage/catalog pages that call this are the ones we want to actually
