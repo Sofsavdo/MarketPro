@@ -68,9 +68,9 @@ export default async function CoursesPage() {
               )}
             </CardHeader>
             <CardContent className="flex items-center justify-between pt-0">
-              <div className="text-sm text-slate-400">
-                <p className="font-semibold text-white">{formatSom(course.price, locale)}</p>
-                <p className="text-xs">
+              <div>
+                <p className="text-sm text-slate-400">{formatSom(course.price, locale)}</p>
+                <p className="text-base font-semibold text-amber-400">
                   {t("course.orMonthly", {
                     amount: formatSom(computeMonthlyInstallment(course.price), locale),
                   })}

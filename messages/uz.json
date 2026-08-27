@@ -154,7 +154,7 @@
     "promoCodePlaceholder": "Promo-kod (ixtiyoriy)",
     "buyFrom": "Sotib olish —",
     "installmentHint": "To'lovni bo'lib to'lashni xohlaysizmi? Pastdagi tugmani bosing — operatorimiz siz bilan bog'lanib, shartlarni rasmiylashtiradi.",
-    "orMonthly": "yoki oyiga {amount} dan (12 oy, muddatli to'lov)",
+    "orMonthly": "{amount}/oy dan",
     "requestInstallment": "Muddatli to'lovga yozilish",
     "installmentLeadSubmitted": "So'rovingiz qabul qilindi! Operatorimiz tez orada siz bilan bog'lanadi."
   },

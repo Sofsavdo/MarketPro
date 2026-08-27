@@ -154,7 +154,7 @@
     "promoCodePlaceholder": "Promo code (optional)",
     "buyFrom": "Buy from",
     "installmentHint": "Want to pay in parts? Tap below — our operator will call you to arrange it.",
-    "orMonthly": "or from {amount}/mo (12 months, installment)",
+    "orMonthly": "{amount}/mo",
     "requestInstallment": "Request installment plan",
     "installmentLeadSubmitted": "Request received! Our operator will contact you shortly."
   },
