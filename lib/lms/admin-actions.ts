@@ -566,3 +566,46 @@ export async function togglePromoCode(promoCodeId: string, active: boolean) {
   await admin.from("promo_codes").update({ active: !active }).eq("id", promoCodeId);
   revalidatePath("/admin/promo-codes");
 }
+
+export async function markInstallmentLeadContacted(leadId: string) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+  await admin.from("installment_leads").update({ status: "contacted" }).eq("id", leadId);
+  revalidatePath("/admin/installments");
+}
+
+export async function declineInstallmentLead(leadId: string) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+  await admin.from("installment_leads").update({ status: "declined" }).eq("id", leadId);
+  revalidatePath("/admin/installments");
+}
+
+/**
+ * Grants VIP access once the operator has formalized the 12-month
+ * installment deal by phone (nasiya) — actual monthly collection happens
+ * outside this app for now (manual Click links, or Atmos auto-debit once
+ * that's wired up), so this just records the sale and unlocks the course,
+ * the same "manual" payment pattern as upgradeToVipWithCredit.
+ */
+export async function convertInstallmentLead(leadId: string, userId: string, courseId: string, totalAmount: number) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+
+  await admin.from("payments").insert({
+    user_id: userId,
+    provider: "manual",
+    amount: totalAmount,
+    status: "paid",
+    course_id: courseId,
+  });
+
+  await admin.from("enrollments").upsert(
+    { user_id: userId, course_id: courseId, source: "purchase" },
+    { onConflict: "user_id,course_id" },
+  );
+
+  await admin.from("installment_leads").update({ status: "converted" }).eq("id", leadId);
+
+  revalidatePath("/admin/installments");
+}

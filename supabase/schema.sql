@@ -628,6 +628,38 @@ alter table public.promo_codes enable row level security;
 
 create index if not exists idx_certificates_user on public.certificates (user_id);
 
+-- ============================================================
+-- installment_leads — a student who chose "muddatli to'lov" (12-month
+-- installment) at checkout instead of paying Click/Payme/Atmos in full.
+-- No payment happens here — this just queues them for an operator to call
+-- and formalize the deal (nasiya) by phone, same shape as the CRM
+-- lead_status flow on `profiles`. `monthly_amount`/`total_amount` are
+-- captured server-side at submit time (course price × 1.43 ÷ 12) so the
+-- number an operator sees can't drift from what the student was actually
+-- shown, even if the course price changes later.
+-- ============================================================
+create table if not exists public.installment_leads (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  course_id uuid not null references public.courses (id) on delete cascade,
+  monthly_amount int not null,
+  total_amount int not null,
+  status text not null default 'new' check (status in ('new', 'contacted', 'converted', 'declined')),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_installment_leads_status
+  on public.installment_leads (status, created_at desc);
+
+alter table public.installment_leads enable row level security;
+
+drop policy if exists "Users can create their own installment lead" on public.installment_leads;
+create policy "Users can create their own installment lead" on public.installment_leads
+  for insert with check (auth.uid() = user_id);
+drop policy if exists "Users see their own installment leads" on public.installment_leads;
+create policy "Users see their own installment leads" on public.installment_leads
+  for select using (auth.uid() = user_id);
+
 -- Writes to courses/modules/lessons/quiz_questions/enrollments/subscriptions/payments/
 -- installment_plans/installment_payments/live_sessions, instructor answers on
 -- session_questions, and all admin reads (including unpublished courses and the

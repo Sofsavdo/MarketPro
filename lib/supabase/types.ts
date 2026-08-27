@@ -333,6 +333,25 @@ export interface Database {
         },
         { course_id: string; user_id: string }
       >;
+      installment_leads: Table<
+        {
+          id: string;
+          user_id: string;
+          course_id: string;
+          monthly_amount: number;
+          total_amount: number;
+          status: "new" | "contacted" | "converted" | "declined";
+          created_at: string;
+        },
+        {
+          user_id: string;
+          course_id: string;
+          monthly_amount: number;
+          total_amount: number;
+          status?: "new" | "contacted" | "converted" | "declined";
+        },
+        { status?: "new" | "contacted" | "converted" | "declined" }
+      >;
       promo_codes: Table<
         {
           id: string;
