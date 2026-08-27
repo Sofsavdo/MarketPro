@@ -191,11 +191,11 @@ export default async function CourseDetailPage({
                             )}
                           </span>
                         </span>
-                        <span className="min-w-0 flex-1 text-slate-200">
+                        <span className="min-w-0 flex-1 truncate text-slate-200">
                           {localizedField(lesson, "title", locale)}
                         </span>
                         {lesson.is_free_preview && (
-                          <Badge variant="outline" className="shrink-0">
+                          <Badge variant="outline" className="hidden shrink-0 sm:inline-flex">
                             {t("course.freePreview")}
                           </Badge>
                         )}
