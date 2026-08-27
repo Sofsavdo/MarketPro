@@ -5,8 +5,14 @@ import { createClient } from "@/lib/supabase/server";
 
 /**
  * Reviews are gated by the `course_reviews` RLS insert policy itself
- * (`public.has_course_access`), so this just needs the caller's own
- * session client — no admin bypass required, and no way to fake access.
+ * (`public.has_completed_course` — every lesson finished, not merely
+ * "has access"), so this just needs the caller's own session client — no
+ * admin bypass required, and no way to fake completion. Every submission
+ * lands as 'pending': it only becomes publicly visible once an admin
+ * approves it (see approveCourseReview/deleteCourseReview in
+ * admin-actions.ts) — the RLS update policy's own `with check` additionally
+ * refuses to let a student set status to anything but 'pending' themselves,
+ * so this isn't just an app-layer convention.
  */
 export async function submitCourseReview(
   courseId: string,
@@ -25,10 +31,13 @@ export async function submitCourseReview(
     throw new Error("invalid_rating");
   }
 
-  await supabase.from("course_reviews").upsert(
-    { course_id: courseId, user_id: user.id, rating, comment },
+  const { error } = await supabase.from("course_reviews").upsert(
+    { course_id: courseId, user_id: user.id, rating, comment, status: "pending" },
     { onConflict: "course_id,user_id" },
   );
+  // RLS rejects this for anyone who hasn't finished every lesson — surfaced
+  // as a plain error the form can catch, rather than a raw Postgres message.
+  if (error) throw new Error("course_not_completed");
 
   revalidatePath(`/courses/${slug}`);
 }

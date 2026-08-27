@@ -325,10 +325,17 @@ export interface Database {
           user_id: string;
           rating: number;
           comment: string | null;
+          status: "pending" | "approved";
           created_at: string;
         },
-        { course_id: string; user_id: string; rating: number; comment?: string | null },
-        { rating?: number; comment?: string | null }
+        {
+          course_id: string;
+          user_id: string;
+          rating: number;
+          comment?: string | null;
+          status?: "pending" | "approved";
+        },
+        { rating?: number; comment?: string | null; status?: "pending" | "approved" }
       >;
       lesson_comments: Table<
         {

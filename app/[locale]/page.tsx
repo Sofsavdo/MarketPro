@@ -48,16 +48,25 @@ export default async function HomePage() {
           }}
         />
         <div className="relative mx-auto max-w-6xl px-4 py-24 text-center sm:py-32">
-          <Badge variant="outline" className="mb-6">
+          <Badge variant="outline" className="mb-6 animate-fade-up">
             {t("home.hero.eyebrow")}
           </Badge>
-          <h1 className="text-balance text-4xl font-bold tracking-tight text-white sm:text-6xl">
+          <h1
+            className="animate-fade-up text-balance text-4xl font-bold tracking-tight text-white sm:text-6xl"
+            style={{ animationDelay: "60ms" }}
+          >
             {t("home.hero.title")}
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-balance text-lg text-slate-400">
+          <p
+            className="animate-fade-up mx-auto mt-6 max-w-2xl text-balance text-lg text-slate-400"
+            style={{ animationDelay: "120ms" }}
+          >
             {t("home.hero.subtitle")}
           </p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div
+            className="animate-fade-up mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+            style={{ animationDelay: "180ms" }}
+          >
             <Button asChild size="lg">
               <Link href="/courses">
                 {t("home.hero.ctaPrimary")} <ArrowRight className="h-4 w-4" />
@@ -68,7 +77,10 @@ export default async function HomePage() {
             </Button>
           </div>
 
-          <div className="mx-auto mt-16 grid max-w-3xl grid-cols-3 gap-6 border-t border-slate-800/60 pt-10">
+          <div
+            className="animate-fade-up mx-auto mt-16 grid max-w-3xl grid-cols-3 gap-6 border-t border-slate-800/60 pt-10"
+            style={{ animationDelay: "240ms" }}
+          >
             {(["stat1", "stat2", "stat3"] as const).map((key) => (
               <div key={key}>
                 <p className="text-2xl font-bold text-amber-500 sm:text-3xl">
@@ -88,10 +100,12 @@ export default async function HomePage() {
         <h2 className="text-center text-3xl font-bold text-white">{t("home.features.title")}</h2>
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((f) => (
-            <Card key={f.title} className="flex h-full flex-col">
+            <Card key={f.title} className="card-lift flex h-full flex-col hover:border-amber-500/40">
               <CardHeader>
-                <f.icon className="h-8 w-8 text-amber-500" />
-                <CardTitle className="mt-2 text-base">{f.title}</CardTitle>
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/10">
+                  <f.icon className="h-5 w-5 text-amber-500" />
+                </span>
+                <CardTitle className="mt-3 text-base">{f.title}</CardTitle>
                 <CardDescription>{f.desc}</CardDescription>
               </CardHeader>
             </Card>
@@ -113,71 +127,72 @@ export default async function HomePage() {
 
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {courses.map((course, i) => (
-              <Card key={course.id} className="flex flex-col justify-between overflow-hidden">
-                <div className="relative aspect-video w-full bg-slate-800">
-                  {course.cover_url ? (
-                    <Image
-                      src={course.cover_url}
-                      alt=""
-                      fill
-                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center">
-                      <ImageOff className="h-8 w-8 text-slate-600" />
-                    </div>
-                  )}
-                </div>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <Badge variant={course.is_published ? "default" : "outline"}>
-                      {course.is_published
-                        ? i === 1
-                          ? t("home.coursesSection.badgePopular")
-                          : t("home.coursesSection.badgeNew")
-                        : t("home.coursesSection.badgeComingSoon")}
-                    </Badge>
-                    <span className="text-xs text-slate-500">
-                      {course.duration_months} {t("home.coursesSection.months")}
-                    </span>
-                  </div>
-                  <CardTitle className="mt-3 line-clamp-1">
-                    {localizedField(course, "title", locale)}
-                  </CardTitle>
-                  <CardDescription className="line-clamp-2">
-                    {localizedField(course, "description", locale)}
-                  </CardDescription>
-                  {course.instructor_name && (
-                    <InstructorBadge
-                      name={course.instructor_name}
-                      avatarUrl={course.instructor_avatar_url}
-                      label={t("course.instructorLabel")}
-                    />
-                  )}
-                </CardHeader>
-                <CardContent className="flex items-center justify-between pt-0">
-                  <div>
-                    {course.price_start > 0 && (
-                      <>
-                        <p className="text-sm text-slate-400">
-                          {t("home.coursesSection.from")} {formatSom(course.price_start, locale)}
-                        </p>
-                        <p className="text-base font-semibold text-amber-400">
-                          {t("course.orMonthly", {
-                            amount: formatSom(computeMonthlyInstallment(course.price_start), locale),
-                          })}
-                        </p>
-                      </>
+              <Link key={course.id} href={`/courses/${course.slug}`} className="group block">
+                <Card className="card-lift flex h-full flex-col justify-between overflow-hidden hover:border-amber-500/40">
+                  <div className="relative aspect-video w-full overflow-hidden bg-slate-800">
+                    {course.cover_url ? (
+                      <Image
+                        src={course.cover_url}
+                        alt=""
+                        fill
+                        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <ImageOff className="h-8 w-8 text-slate-600" />
+                      </div>
                     )}
                   </div>
-                  <Button asChild size="sm" variant={course.is_published ? "default" : "outline"}>
-                    <Link href={`/courses/${course.slug}`}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <Badge variant={course.is_published ? "default" : "outline"}>
+                        {course.is_published
+                          ? i === 1
+                            ? t("home.coursesSection.badgePopular")
+                            : t("home.coursesSection.badgeNew")
+                          : t("home.coursesSection.badgeComingSoon")}
+                      </Badge>
+                      <span className="text-xs text-slate-500">
+                        {course.duration_months} {t("home.coursesSection.months")}
+                      </span>
+                    </div>
+                    <CardTitle className="mt-3 line-clamp-1 transition-colors group-hover:text-amber-400">
+                      {localizedField(course, "title", locale)}
+                    </CardTitle>
+                    <CardDescription className="line-clamp-2">
+                      {localizedField(course, "description", locale)}
+                    </CardDescription>
+                    {course.instructor_name && (
+                      <InstructorBadge
+                        name={course.instructor_name}
+                        avatarUrl={course.instructor_avatar_url}
+                        label={t("course.instructorLabel")}
+                      />
+                    )}
+                  </CardHeader>
+                  <CardContent className="flex items-center justify-between pt-0">
+                    <div>
+                      {course.price_start > 0 && (
+                        <>
+                          <p className="text-sm text-slate-400">
+                            {t("home.coursesSection.from")} {formatSom(course.price_start, locale)}
+                          </p>
+                          <p className="text-base font-semibold text-amber-400">
+                            {t("course.orMonthly", {
+                              amount: formatSom(computeMonthlyInstallment(course.price_start), locale),
+                            })}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                    <span className="inline-flex items-center gap-1 text-sm font-medium text-amber-400">
                       {t("home.coursesSection.viewCourse")}
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                    </span>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
 
