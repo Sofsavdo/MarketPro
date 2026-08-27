@@ -37,7 +37,15 @@ export default async function LessonPage({
   if (!lesson) notFound();
 
   const access = await getLessonAccess(user.id, course.id);
-  const locked = !access.hasCourseAccess || (await isLessonLocked(user.id, course.id, lesson.order_index));
+  // Mirrors the curriculum list's lock logic (courses/[slug]/page.tsx): a
+  // free-preview lesson must stay open to someone with no course access at
+  // all, not just to someone who has access but hasn't reached it in
+  // sequence yet. The previous version locked every lesson for anyone
+  // without hasCourseAccess regardless of is_free_preview, so the "free"
+  // first lesson was unopenable for exactly the students it's meant to hook.
+  const locked = access.hasCourseAccess
+    ? await isLessonLocked(user.id, course.id, lesson.order_index)
+    : !lesson.is_free_preview;
 
   const { data: questions } = await supabase
     .from("quiz_questions")
