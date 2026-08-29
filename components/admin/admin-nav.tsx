@@ -13,6 +13,7 @@ import {
   ListPlus,
   Tag,
   Star,
+  MonitorSmartphone,
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -20,6 +21,7 @@ const NAV_GROUPS = [
     label: "Kontent",
     items: [
       { href: "/admin", label: "Kurslar", icon: LayoutGrid },
+      { href: "/admin/landing", label: "Landing", icon: MonitorSmartphone },
       { href: "/admin/live-sessions", label: "Jonli darslar", icon: Radio },
     ],
   },

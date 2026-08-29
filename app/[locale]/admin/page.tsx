@@ -3,7 +3,9 @@ import { Link } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
 import { PublishToggle } from "@/components/admin/publish-toggle";
 import { ScrollFadeX } from "@/components/admin/scroll-fade-x";
+import { moveCourse } from "@/lib/lms/admin-actions";
 import { formatSom } from "@/lib/utils";
+import { ChevronUp, ChevronDown } from "lucide-react";
 
 export default async function AdminCoursesPage() {
   const supabase = await createAdminClient();
@@ -28,6 +30,7 @@ export default async function AdminCoursesPage() {
         <table className="w-full min-w-[720px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-slate-800 text-left text-slate-400">
+              <th className="py-2 pr-4">Tartib</th>
               <th className="py-2 pr-4">Nomi</th>
               <th className="py-2 pr-4">Narxlar (Start / Standart / Pro)</th>
               <th className="py-2 pr-4">Holat</th>
@@ -35,8 +38,32 @@ export default async function AdminCoursesPage() {
             </tr>
           </thead>
           <tbody>
-            {(courses ?? []).map((course) => (
+            {(courses ?? []).map((course, i) => (
               <tr key={course.id} className="border-b border-slate-900">
+                <td className="py-3 pr-4">
+                  <div className="flex items-center gap-1">
+                    <form action={moveCourse.bind(null, course.id, "up")}>
+                      <button
+                        type="submit"
+                        disabled={i === 0}
+                        aria-label="Yuqoriga"
+                        className="rounded p-1 text-slate-400 hover:bg-slate-800 hover:text-white disabled:opacity-20"
+                      >
+                        <ChevronUp className="h-4 w-4" />
+                      </button>
+                    </form>
+                    <form action={moveCourse.bind(null, course.id, "down")}>
+                      <button
+                        type="submit"
+                        disabled={i === (courses ?? []).length - 1}
+                        aria-label="Pastga"
+                        className="rounded p-1 text-slate-400 hover:bg-slate-800 hover:text-white disabled:opacity-20"
+                      >
+                        <ChevronDown className="h-4 w-4" />
+                      </button>
+                    </form>
+                  </div>
+                </td>
                 <td className="py-3 pr-4 text-white">{course.title_uz}</td>
                 <td className="py-3 pr-4 text-slate-400">
                   {formatSom(course.price_start)} / {formatSom(course.price_standard)} /{" "}
