@@ -243,11 +243,11 @@ export default async function CourseDetailPage({
                       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-semibold text-slate-300">
                         {mi + 1}
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-left font-semibold text-white">
+                      <span className="min-w-0 flex-1 truncate pr-1 text-left font-semibold text-white">
                         {localizedField(mod, "title", locale)}
                       </span>
                       <span className="shrink-0 text-xs font-normal text-slate-500">
-                        {unlockedCount > 0 && `${unlockedCount}/`}
+                        <span className="hidden sm:inline">{unlockedCount > 0 && `${unlockedCount}/`}</span>
                         {mod.lessons.length} {t("course.lessons")}
                       </span>
                     </span>
@@ -267,7 +267,7 @@ export default async function CourseDetailPage({
                               locked ? "cursor-not-allowed opacity-60" : "hover:border-amber-500/50",
                             )}
                           >
-                            <span className="relative flex h-11 w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-md bg-slate-800">
+                            <span className="relative flex h-9 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-slate-800 sm:h-11 sm:w-[72px]">
                               {lesson.thumbnail_url ? (
                                 <Image
                                   src={lesson.thumbnail_url}
