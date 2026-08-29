@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/server";
+import { ScrollFadeX } from "@/components/admin/scroll-fade-x";
 import { formatDate } from "@/lib/utils";
 
 export default async function AdminWaitlistPage() {
@@ -20,7 +21,8 @@ export default async function AdminWaitlistPage() {
         Hali ochilmagan kurslarga qiziqish bildirgan foydalanuvchilar.
       </p>
 
-      <div className="mt-6 overflow-x-auto">
+      <div className="mt-6">
+       <ScrollFadeX>
         <table className="w-full min-w-[600px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-slate-800 text-left text-slate-400">
@@ -50,6 +52,7 @@ export default async function AdminWaitlistPage() {
             )}
           </tbody>
         </table>
+       </ScrollFadeX>
       </div>
     </div>
   );
