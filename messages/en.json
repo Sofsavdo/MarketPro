@@ -232,7 +232,10 @@
     "streak": "{count}-day streak",
     "upsellTitle": "What's next",
     "upsellDesc": "You've completed the course! Check out other tracks.",
-    "browseMore": "Browse more courses"
+    "browseMore": "Browse more courses",
+    "statCourses": "Active courses",
+    "statAvgProgress": "Average progress",
+    "streakLabel": "day streak"
   },
   "footer": {
     "rights": "All rights reserved.",
