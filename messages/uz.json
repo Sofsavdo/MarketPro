@@ -26,7 +26,8 @@
       "stat2Value": "7+",
       "stat2Label": "Yo'nalish",
       "stat3Value": "3 yil",
-      "stat3Label": "Marketplace amaliy tajriba"
+      "stat3Label": "Marketplace amaliy tajriba",
+      "priceBadge": "{amount} so'mdan — oyiga"
     },
     "features": {
       "title": "Nega IZDOSH Academy",
@@ -74,6 +75,27 @@
       "a4": "Click va Payme orqali onlayn to'lov qilishingiz mumkin. To'lov tasdiqlangach, kurs darhol ochiladi.",
       "q5": "Video darslarni qayerda ko'raman?",
       "a5": "Barcha video darslar to'g'ridan-to'g'ri saytimizda, ichki pleer orqali ko'rsatiladi."
+    },
+    "testimonials": {
+      "title": "Bitiruvchilar",
+      "subtitle": "Ular yo'nalishni tugatib, ishga tushirdi",
+      "items": [
+        {
+          "quote": "Uzum Market yo'nalishini tugatib, birinchi oyda 8 mln so'm aylanma qildim. Mentor har bir topshiriqni real vaqtda tekshirdi.",
+          "name": "Nodira Musayeva",
+          "role": "Uzum Market, bitiruvchi"
+        },
+        {
+          "quote": "China Sourcing kursidan keyin o'zim mustaqil yetkazib beruvchi topib, marjani 2 barobar oshirdim. 12 oyga bo'lib to'langani juda qulay bo'ldi.",
+          "name": "Bekzod Tursunov",
+          "role": "China Sourcing, bitiruvchi"
+        },
+        {
+          "quote": "AI yo'nalishida birinchi ilovamni ishga tushirdim. Mijoz uchun bot va sayt endi men uchun oddiy ish.",
+          "name": "Dilnoza Karimova",
+          "role": "AI-development, bitiruvchi"
+        }
+      ]
     }
   },
   "pricing": {
