@@ -55,7 +55,7 @@ async function renumberCourseLessons(
   }
 }
 
-async function requireAdmin(): Promise<{ userId: string }> {
+export async function requireAdmin(): Promise<{ userId: string }> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -706,4 +706,33 @@ export async function deleteCourseReview(reviewId: string) {
     const { data: course } = await admin.from("courses").select("slug").eq("id", review.course_id).maybeSingle();
     if (course) revalidatePath(`/[locale]/courses/${course.slug}`, "page");
   }
+}
+
+/**
+ * Swaps this course's order_index with its neighbor — this is the order
+ * the home page carousel and /courses catalog both list courses in
+ * (getPublishedCourses() sorts by order_index), so this is the landing
+ * CMS's "kurslar tartibi" (course order) control.
+ */
+export async function moveCourse(courseId: string, direction: "up" | "down") {
+  await requireAdmin();
+  const admin = await createAdminClient();
+  const { data: courses } = await admin
+    .from("courses")
+    .select("id, order_index")
+    .order("order_index", { ascending: true });
+  if (!courses) return;
+
+  const idx = courses.findIndex((c) => c.id === courseId);
+  const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+  if (idx < 0 || swapIdx < 0 || swapIdx >= courses.length) return;
+
+  const a = courses[idx];
+  const b = courses[swapIdx];
+  await admin.from("courses").update({ order_index: b.order_index }).eq("id", a.id);
+  await admin.from("courses").update({ order_index: a.order_index }).eq("id", b.id);
+
+  revalidatePath("/admin");
+  revalidatePath("/[locale]", "page");
+  revalidatePath("/[locale]/courses", "page");
 }

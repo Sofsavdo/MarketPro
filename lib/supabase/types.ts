@@ -397,6 +397,22 @@ export interface Database {
         },
         { used_count?: number; active?: boolean }
       >;
+      landing_blocks: Table<
+        {
+          id: string;
+          key: string;
+          is_visible: boolean;
+          order_index: number;
+          content: Record<string, unknown>;
+          updated_at: string;
+        },
+        {
+          key: string;
+          is_visible?: boolean;
+          order_index?: number;
+          content?: Record<string, unknown>;
+        }
+      >;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
