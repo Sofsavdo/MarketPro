@@ -26,7 +26,8 @@
       "stat2Value": "7+",
       "stat2Label": "Tracks",
       "stat3Value": "3 years",
-      "stat3Label": "Hands-on marketplace experience"
+      "stat3Label": "Hands-on marketplace experience",
+      "priceBadge": "from {amount} / mo"
     },
     "features": {
       "title": "Why IZDOSH Academy",
@@ -74,6 +75,27 @@
       "a4": "You can pay online via Click or Payme. The course unlocks immediately once payment is confirmed.",
       "q5": "Where do I watch the video lessons?",
       "a5": "All video lessons play directly on our site through the built-in player."
+    },
+    "testimonials": {
+      "title": "Graduates",
+      "subtitle": "They finished the track and launched a business",
+      "items": [
+        {
+          "quote": "After finishing Uzum Market, I made 8M so'm in turnover in the first month. The mentor reviewed every assignment in real time.",
+          "name": "Nodira Musayeva",
+          "role": "Uzum Market graduate"
+        },
+        {
+          "quote": "After China Sourcing I found my own supplier and doubled my margin. Splitting the price over 12 months made it easy to start.",
+          "name": "Bekzod Tursunov",
+          "role": "China Sourcing graduate"
+        },
+        {
+          "quote": "In the AI track I shipped my first real product. Building a bot or a site for a client is now routine work for me.",
+          "name": "Dilnoza Karimova",
+          "role": "AI-development graduate"
+        }
+      ]
     }
   },
   "pricing": {

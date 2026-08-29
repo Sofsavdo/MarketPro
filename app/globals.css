@@ -127,3 +127,13 @@ body {
   background: #c9a227;
   color: #0a1628;
 }
+
+/* Hides the scrollbar on horizontally-scrolling strips (home page course
+   carousel) while keeping the element natively scrollable/swipeable. */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
