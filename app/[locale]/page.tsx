@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, Sparkles, Layers, Languages, ArrowRight, ImageOff, Star } from "lucide-react";
+import { ShieldCheck, Sparkles, Layers, Languages, ArrowRight, ImageOff, Star, Wallet } from "lucide-react";
 import { getPublishedCourses, localizedField } from "@/lib/courses";
 import { formatSom } from "@/lib/utils";
 import { computeMonthlyInstallment } from "@/lib/pricing";
@@ -66,7 +66,7 @@ export default async function HomePage() {
               "radial-gradient(560px circle at 12% -10%, rgba(201,162,39,0.22), transparent 60%), radial-gradient(480px circle at 92% 10%, rgba(16,185,129,0.12), transparent 60%)",
           }}
         />
-        <div className="relative mx-auto max-w-6xl px-4 py-24 text-center sm:py-32">
+        <div className="relative mx-auto max-w-6xl px-4 py-16 text-center sm:py-32">
           <span className="animate-fade-up inline-flex items-center gap-2 rounded-full bg-amber-500 px-3 py-1 text-xs font-semibold text-slate-950">
             {t("home.hero.eyebrow")}
           </span>
@@ -109,15 +109,15 @@ export default async function HomePage() {
           </div>
 
           <div
-            className="animate-fade-up mx-auto mt-16 grid max-w-3xl grid-cols-3 gap-6 border-t border-amber-200 pt-10"
+            className="animate-fade-up mx-auto mt-12 grid max-w-3xl grid-cols-3 gap-2 border-t border-amber-200 pt-8 sm:mt-16 sm:gap-6 sm:pt-10"
             style={{ animationDelay: "240ms" }}
           >
             {(["stat1", "stat2", "stat3"] as const).map((key) => (
               <div key={key}>
-                <p className="text-2xl font-bold text-amber-700 sm:text-3xl">
+                <p className="text-lg leading-tight font-bold text-balance text-amber-700 sm:text-3xl">
                   {t(`home.hero.${key}Value`)}
                 </p>
-                <p className="mt-1 text-xs text-slate-500 sm:text-sm">
+                <p className="mt-1 text-[11px] text-balance text-slate-500 sm:text-sm">
                   {t(`home.hero.${key}Label`)}
                 </p>
               </div>
@@ -127,9 +127,9 @@ export default async function HomePage() {
       </section>
 
       {/* Features */}
-      <section className="mx-auto max-w-6xl px-4 py-20">
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
         <h2 className="text-center text-3xl font-bold text-slate-950">{t("home.features.title")}</h2>
-        <div className="mt-12 grid gap-1 overflow-hidden rounded-2xl border border-amber-200 bg-amber-200 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid gap-1 overflow-hidden rounded-2xl border border-amber-200 bg-amber-200 sm:mt-12 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((f) => (
             <div key={f.title} className="flex h-full flex-col bg-white p-6 transition-colors hover:bg-amber-50">
               <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100">
@@ -143,7 +143,7 @@ export default async function HomePage() {
       </section>
 
       {/* Courses carousel */}
-      <section id="courses" className="border-y border-amber-200 bg-white py-20">
+      <section id="courses" className="border-y border-amber-200 bg-white py-14 sm:py-20">
         <div className="mx-auto max-w-6xl px-4">
           <div className="flex flex-col items-center gap-2 text-center">
             <h2 className="text-3xl font-bold text-slate-950">{t("home.coursesSection.title")}</h2>
@@ -151,7 +151,7 @@ export default async function HomePage() {
           </div>
 
           {!courses.length && (
-            <p className="mt-12 text-center text-slate-500">{t("home.coursesSection.empty")}</p>
+            <p className="mt-8 text-center text-slate-500">{t("home.coursesSection.empty")}</p>
           )}
 
           {courses.length > 0 && (
@@ -218,7 +218,7 @@ export default async function HomePage() {
             </CourseCarousel>
           )}
 
-          <div className="mt-10 flex justify-center">
+          <div className="mt-8 flex justify-center">
             <Button
               asChild
               size="lg"
@@ -231,12 +231,12 @@ export default async function HomePage() {
       </section>
 
       {/* Testimonials */}
-      <section className="mx-auto max-w-6xl px-4 py-20">
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-slate-950">{t("home.testimonials.title")}</h2>
           <p className="mt-2 text-slate-600">{t("home.testimonials.subtitle")}</p>
         </div>
-        <div className="mt-12 grid gap-5 sm:grid-cols-3">
+        <div className="mt-10 grid gap-5 sm:mt-12 sm:grid-cols-3">
           {testimonialItems.map((item) => (
             <div
               key={item.name}
@@ -262,26 +262,31 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Pricing teaser */}
-      <section className="border-y border-amber-200 bg-white px-4 py-20 text-center">
-        <h2 className="text-3xl font-bold text-slate-950">{t("home.pricingTeaser.title")}</h2>
-        <p className="mx-auto mt-3 max-w-xl text-slate-600">{t("home.pricingTeaser.subtitle")}</p>
-        <Button asChild size="lg" className="mt-8">
-          <Link href="/pricing">{t("home.pricingTeaser.cta")}</Link>
-        </Button>
-      </section>
-
-      {/* Guarantee */}
-      <section className="bg-gradient-to-b from-amber-100 to-amber-50 py-20">
-        <div className="mx-auto flex max-w-4xl flex-col items-center gap-4 px-4 text-center">
-          <ShieldCheck className="h-10 w-10 text-amber-700" />
-          <h2 className="text-3xl font-bold text-slate-950">{t("home.guarantee.title")}</h2>
-          <p className="max-w-2xl text-slate-600">{t("home.guarantee.desc")}</p>
+      {/* Pricing teaser + Guarantee */}
+      <section className="border-y border-amber-200 bg-white px-4 py-14 sm:py-20">
+        <div className="mx-auto grid max-w-5xl gap-5 sm:grid-cols-2">
+          <div className="flex flex-col items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-8">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/15">
+              <Wallet className="h-5 w-5 text-amber-700" />
+            </span>
+            <h2 className="text-xl font-bold text-slate-950">{t("home.pricingTeaser.title")}</h2>
+            <p className="text-sm text-slate-600">{t("home.pricingTeaser.subtitle")}</p>
+            <Button asChild className="mt-2">
+              <Link href="/pricing">{t("home.pricingTeaser.cta")}</Link>
+            </Button>
+          </div>
+          <div className="flex flex-col items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-8">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/15">
+              <ShieldCheck className="h-5 w-5 text-amber-700" />
+            </span>
+            <h2 className="text-xl font-bold text-slate-950">{t("home.guarantee.title")}</h2>
+            <p className="text-sm text-slate-600">{t("home.guarantee.desc")}</p>
+          </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="mx-auto max-w-3xl px-4 py-20">
+      <section className="mx-auto max-w-3xl px-4 py-14 sm:py-20">
         <h2 className="text-center text-3xl font-bold text-slate-950">{t("home.faq.title")}</h2>
         <div className="mt-10 divide-y divide-amber-200 rounded-2xl border border-amber-200 bg-white">
           {faqKeys.map((key) => (
