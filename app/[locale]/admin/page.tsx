@@ -2,6 +2,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { Link } from "@/i18n/navigation";
 import { Badge } from "@/components/ui/badge";
 import { PublishToggle } from "@/components/admin/publish-toggle";
+import { ScrollFadeX } from "@/components/admin/scroll-fade-x";
 import { formatSom } from "@/lib/utils";
 
 export default async function AdminCoursesPage() {
@@ -22,7 +23,8 @@ export default async function AdminCoursesPage() {
           + Yangi kurs
         </Link>
       </div>
-      <div className="mt-6 overflow-x-auto">
+      <div className="mt-6">
+       <ScrollFadeX>
         <table className="w-full min-w-[720px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-slate-800 text-left text-slate-400">
@@ -57,6 +59,7 @@ export default async function AdminCoursesPage() {
             ))}
           </tbody>
         </table>
+       </ScrollFadeX>
       </div>
     </div>
   );

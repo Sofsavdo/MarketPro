@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createLiveSession, deleteLiveSession } from "@/lib/lms/admin-actions";
+import { ScrollFadeX } from "@/components/admin/scroll-fade-x";
 import { formatDateTime } from "@/lib/utils";
 
 export default async function AdminLiveSessionsPage() {
@@ -98,7 +99,8 @@ export default async function AdminLiveSessionsPage() {
         </form>
       </details>
 
-      <div className="mt-8 overflow-x-auto">
+      <div className="mt-8">
+       <ScrollFadeX>
         <table className="w-full min-w-[760px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-slate-800 text-left text-slate-400">
@@ -143,6 +145,7 @@ export default async function AdminLiveSessionsPage() {
             )}
           </tbody>
         </table>
+       </ScrollFadeX>
       </div>
     </div>
   );

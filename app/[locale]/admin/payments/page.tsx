@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
+import { ScrollFadeX } from "@/components/admin/scroll-fade-x";
 import { formatSom, formatDate } from "@/lib/utils";
 import { refundPayment } from "@/lib/lms/admin-actions";
 
@@ -44,7 +45,8 @@ export default async function AdminPaymentsPage() {
         </div>
       </div>
 
-      <div className="mt-8 overflow-x-auto">
+      <div className="mt-8">
+       <ScrollFadeX>
         <table className="w-full min-w-[860px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-slate-800 text-left text-slate-400">
@@ -94,6 +96,7 @@ export default async function AdminPaymentsPage() {
             )}
           </tbody>
         </table>
+       </ScrollFadeX>
       </div>
     </div>
   );

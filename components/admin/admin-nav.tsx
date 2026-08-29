@@ -58,9 +58,9 @@ export function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="scrollbar-hide -mx-1 flex items-center gap-5 overflow-x-auto px-1 [&>div]:shrink-0">
+    <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
       {NAV_GROUPS.map((group) => (
-        <div key={group.label} className="flex items-center gap-1.5">
+        <div key={group.label} className="flex flex-wrap items-center gap-1.5">
           <span className="mr-1 hidden text-[10px] font-medium tracking-wide text-slate-600 uppercase sm:inline">
             {group.label}
           </span>
