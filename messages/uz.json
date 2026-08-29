@@ -232,7 +232,10 @@
     "streak": "{count} kunlik seriya",
     "upsellTitle": "Keyingi qadam",
     "upsellDesc": "Kursni tugatdingiz! Boshqa yo'nalishlarni ham ko'rib chiqing.",
-    "browseMore": "Boshqa kurslarni ko'rish"
+    "browseMore": "Boshqa kurslarni ko'rish",
+    "statCourses": "Faol kurslar",
+    "statAvgProgress": "O'rtacha progress",
+    "streakLabel": "kunlik seriya"
   },
   "footer": {
     "rights": "Barcha huquqlar himoyalangan.",
