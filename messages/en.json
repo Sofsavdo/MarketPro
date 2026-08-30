@@ -209,7 +209,9 @@
     "videoComingSoon": "Video coming soon",
     "materialsTitle": "Additional materials",
     "videoError": "Could not load the video. Check your connection or try again later.",
-    "lessonCompleted": "Lesson completed"
+    "lessonCompleted": "Lesson completed",
+    "nextLockedSequence": "Finish the current lesson to unlock it",
+    "nextLockedPurchase": "Purchase the course to continue"
   },
   "dashboard": {
     "title": "My courses",

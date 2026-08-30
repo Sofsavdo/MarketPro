@@ -17,7 +17,7 @@ const ALLOWED_TYPES: Record<string, string> = {
  * undefined), so callers can fall back to "leave the existing image alone."
  */
 export async function uploadImage(
-  bucket: "course-covers" | "lesson-thumbnails",
+  bucket: "course-covers" | "lesson-thumbnails" | "landing-images",
   file: File | null,
 ): Promise<string | null> {
   if (!file || file.size === 0) return null;

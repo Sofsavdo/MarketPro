@@ -209,7 +209,9 @@
     "videoComingSoon": "Video tez orada",
     "materialsTitle": "Qo'shimcha materiallar",
     "videoError": "Videoni yuklab bo'lmadi. Internet aloqasini tekshiring yoki keyinroq qayta urinib ko'ring.",
-    "lessonCompleted": "Dars yakunlandi"
+    "lessonCompleted": "Dars yakunlandi",
+    "nextLockedSequence": "Ochish uchun joriy darsni yakunlang",
+    "nextLockedPurchase": "Davom etish uchun kursni sotib oling"
   },
   "dashboard": {
     "title": "Mening kurslarim",

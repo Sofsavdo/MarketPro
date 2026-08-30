@@ -19,6 +19,7 @@ import {
   type PricingTeaserContent,
   type GuaranteeContent,
   type FaqContent,
+  type GalleryContent,
 } from "@/lib/landing";
 
 // Public, identical for every visitor — cache it instead of hitting
@@ -81,6 +82,7 @@ export default async function HomePage() {
   ) as PricingTeaserContent | null;
   const guarantee = localizedBlockContent<"guarantee">(blockByKey.get("guarantee"), locale) as GuaranteeContent | null;
   const faq = localizedBlockContent<"faq">(blockByKey.get("faq"), locale) as FaqContent | null;
+  const gallery = localizedBlockContent<"gallery">(blockByKey.get("gallery"), locale) as GalleryContent | null;
 
   return (
     <div className="bg-amber-50 text-slate-950">
@@ -134,6 +136,15 @@ export default async function HomePage() {
                 </span>
               )}
             </div>
+
+            {hero.imageUrl && (
+              <div
+                className="animate-fade-up relative mx-auto mt-12 aspect-[16/9] w-full max-w-3xl overflow-hidden rounded-2xl border border-amber-200 shadow-xl shadow-amber-900/10 sm:mt-16"
+                style={{ animationDelay: "210ms" }}
+              >
+                <Image src={hero.imageUrl} alt="" fill sizes="(min-width: 768px) 768px, 100vw" className="object-cover" />
+              </div>
+            )}
 
             <div
               className="animate-fade-up mx-auto mt-12 grid max-w-3xl grid-cols-3 gap-2 border-t border-amber-200 pt-8 sm:mt-16 sm:gap-6 sm:pt-10"
@@ -341,6 +352,32 @@ export default async function HomePage() {
                 <p className="mt-3 text-sm leading-relaxed text-slate-600">{item.a}</p>
               </details>
             ))}
+          </div>
+        </section>
+      )}
+
+      {gallery && gallery.items.length > 0 && visibleOrderedKeys.includes("gallery") && (
+        <section className="border-t border-amber-200 bg-white py-14 sm:py-20">
+          <div className="mx-auto max-w-6xl px-4">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-slate-950">{gallery.title}</h2>
+              <p className="mt-2 text-slate-600">{gallery.subtitle}</p>
+            </div>
+            <CourseCarousel>
+              {gallery.items.map((item, i) => (
+                <div
+                  key={i}
+                  className="relative aspect-[4/5] w-[240px] shrink-0 snap-start overflow-hidden rounded-2xl border border-amber-200 bg-amber-50"
+                >
+                  <Image src={item.imageUrl} alt={item.caption} fill sizes="240px" className="object-cover" />
+                  {item.caption && (
+                    <p className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-xs font-medium text-white">
+                      {item.caption}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </CourseCarousel>
           </div>
         </section>
       )}

@@ -209,7 +209,9 @@
     "videoComingSoon": "Видео скоро появится",
     "materialsTitle": "Дополнительные материалы",
     "videoError": "Не удалось загрузить видео. Проверьте интернет-соединение или попробуйте позже.",
-    "lessonCompleted": "Урок завершён"
+    "lessonCompleted": "Урок завершён",
+    "nextLockedSequence": "Чтобы открыть, завершите текущий урок",
+    "nextLockedPurchase": "Чтобы продолжить, купите курс"
   },
   "dashboard": {
     "title": "Мои курсы",

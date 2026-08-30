@@ -206,7 +206,7 @@ export default async function AdminCourseEditPage({
                       <Link href={`/admin/lessons/${lesson.id}`} className="min-w-0 flex-1">
                         {li + 1}. {lesson.title_uz}{" "}
                         <span className="text-slate-500">
-                          {lesson.video_url ? "🎬" : "📄"} {lesson.is_free_preview ? "· bepul" : ""}
+                          {lesson.bunny_video_id ? "🎬" : "📄"} {lesson.is_free_preview ? "· bepul" : ""}
                         </span>
                       </Link>
                       <div className="flex items-center gap-3 text-xs text-slate-500">

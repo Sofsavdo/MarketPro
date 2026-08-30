@@ -923,3 +923,30 @@ insert into public.landing_blocks (key, order_index, content) values
   ('guarantee', 5, '{"uz": {"title": "Risk sizda emas, bizda", "desc": "Birinchi 2 ta live darsdan keyin yoqmasa — savolsiz, 100% pul qaytarish. Agar barcha topshiriqlarni bajarsangiz-u, natija bo''lmasa — pulingizni to''liq qaytaramiz."}, "ru": {"title": "Риск не на вас, а на нас", "desc": "Если после первых 2 живых уроков не понравится — вернём 100% денег без вопросов. Если выполните все задания, но не получите результат — вернём деньги полностью."}, "en": {"title": "The risk is ours, not yours", "desc": "Don''t like it after the first 2 live lessons? 100% refund, no questions asked. Complete every assignment and still see no result? We''ll refund you in full."}}'::jsonb),
   ('faq', 6, '{"uz": {"title": "Ko''p so''raladigan savollar", "items": [{"q": "Kursni sotib olish uchun ro''yxatdan o''tishim shartmi?", "a": "Ha. Kursni xarid qilish va darslarni boshlash uchun avval bepul akkaunt yaratishingiz kerak."}, {"q": "Darslarni tartibsiz o''tsa bo''ladimi?", "a": "Yo''q. Har bir mavzu avvalgi mavzuni tugatib, oraliq testdan o''tgandan so''ng ochiladi — bu chuqur va tizimli o''zlashtirishni ta''minlaydi."}, {"q": "Obuna va alohida kurs narxi orasidagi farq nima?", "a": "Alohida kurs — faqat bitta yo''nalishga kirish huquqi beradi. Obuna esa barcha kurslarga bir vaqtning o''zida kirish imkonini beradi va uzoq muddatda ancha tejamli."}, {"q": "To''lovni qanday amalga oshiraman?", "a": "Click va Payme orqali onlayn to''lov qilishingiz mumkin. To''lov tasdiqlangach, kurs darhol ochiladi."}, {"q": "Video darslarni qayerda ko''raman?", "a": "Barcha video darslar to''g''ridan-to''g''ri saytimizda, ichki pleer orqali ko''rsatiladi."}]}, "ru": {"title": "Часто задаваемые вопросы", "items": [{"q": "Нужно ли регистрироваться для покупки курса?", "a": "Да. Для покупки курса и начала обучения сначала нужно создать бесплатный аккаунт."}, {"q": "Можно ли проходить уроки в произвольном порядке?", "a": "Нет. Каждая тема открывается только после завершения предыдущей темы и прохождения промежуточного теста — это обеспечивает глубокое и системное усвоение."}, {"q": "В чём разница между подпиской и отдельным курсом?", "a": "Отдельный курс даёт доступ только к одному направлению. Подписка даёт доступ ко всем курсам одновременно и намного выгоднее в долгосрочной перспективе."}, {"q": "Как оплатить?", "a": "Вы можете оплатить онлайн через Click или Payme. После подтверждения оплаты курс открывается сразу."}, {"q": "Где я буду смотреть видеоуроки?", "a": "Все видеоуроки показываются прямо на нашем сайте через встроенный плеер."}]}, "en": {"title": "Frequently asked questions", "items": [{"q": "Do I need to sign up before buying a course?", "a": "Yes. You need a free account before you can purchase a course and start learning."}, {"q": "Can I take the lessons out of order?", "a": "No. Each topic unlocks only after you complete the previous topic and pass its quiz — this ensures deep, systematic learning."}, {"q": "What''s the difference between a subscription and buying a single course?", "a": "A single course gives access to just that one track. A subscription gives access to every course at once, and is far more cost-effective long-term."}, {"q": "How do I pay?", "a": "You can pay online via Click or Payme. The course unlocks immediately once payment is confirmed."}, {"q": "Where do I watch the video lessons?", "a": "All video lessons play directly on our site through the built-in player."}]}}'::jsonb)
 on conflict (key) do nothing;
+
+-- ============================================================
+-- Bunny.net Stream video hosting for lessons
+-- Replaces the old YouTube-link `video_url` field: YouTube's embed is slow
+-- to bootstrap and its own UI surfaces "related videos" that let a student
+-- navigate off the course entirely. `video_url` is left in place (unused)
+-- rather than dropped, so this stays a purely additive migration.
+-- ============================================================
+alter table public.lessons add column if not exists bunny_video_id text;
+
+-- ============================================================
+-- Landing image gallery — a new "gallery" landing_blocks entry (list-shaped,
+-- same admin-resizable pattern as testimonials/faq) plus a hero background
+-- image, both uploaded via a public "landing-images" bucket. Same
+-- public-read / service-role-write pattern as course-covers above.
+-- ============================================================
+insert into storage.buckets (id, name, public)
+values ('landing-images', 'landing-images', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Landing images are publicly readable" on storage.objects;
+create policy "Landing images are publicly readable" on storage.objects
+  for select using (bucket_id = 'landing-images');
+
+insert into public.landing_blocks (key, order_index, content) values
+  ('gallery', 7, '{"uz": {"title": "Jarayondan lavhalar", "subtitle": "O''quv jarayoni va bitiruvchilar hayotidan", "items": []}, "ru": {"title": "Кадры из процесса", "subtitle": "Из учебного процесса и жизни выпускников", "items": []}, "en": {"title": "Behind the scenes", "subtitle": "From the learning process and our graduates'' lives", "items": []}}'::jsonb)
+on conflict (key) do nothing;

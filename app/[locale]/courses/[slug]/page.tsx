@@ -172,7 +172,10 @@ export default async function CourseDetailPage({
         </div>
       ) : (
         access.accessLevel !== "pro" && (
-          <div className="animate-fade-up mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/40 bg-amber-500/5 px-5 py-4">
+          <div
+            id="purchase"
+            className="animate-fade-up mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/40 bg-amber-500/5 px-5 py-4 scroll-mt-24"
+          >
             <div className="flex items-center gap-3">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/15">
                 <ShoppingBag className="h-4 w-4 text-amber-400" />

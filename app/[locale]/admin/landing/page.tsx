@@ -2,7 +2,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, ChevronUp, ChevronDown, Eye, EyeOff, Trash2, Plus } from "lucide-react";
+import { CheckCircle2, ChevronUp, ChevronDown, Eye, EyeOff, Trash2, Plus, Upload } from "lucide-react";
 import {
   updateLandingBlockContent,
   updateLandingListItemContent,
@@ -11,6 +11,8 @@ import {
   moveLandingListItem,
   toggleLandingBlockVisibility,
   moveLandingBlock,
+  updateLandingHeroImage,
+  addLandingGalleryImage,
 } from "@/lib/lms/landing-actions";
 import type { LandingBlockKey } from "@/lib/landing";
 import type { Locale } from "@/i18n/routing";
@@ -26,6 +28,7 @@ const BLOCK_LABELS: Record<LandingBlockKey, string> = {
   pricing_teaser: "Narx taklifi bloki",
   guarantee: "Kafolat bloki",
   faq: "Ko'p so'raladigan savollar",
+  gallery: "Rasmlar galereyasi (carusel)",
 };
 
 type FieldDef = { name: string; label: string; multiline?: boolean };
@@ -68,6 +71,10 @@ const LIST_TOP_FIELDS: Partial<Record<LandingBlockKey, FieldDef[]>> = {
     { name: "subtitle", label: "Bo'lim tavsifi" },
   ],
   faq: [{ name: "title", label: "Bo'lim sarlavhasi" }],
+  gallery: [
+    { name: "title", label: "Bo'lim sarlavhasi" },
+    { name: "subtitle", label: "Bo'lim tavsifi" },
+  ],
 };
 
 const ITEM_FIELDS: Partial<Record<LandingBlockKey, FieldDef[]>> = {
@@ -84,9 +91,12 @@ const ITEM_FIELDS: Partial<Record<LandingBlockKey, FieldDef[]>> = {
     { name: "q", label: "Savol" },
     { name: "a", label: "Javob", multiline: true },
   ],
+  gallery: [{ name: "caption", label: "Izoh (ixtiyoriy)" }],
 };
 
-const RESIZABLE: LandingBlockKey[] = ["testimonials", "faq"];
+const RESIZABLE: LandingBlockKey[] = ["testimonials", "faq", "gallery"];
+/** Gallery items carry an uploaded image, not just text — its "add" flow is a file form, not the generic blank-item button. */
+const IMAGE_LIST_BLOCKS: LandingBlockKey[] = ["gallery"];
 
 export default async function AdminLandingPage({
   searchParams,
@@ -184,6 +194,36 @@ export default async function AdminLandingPage({
                 </summary>
 
                 <div className="mt-4 space-y-6 border-t border-slate-800 pt-4">
+                  {key === "hero" && (
+                    <div className="space-y-2">
+                      <Label className="text-xs">Hero rasmi (ixtiyoriy, barcha tillar uchun bitta rasm)</Label>
+                      {(() => {
+                        const heroImageUrl = (row.content as Record<string, { imageUrl?: string }>)?.uz
+                          ?.imageUrl;
+                        return heroImageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element -- admin preview of a Supabase Storage URL
+                          <img
+                            src={heroImageUrl}
+                            alt=""
+                            className="h-32 w-auto rounded-lg border border-slate-800 object-cover"
+                          />
+                        ) : null;
+                      })()}
+                      <form action={updateLandingHeroImage} className="flex items-center gap-2">
+                        <input
+                          type="file"
+                          name="image_file"
+                          accept="image/jpeg,image/png,image/webp"
+                          required
+                          className="text-sm text-slate-300 file:mr-3 file:rounded-md file:border-0 file:bg-amber-500 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-950 hover:file:bg-amber-400"
+                        />
+                        <Button type="submit" size="sm" variant="outline">
+                          Yuklash
+                        </Button>
+                      </form>
+                    </div>
+                  )}
+
                   {/* Flat / top-level fields, one card per locale */}
                   {(flatFields || topFields) && (
                     <div className="grid gap-3 sm:grid-cols-3">
@@ -262,6 +302,22 @@ export default async function AdminLandingPage({
                                 </div>
                               )}
                             </div>
+                            {IMAGE_LIST_BLOCKS.includes(key) &&
+                              (() => {
+                                const imgUrl = (
+                                  (contentByLocale?.uz?.items ?? [])[idx] as
+                                    | { imageUrl?: string }
+                                    | undefined
+                                )?.imageUrl;
+                                return imgUrl ? (
+                                  // eslint-disable-next-line @next/next/no-img-element -- admin preview of a Supabase Storage URL
+                                  <img
+                                    src={imgUrl}
+                                    alt=""
+                                    className="mt-2 h-24 w-40 rounded-lg border border-slate-800 object-cover"
+                                  />
+                                ) : null;
+                              })()}
                             <div className="mt-2 grid gap-3 sm:grid-cols-3">
                               {LOCALES.map((locale) => (
                                 <form
@@ -295,7 +351,28 @@ export default async function AdminLandingPage({
                         ));
                       })()}
 
-                      {isResizable && (
+                      {isResizable && IMAGE_LIST_BLOCKS.includes(key) && (
+                        <form
+                          action={addLandingGalleryImage}
+                          className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-slate-700 p-3"
+                        >
+                          <input
+                            type="file"
+                            name="image_file"
+                            accept="image/jpeg,image/png,image/webp"
+                            required
+                            className="text-sm text-slate-300 file:mr-3 file:rounded-md file:border-0 file:bg-amber-500 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-950 hover:file:bg-amber-400"
+                          />
+                          <Input name="caption_uz" placeholder="Izoh (UZ)" className="w-36 text-sm" />
+                          <Input name="caption_ru" placeholder="Izoh (RU)" className="w-36 text-sm" />
+                          <Input name="caption_en" placeholder="Izoh (EN)" className="w-36 text-sm" />
+                          <Button type="submit" size="sm" className="gap-1.5">
+                            <Upload className="h-3.5 w-3.5" /> Rasm qo&apos;shish
+                          </Button>
+                        </form>
+                      )}
+
+                      {isResizable && !IMAGE_LIST_BLOCKS.includes(key) && (
                         <form
                           action={addLandingListItem.bind(
                             null,
