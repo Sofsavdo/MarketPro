@@ -7,6 +7,7 @@ import { getLessonAccess, isLessonLocked, isFreePreview } from "@/lib/lms/access
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import type { Locale } from "@/i18n/routing";
 import { LessonPlayer } from "@/components/course/lesson-player";
+import { getBunnyEmbedUrl } from "@/lib/video/bunny";
 import { LessonComments } from "@/components/course/lesson-comments";
 import { submitLessonComment } from "@/lib/lms/reviews-actions";
 
@@ -129,7 +130,7 @@ export default async function LessonPage({
           courseId={course.id}
           courseSlug={course.slug}
           lessonId={lesson.id}
-          videoUrl={lesson.video_url}
+          videoEmbedUrl={lesson.bunny_video_id ? getBunnyEmbedUrl(lesson.bunny_video_id) : undefined}
           content={localizedField(lesson, "content", locale) ?? undefined}
           questions={(questions ?? []).map((q) => ({
             id: q.id,
@@ -146,7 +147,6 @@ export default async function LessonPage({
             fileType: m.file_type,
           }))}
           watermarkText={user.phone ? `${user.phone} · ${user.id.slice(0, 8)}` : undefined}
-          thumbnailUrl={lesson.thumbnail_url ?? undefined}
           prevLessonId={prevLesson?.id}
           nextLessonId={nextLesson?.id}
           nextLocked={nextLocked}

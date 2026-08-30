@@ -100,6 +100,7 @@ export interface Database {
           title_ru: string;
           title_en: string;
           video_url: string;
+          bunny_video_id: string | null;
           thumbnail_url: string | null;
           content_uz: string | null;
           content_ru: string | null;

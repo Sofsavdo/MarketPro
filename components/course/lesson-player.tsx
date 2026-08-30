@@ -1,15 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, FileText, Presentation, Image as ImageIcon, Link as LinkIcon, Download, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { VideoWatermark, BrandWatermark } from "@/components/course/video-watermark";
-
-const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
 
 interface Question {
   id: string;
@@ -36,14 +33,13 @@ export function LessonPlayer({
   courseId,
   courseSlug,
   lessonId,
-  videoUrl,
+  videoEmbedUrl,
   content,
   questions,
   alreadyCompleted,
   quizAlreadyPassed,
   materials = [],
   watermarkText,
-  thumbnailUrl,
   prevLessonId,
   nextLessonId,
   nextLocked,
@@ -51,7 +47,8 @@ export function LessonPlayer({
   courseId: string;
   courseSlug: string;
   lessonId: string;
-  videoUrl: string;
+  /** Pre-signed Bunny Stream embed URL (see lib/video/bunny.ts), or undefined for a text-only lesson. */
+  videoEmbedUrl?: string;
   content?: string;
   questions: Question[];
   alreadyCompleted: boolean;
@@ -59,8 +56,6 @@ export function LessonPlayer({
   materials?: Material[];
   /** Student's phone + short id, stamped over the video (see VideoWatermark). */
   watermarkText?: string;
-  /** Shown as the player's poster image before playback starts. */
-  thumbnailUrl?: string;
   /** Adjacent lessons in course order, for the prev/next nav row below. */
   prevLessonId?: string;
   nextLessonId?: string;
@@ -69,22 +64,45 @@ export function LessonPlayer({
 }) {
   const t = useTranslations("lesson");
   const router = useRouter();
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const [videoWatched, setVideoWatched] = useState(alreadyCompleted || !videoUrl);
+  const [videoWatched, setVideoWatched] = useState(alreadyCompleted || !videoEmbedUrl);
   const [videoError, setVideoError] = useState(false);
 
-  // react-player's provider embeds (YouTube/Vimeo custom elements) can fail
-  // to load their bootstrap script off-thread — that rejection doesn't
-  // surface through the <video> element's onError, so without this the
-  // player silently shows a broken-image icon instead of a real message.
+  // Bunny's embed player speaks the player.js postMessage protocol
+  // (docs.bunny.net/stream/playback-api): it posts an unprompted "ready"
+  // event, after which a listener must be registered for any other event —
+  // "ended" here, to unlock lesson completion the same way onEnded used to.
   useEffect(() => {
-    if (!videoUrl || videoError) return;
-    function handleRejection() {
-      setVideoError(true);
+    if (!videoEmbedUrl || videoError) return;
+
+    function post(message: Record<string, unknown>) {
+      iframeRef.current?.contentWindow?.postMessage(JSON.stringify(message), "*");
     }
-    window.addEventListener("unhandledrejection", handleRejection);
-    return () => window.removeEventListener("unhandledrejection", handleRejection);
-  }, [videoUrl, videoError]);
+
+    function handleMessage(event: MessageEvent) {
+      if (typeof event.data !== "string") return;
+      let data: { context?: string; event?: string } | null = null;
+      try {
+        data = JSON.parse(event.data);
+      } catch {
+        return;
+      }
+      if (data?.context !== "player.js") return;
+
+      if (data.event === "ready") {
+        post({ context: "player.js", version: "0.0.1", method: "addEventListener", value: "ended", listener: "ended" });
+        post({ context: "player.js", version: "0.0.1", method: "addEventListener", value: "error", listener: "error" });
+      } else if (data.event === "ended") {
+        setVideoWatched(true);
+      } else if (data.event === "error") {
+        setVideoError(true);
+      }
+    }
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [videoEmbedUrl, videoError]);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [quizResult, setQuizResult] = useState<"passed" | "failed" | null>(
     quizAlreadyPassed ? "passed" : null,
@@ -133,7 +151,7 @@ export function LessonPlayer({
 
   return (
     <div className="mt-8 space-y-8">
-      {videoUrl && (
+      {videoEmbedUrl && (
         <div className="relative aspect-video overflow-hidden rounded-2xl border border-slate-800 bg-black">
           {videoError ? (
             <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center text-slate-500">
@@ -142,13 +160,13 @@ export function LessonPlayer({
             </div>
           ) : (
             <>
-              <ReactPlayer
-                src={videoUrl}
-                poster={thumbnailUrl}
-                width="100%"
-                height="100%"
-                controls
-                onEnded={() => setVideoWatched(true)}
+              <iframe
+                ref={iframeRef}
+                src={videoEmbedUrl}
+                loading="lazy"
+                className="h-full w-full"
+                allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;"
+                allowFullScreen
                 onError={() => setVideoError(true)}
               />
               <BrandWatermark />
@@ -162,7 +180,7 @@ export function LessonPlayer({
         <div className="prose prose-invert prose-slate max-w-none text-slate-300">{content}</div>
       )}
 
-      {!videoUrl && !content && materials.length === 0 && (
+      {!videoEmbedUrl && !content && materials.length === 0 && (
         <div className="flex aspect-video items-center justify-center rounded-2xl border border-dashed border-slate-800 text-slate-600">
           {t("videoComingSoon")}
         </div>

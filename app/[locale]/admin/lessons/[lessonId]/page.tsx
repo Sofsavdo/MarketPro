@@ -7,11 +7,14 @@ import { Label } from "@/components/ui/label";
 import { CheckCircle2 } from "lucide-react";
 import {
   updateLesson,
+  removeLessonVideo,
   addQuizQuestion,
   deleteQuizQuestion,
   addLessonMaterial,
   deleteLessonMaterial,
 } from "@/lib/lms/admin-actions";
+import { VideoUploadField } from "@/components/admin/video-upload-field";
+import { getBunnyEmbedUrl } from "@/lib/video/bunny";
 
 const FILE_TYPE_LABELS: Record<string, string> = {
   pdf: "PDF",
@@ -85,11 +88,29 @@ export default async function AdminLessonEditPage({
           <Field label="Sarlavha (EN)" name="title_en" defaultValue={lesson.title_en} />
         </div>
 
-        <Field
-          label="Video havolasi (YouTube/Vimeo) — ixtiyoriy, faqat matn/material bilan ham dars bo'lishi mumkin"
-          name="video_url"
-          defaultValue={lesson.video_url}
-        />
+        <div className="flex flex-col gap-1.5">
+          <Label>Dars videosi — ixtiyoriy, faqat matn/material bilan ham dars bo&apos;lishi mumkin</Label>
+          {lesson.bunny_video_id ? (
+            <div className="space-y-2">
+              <div className="aspect-video max-w-md overflow-hidden rounded-lg border border-slate-800 bg-black">
+                <iframe
+                  src={getBunnyEmbedUrl(lesson.bunny_video_id)}
+                  loading="lazy"
+                  className="h-full w-full"
+                  allow="accelerometer;encrypted-media;picture-in-picture;"
+                  allowFullScreen
+                />
+              </div>
+              <form action={removeLessonVideo.bind(null, lessonId)}>
+                <button type="submit" className="text-sm text-red-400 hover:underline">
+                  Videoni o&apos;chirish va boshqasini yuklash
+                </button>
+              </form>
+            </div>
+          ) : (
+            <VideoUploadField lessonId={lessonId} />
+          )}
+        </div>
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="thumbnail_file">

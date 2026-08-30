@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { uploadImage } from "@/lib/supabase/storage";
+import { deleteBunnyVideo } from "@/lib/video/bunny";
 import { revokeAccessForPayment } from "@/lib/payments/grant-access";
 import { createInstallmentPlan, markInstallmentPaid } from "@/lib/payments/installments";
 import { INSTALLMENT_MONTHS } from "@/lib/pricing";
@@ -181,7 +182,6 @@ export async function updateLesson(lessonId: string, formData: FormData) {
       title_uz: String(formData.get("title_uz") ?? ""),
       title_ru: String(formData.get("title_ru") ?? ""),
       title_en: String(formData.get("title_en") ?? ""),
-      video_url: String(formData.get("video_url") ?? ""),
       ...(newThumbnailUrl ? { thumbnail_url: newThumbnailUrl } : {}),
       content_uz: String(formData.get("content_uz") ?? ""),
       content_ru: String(formData.get("content_ru") ?? ""),
@@ -194,6 +194,25 @@ export async function updateLesson(lessonId: string, formData: FormData) {
   // Same "Saqlash gave no feedback" gap as updateCourse — see that
   // function's own comment.
   redirect(`/admin/lessons/${lessonId}?saved=1`);
+}
+
+/** Detaches and deletes a lesson's Bunny Stream video (e.g. to re-upload). */
+export async function removeLessonVideo(lessonId: string) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+
+  const { data: lesson } = await admin
+    .from("lessons")
+    .select("bunny_video_id")
+    .eq("id", lessonId)
+    .maybeSingle();
+
+  if (lesson?.bunny_video_id) {
+    await deleteBunnyVideo(lesson.bunny_video_id);
+  }
+
+  await admin.from("lessons").update({ bunny_video_id: null }).eq("id", lessonId);
+  revalidatePath(`/admin/lessons/${lessonId}`);
 }
 
 export async function createModule(courseId: string, formData: FormData) {

@@ -13,6 +13,7 @@ export const LANDING_BLOCK_KEYS = [
   "pricing_teaser",
   "guarantee",
   "faq",
+  "gallery",
 ] as const;
 export type LandingBlockKey = (typeof LANDING_BLOCK_KEYS)[number];
 
@@ -28,6 +29,8 @@ export interface HeroContent {
   stat2Label: string;
   stat3Value: string;
   stat3Label: string;
+  /** Optional hero image, uploaded from /admin/landing — same photo across all 3 locales. */
+  imageUrl?: string;
 }
 export interface FeatureItem {
   title: string;
@@ -68,6 +71,15 @@ export interface FaqContent {
   title: string;
   items: FaqItem[];
 }
+export interface GalleryItem {
+  imageUrl: string;
+  caption: string;
+}
+export interface GalleryContent {
+  title: string;
+  subtitle: string;
+  items: GalleryItem[];
+}
 
 /** Maps a block key to its per-locale content's TypeScript shape. */
 export interface LandingBlockContentMap {
@@ -78,6 +90,7 @@ export interface LandingBlockContentMap {
   pricing_teaser: PricingTeaserContent;
   guarantee: GuaranteeContent;
   faq: FaqContent;
+  gallery: GalleryContent;
 }
 
 export interface LandingBlock<K extends LandingBlockKey = LandingBlockKey> {
