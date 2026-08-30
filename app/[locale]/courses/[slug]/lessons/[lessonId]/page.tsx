@@ -150,6 +150,7 @@ export default async function LessonPage({
           prevLessonId={prevLesson?.id}
           nextLessonId={nextLesson?.id}
           nextLocked={nextLocked}
+          hasCourseAccess={access.hasCourseAccess}
         />
       )}
 

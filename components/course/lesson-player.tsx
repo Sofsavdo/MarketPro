@@ -43,6 +43,7 @@ export function LessonPlayer({
   prevLessonId,
   nextLessonId,
   nextLocked,
+  hasCourseAccess,
 }: {
   courseId: string;
   courseSlug: string;
@@ -61,6 +62,8 @@ export function LessonPlayer({
   nextLessonId?: string;
   /** Whether the next lesson is still locked for this user. */
   nextLocked?: boolean;
+  /** Whether this student has bought the course at all — decides *why* the next lesson is locked. */
+  hasCourseAccess?: boolean;
 }) {
   const t = useTranslations("lesson");
   const router = useRouter();
@@ -290,9 +293,28 @@ export function LessonPlayer({
           )}
           {nextLessonId &&
             (nextLocked ? (
-              <Button size="sm" variant="outline" disabled className="gap-1.5">
-                <Lock className="h-3.5 w-3.5" /> {t("nextLesson")}
-              </Button>
+              hasCourseAccess ? (
+                <div className="flex flex-col items-end gap-1">
+                  <Button size="sm" variant="outline" disabled className="gap-1.5">
+                    <Lock className="h-3.5 w-3.5" /> {t("nextLesson")}
+                  </Button>
+                  <p className="text-xs text-slate-500">{t("nextLockedSequence")}</p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-end gap-1">
+                  <Button asChild size="sm" variant="outline" className="gap-1.5">
+                    <Link href={`/courses/${courseSlug}#purchase`}>
+                      <Lock className="h-3.5 w-3.5" /> {t("nextLesson")}
+                    </Link>
+                  </Button>
+                  <Link
+                    href={`/courses/${courseSlug}#purchase`}
+                    className="text-xs text-amber-400 hover:underline"
+                  >
+                    {t("nextLockedPurchase")}
+                  </Link>
+                </div>
+              )
             ) : (
               <Button asChild size="sm">
                 <Link href={`/courses/${courseSlug}/lessons/${nextLessonId}`}>
