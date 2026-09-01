@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getTranslations, getLocale } from "next-intl/server";
 import Image from "next/image";
 import { ArrowRight, ImageOff } from "lucide-react";
@@ -5,10 +6,30 @@ import { Link } from "@/i18n/navigation";
 import { getPublishedCourses, localizedField } from "@/lib/courses";
 import { formatSom } from "@/lib/utils";
 import { computeMonthlyInstallment } from "@/lib/pricing";
+import { routing } from "@/i18n/routing";
 import type { Locale } from "@/i18n/routing";
 
 // Same reasoning as the homepage — public catalog data, safe to cache.
 export const revalidate = 300;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "seo" });
+  return {
+    title: t("coursesTitle"),
+    description: t("coursesDescription"),
+    keywords: t("coursesKeywords"),
+    alternates: {
+      canonical: `/${locale}/courses`,
+      languages: Object.fromEntries(routing.locales.map((l) => [l, `/${l}/courses`])),
+    },
+    openGraph: { title: t("coursesTitle"), description: t("coursesDescription"), type: "website" },
+  };
+}
 
 /*
  * Light landing treatment, matching the home page's course carousel card

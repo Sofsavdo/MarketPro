@@ -4,6 +4,12 @@
     "fullName": "IZDOSH Academy",
     "tagline": "Learn in-demand skills"
   },
+  "seo": {
+    "homeKeywords": "izdosh, izdosh academy, izdosh.uz, Uzum Market course, marketplace selling course, China sourcing course, landing page course, Telegram bot course, AI development course, vibecoding, startup MVP, online course Uzbekistan, practical skills courses",
+    "coursesTitle": "Courses — Uzum Market, marketplace selling, AI development",
+    "coursesDescription": "Every IZDOSH Academy track: Uzum Market selling, marketplace business, China sourcing, landing page building, Telegram bot development, VibeCoding, Startup MVP. Video lessons, quizzes, and a certificate.",
+    "coursesKeywords": "Uzum Market course, marketplace selling course, China sourcing course, landing page course, Telegram bot course, AI development course, IZDOSH Academy courses"
+  },
   "nav": {
     "courses": "Courses",
     "pricing": "Pricing",

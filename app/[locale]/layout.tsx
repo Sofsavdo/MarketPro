@@ -21,6 +21,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "brand" });
+  const tSeo = await getTranslations({ locale, namespace: "seo" });
   const title = { default: t("fullName"), template: `%s — ${t("fullName")}` };
   const description = t("tagline");
 
@@ -28,6 +29,7 @@ export async function generateMetadata({
     metadataBase: new URL(siteUrl),
     title,
     description,
+    keywords: tSeo("homeKeywords"),
     alternates: {
       canonical: `/${locale}`,
       languages: Object.fromEntries(routing.locales.map((l) => [l, `/${l}`])),
@@ -35,6 +37,29 @@ export async function generateMetadata({
     openGraph: { title: t("fullName"), description, siteName: t("fullName"), locale, type: "website" },
     twitter: { card: "summary_large_image", title: t("fullName"), description },
   };
+}
+
+/**
+ * Organization structured data (schema.org, via JSON-LD) — helps both
+ * Google's entity understanding (Knowledge Panel eligibility) and AI
+ * systems that crawl for structured facts about a brand rather than
+ * free-form text. Rendered on every locale's every page since it's the
+ * same entity regardless of which page or language someone lands on.
+ */
+async function OrganizationJsonLd({ locale }: { locale: string }) {
+  const t = await getTranslations({ locale, namespace: "brand" });
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "EducationalOrganization",
+    name: t("fullName"),
+    alternateName: t("name"),
+    url: siteUrl,
+    description: t("tagline"),
+    sameAs: ["https://t.me/izdosh_academy", "https://instagram.com/izdosh.uz"],
+  };
+  return (
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+  );
 }
 
 export default async function LocaleLayout({
@@ -52,6 +77,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} className={`${sans.variable} ${mono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-slate-950">
+        <OrganizationJsonLd locale={locale} />
         <NextIntlClientProvider>
           <Header />
           <main className="flex-1">{children}</main>
