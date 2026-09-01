@@ -14,6 +14,7 @@ import {
   deleteLessonMaterial,
 } from "@/lib/lms/admin-actions";
 import { VideoUploadField } from "@/components/admin/video-upload-field";
+import { DeleteVideoButton } from "@/components/admin/delete-video-button";
 import { getBunnyEmbedUrl } from "@/lib/video/bunny";
 
 const FILE_TYPE_LABELS: Record<string, string> = {
@@ -81,35 +82,33 @@ export default async function AdminLessonEditPage({
         </div>
       )}
 
+      <h2 className="mt-8 text-xl font-semibold text-white">Dars videosi</h2>
+      <p className="mt-1 text-sm text-slate-500">
+        Ixtiyoriy — faqat matn/material bilan ham dars bo&apos;lishi mumkin.
+      </p>
+      <div className="mt-4 max-w-md">
+        {lesson.bunny_video_id ? (
+          <div className="space-y-2">
+            <div className="aspect-video overflow-hidden rounded-lg border border-slate-800 bg-black">
+              <iframe
+                src={getBunnyEmbedUrl(lesson.bunny_video_id)}
+                className="h-full w-full"
+                allow="accelerometer;encrypted-media;picture-in-picture;"
+                allowFullScreen
+              />
+            </div>
+            <DeleteVideoButton action={removeLessonVideo.bind(null, lessonId)} />
+          </div>
+        ) : (
+          <VideoUploadField lessonId={lessonId} />
+        )}
+      </div>
+
       <form action={updateLessonWithId} className="mt-8 max-w-2xl space-y-6">
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Sarlavha (UZ)" name="title_uz" defaultValue={lesson.title_uz} />
           <Field label="Sarlavha (RU)" name="title_ru" defaultValue={lesson.title_ru} />
           <Field label="Sarlavha (EN)" name="title_en" defaultValue={lesson.title_en} />
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <Label>Dars videosi — ixtiyoriy, faqat matn/material bilan ham dars bo&apos;lishi mumkin</Label>
-          {lesson.bunny_video_id ? (
-            <div className="space-y-2">
-              <div className="aspect-video max-w-md overflow-hidden rounded-lg border border-slate-800 bg-black">
-                <iframe
-                  src={getBunnyEmbedUrl(lesson.bunny_video_id)}
-                  loading="lazy"
-                  className="h-full w-full"
-                  allow="accelerometer;encrypted-media;picture-in-picture;"
-                  allowFullScreen
-                />
-              </div>
-              <form action={removeLessonVideo.bind(null, lessonId)}>
-                <button type="submit" className="text-sm text-red-400 hover:underline">
-                  Videoni o&apos;chirish va boshqasini yuklash
-                </button>
-              </form>
-            </div>
-          ) : (
-            <VideoUploadField lessonId={lessonId} />
-          )}
         </div>
 
         <div className="flex flex-col gap-1.5">

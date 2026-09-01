@@ -84,5 +84,9 @@ export function getBunnyEmbedUrl(videoId: string, ttlSeconds = 4 * 3600): string
     .update(`${securityKey}${videoId}${expires}`)
     .digest("hex");
 
-  return `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?token=${token}&expires=${expires}&autoplay=false`;
+  // preload=true tells Bunny's player to start buffering the manifest/first
+  // segment as soon as the iframe loads instead of waiting for the play
+  // click — without it, the black screen a student sees before playback
+  // starts includes both HLS startup latency *and* this initial fetch.
+  return `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?token=${token}&expires=${expires}&autoplay=false&preload=true`;
 }
