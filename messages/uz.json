@@ -4,6 +4,12 @@
     "fullName": "IZDOSH Academy",
     "tagline": "Amaliy kasblarni o'rganing"
   },
+  "seo": {
+    "homeKeywords": "izdosh, izdosh academy, izdosh.uz, uzum market kursi, marketpleys kursi, marketpleys savdo kursi, xitoydan tovar olib kelish kursi, landing page yaratish kursi, telegram bot yasash kursi, ai dasturlash kursi, vibecoding, startup mvp, onlayn kurs, onlayn ta'lim O'zbekiston, amaliy kasb kurslari",
+    "coursesTitle": "Kurslar — Uzum Market, marketpleys, AI dasturlash",
+    "coursesDescription": "IZDOSH Academy'ning barcha yo'nalishlari: Uzum Market savdosi, marketpleys biznesi, Xitoydan tovar olib kelish, Landing page yaratish, Telegram bot yasash, VibeCoding, Startup MVP. Video darslar, testlar va sertifikat bilan.",
+    "coursesKeywords": "uzum market kursi, marketpleys kursi, xitoydan tovar olib kelish, landing page kursi, telegram bot kursi, ai dasturlash kursi, izdosh academy kurslari"
+  },
   "nav": {
     "courses": "Kurslar",
     "pricing": "Narxlar",

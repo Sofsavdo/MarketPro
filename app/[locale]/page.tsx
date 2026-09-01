@@ -341,6 +341,23 @@ export default async function HomePage() {
 
       {faq && visibleOrderedKeys.includes("faq") && (
         <section className="mx-auto max-w-3xl px-4 py-14 sm:py-20">
+          {/* FAQPage structured data — the same Q&A content rendered below,
+              given to search engines/AI crawlers as clean facts instead of
+              copy they'd have to parse out of the <details> markup. */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                mainEntity: faq.items.map((item) => ({
+                  "@type": "Question",
+                  name: item.q,
+                  acceptedAnswer: { "@type": "Answer", text: item.a },
+                })),
+              }),
+            }}
+          />
           <h2 className="text-center text-3xl font-bold text-slate-950">{faq.title}</h2>
           <div className="mt-10 divide-y divide-amber-200 rounded-2xl border border-amber-200 bg-white">
             {faq.items.map((item, i) => (

@@ -4,6 +4,12 @@
     "fullName": "IZDOSH Academy",
     "tagline": "Осваивайте востребованные профессии"
   },
+  "seo": {
+    "homeKeywords": "izdosh, izdosh academy, izdosh.uz, курсы uzum market, курсы маркетплейс, курс продаж на маркетплейсах, курс поставки товаров из Китая, курс создания лендинга, курс создания телеграм бота, курс ai разработки, vibecoding, startup mvp, онлайн курсы, онлайн обучение Узбекистан",
+    "coursesTitle": "Курсы — Uzum Market, маркетплейс, AI-разработка",
+    "coursesDescription": "Все направления IZDOSH Academy: продажи на Uzum Market, бизнес на маркетплейсах, поставка товаров из Китая, создание лендингов, разработка телеграм-ботов, VibeCoding, Startup MVP. Видеоуроки, тесты и сертификат.",
+    "coursesKeywords": "курс uzum market, курс маркетплейс, поставка товаров из китая, курс лендинг, курс телеграм бот, курс ai разработка, курсы izdosh academy"
+  },
   "nav": {
     "courses": "Курсы",
     "pricing": "Цены",

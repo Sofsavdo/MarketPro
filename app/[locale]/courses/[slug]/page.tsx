@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, getLocale } from "next-intl/server";
 import Image from "next/image";
@@ -9,7 +10,89 @@ import { getCourseBySlug, getCourseModulesWithLessons, localizedField } from "@/
 import { getLessonAccess, isLessonLocked, isFreePreview } from "@/lib/lms/access";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { formatSom, cn } from "@/lib/utils";
+import { routing } from "@/i18n/routing";
 import type { Locale } from "@/i18n/routing";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://izdosh.uz";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const locale = (await getLocale()) as Locale;
+  const course = await getCourseBySlug(slug);
+  if (!course) return {};
+
+  const title = localizedField(course, "title", locale);
+  const description = localizedField(course, "description", locale);
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/${locale}/courses/${slug}`,
+      languages: Object.fromEntries(routing.locales.map((l) => [l, `/${l}/courses/${slug}`])),
+    },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      images: course.cover_url ? [course.cover_url] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: course.cover_url ? [course.cover_url] : undefined,
+    },
+  };
+}
+
+/**
+ * Course structured data (schema.org/Course) — gives search engines and AI
+ * crawlers clean, unambiguous facts about the course (provider, price,
+ * language) instead of having to infer them from page copy, and makes the
+ * page eligible for Google's Course rich result.
+ */
+function CourseJsonLd({
+  course,
+  locale,
+  slug,
+}: {
+  course: NonNullable<Awaited<ReturnType<typeof getCourseBySlug>>>;
+  locale: Locale;
+  slug: string;
+}) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    name: localizedField(course, "title", locale),
+    description: localizedField(course, "description", locale),
+    url: `${siteUrl}/${locale}/courses/${slug}`,
+    image: course.cover_url ?? undefined,
+    provider: {
+      "@type": "EducationalOrganization",
+      name: "IZDOSH Academy",
+      sameAs: siteUrl,
+    },
+    ...(course.price_start > 0 && {
+      offers: {
+        "@type": "Offer",
+        price: course.price_start,
+        priceCurrency: "UZS",
+        url: `${siteUrl}/${locale}/courses/${slug}`,
+        availability: course.is_published
+          ? "https://schema.org/InStock"
+          : "https://schema.org/PreOrder",
+      },
+    }),
+  };
+  return (
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+  );
+}
 import { PurchaseButtons } from "@/components/course/purchase-buttons";
 import { WaitlistForm } from "@/components/course/waitlist-form";
 import { InstructorBadge } from "@/components/course/instructor-badge";
@@ -108,6 +191,7 @@ export default async function CourseDetailPage({
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-16">
+      <CourseJsonLd course={course} locale={locale} slug={slug} />
       {course.cover_url && (
         <div className="animate-fade-up relative mb-8 aspect-[21/9] w-full overflow-hidden rounded-xl bg-slate-800">
           <Image
