@@ -215,6 +215,19 @@ export async function removeLessonVideo(lessonId: string) {
   revalidatePath(`/admin/lessons/${lessonId}`);
 }
 
+/**
+ * Attaches a Bunny video to its lesson once the upload has actually
+ * finished (called client-side from VideoUploadField's onSuccess) — see
+ * app/api/admin/lessons/[lessonId]/video-upload/route.ts for why this is
+ * deliberately not done at upload-start time.
+ */
+export async function finalizeLessonVideo(lessonId: string, videoId: string) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+  await admin.from("lessons").update({ bunny_video_id: videoId }).eq("id", lessonId);
+  revalidatePath(`/admin/lessons/${lessonId}`);
+}
+
 export async function createModule(courseId: string, formData: FormData) {
   await requireAdmin();
   const admin = await createAdminClient();

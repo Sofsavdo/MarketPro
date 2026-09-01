@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Loader2 } from "lucide-react";
+import { finalizeLessonVideo } from "@/lib/lms/admin-actions";
 
 /**
  * Uploads a lesson video straight to Bunny.net Stream via resumable (TUS)
@@ -57,6 +58,10 @@ export function VideoUploadField({ lessonId }: { lessonId: string }) {
         });
         upload.start();
       });
+
+      // Only now does the lesson actually have a video — see the upload-init
+      // route's comment on why this isn't written any earlier.
+      await finalizeLessonVideo(lessonId, videoId);
 
       setStage("processing");
       router.refresh();

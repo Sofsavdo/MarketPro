@@ -166,7 +166,6 @@ export function LessonPlayer({
               <iframe
                 ref={iframeRef}
                 src={videoEmbedUrl}
-                loading="lazy"
                 className="h-full w-full"
                 allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;"
                 allowFullScreen
