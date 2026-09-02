@@ -72,20 +72,27 @@ export function SubscribeButtons({
         </span>
       </label>
       <Button
-        className="w-full"
+        className="w-full justify-center gap-2"
         disabled={loading !== null || !termsAccepted}
         onClick={() => pay("click")}
       >
-        {loading === "click" ? "..." : "Click"}
+        {loading === "click" ? "..." : t("buyNow")}
+        <span className="rounded bg-[#0a5ca8] px-1.5 py-0.5 text-[11px] font-bold tracking-wide text-white">
+          CLICK
+        </span>
       </Button>
       <Button
-        className="w-full"
+        className="w-full justify-center gap-2"
         variant="outline"
         disabled={loading !== null || !termsAccepted}
         onClick={() => pay("payme")}
       >
-        {loading === "payme" ? "..." : "Payme"}
+        {loading === "payme" ? "..." : t("buyNow")}
+        <span className="rounded bg-[#00bfa5] px-1.5 py-0.5 text-[11px] font-bold tracking-wide text-slate-950">
+          Payme
+        </span>
       </Button>
+      <p className="text-center text-xs text-slate-500">{t("afterPaymentNote")}</p>
     </div>
   );
 }

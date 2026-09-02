@@ -18,6 +18,21 @@ export default async function AboutPage() {
       <h1 className="text-3xl font-bold text-white sm:text-4xl">{t("title")}</h1>
       <p className="mt-3 text-lg text-slate-400">{t("intro")}</p>
 
+      <div className="mt-8 grid grid-cols-3 gap-3 border-t border-slate-800 pt-6">
+        {(
+          [
+            [t("stat1Value"), t("stat1Label")],
+            [t("stat2Value"), t("stat2Label")],
+            [t("stat3Value"), t("stat3Label")],
+          ] as const
+        ).map(([value, label]) => (
+          <div key={label}>
+            <p className="font-mono text-xl font-bold text-amber-500 sm:text-2xl">{value}</p>
+            <p className="mt-1 text-xs text-slate-500">{label}</p>
+          </div>
+        ))}
+      </div>
+
       <div className="mt-10 space-y-4">
         {points.map((p) => (
           <Card key={p.title}>

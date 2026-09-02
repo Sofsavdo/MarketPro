@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { formatSom, cn } from "@/lib/utils";
 import { computeMonthlyInstallment } from "@/lib/pricing";
 import { submitInstallmentLead } from "@/lib/lms/installment-lead-actions";
@@ -17,13 +17,16 @@ export function PurchaseButtons({
   courseId,
   prices,
   locale,
+  isLoggedIn,
 }: {
   courseId: string;
   prices: { start: number; standard: number; pro: number };
   locale: Locale;
+  isLoggedIn: boolean;
 }) {
   const t = useTranslations("course");
   const tAuth = useTranslations("auth");
+  const router = useRouter();
   const [tier, setTier] = useState<Tier>("standard");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState<"click" | "payme" | null>(null);
@@ -38,6 +41,8 @@ export function PurchaseButtons({
   const [promoInvalid, setPromoInvalid] = useState(false);
   const [leadSubmitting, setLeadSubmitting] = useState(false);
   const [leadSubmitted, setLeadSubmitted] = useState(false);
+  const [guestName, setGuestName] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
 
   const price = prices[tier];
   const monthlyAmount = computeMonthlyInstallment(price);
@@ -81,6 +86,10 @@ export function PurchaseButtons({
   }
 
   async function pay(provider: "click" | "payme") {
+    if (!isLoggedIn) {
+      router.push("/login");
+      return;
+    }
     if (!termsAccepted) return;
     setLoading(provider);
     try {
@@ -105,9 +114,16 @@ export function PurchaseButtons({
 
   async function requestInstallment() {
     if (!termsAccepted) return;
+    if (!isLoggedIn && (!guestName.trim() || !guestPhone.trim())) return;
     setLeadSubmitting(true);
     try {
-      await submitInstallmentLead(courseId, tier, true);
+      await submitInstallmentLead(
+        courseId,
+        tier,
+        true,
+        isLoggedIn ? undefined : guestName.trim(),
+        isLoggedIn ? undefined : guestPhone.trim(),
+      );
       setLeadSubmitted(true);
     } finally {
       setLeadSubmitting(false);
@@ -212,20 +228,27 @@ export function PurchaseButtons({
 
       <div className="flex flex-col gap-2">
         <Button
-          className="w-full"
+          className="w-full justify-center gap-2"
           disabled={loading !== null || !termsAccepted}
           onClick={() => pay("click")}
         >
-          {loading === "click" ? "..." : `${t("buyNow")} — Click`}
+          {loading === "click" ? "..." : t("buyNow")}
+          <span className="rounded bg-[#0a5ca8] px-1.5 py-0.5 text-[11px] font-bold tracking-wide text-white">
+            CLICK
+          </span>
         </Button>
         <Button
-          className="w-full"
+          className="w-full justify-center gap-2"
           variant="outline"
           disabled={loading !== null || !termsAccepted}
           onClick={() => pay("payme")}
         >
-          {loading === "payme" ? "..." : `${t("buyNow")} — Payme`}
+          {loading === "payme" ? "..." : t("buyNow")}
+          <span className="rounded bg-[#00bfa5] px-1.5 py-0.5 text-[11px] font-bold tracking-wide text-slate-950">
+            Payme
+          </span>
         </Button>
+        <p className="text-center text-xs text-slate-500">{t("afterPaymentNote")}</p>
       </div>
 
       <div className="rounded-lg border border-dashed border-slate-700 p-3">
@@ -237,11 +260,33 @@ export function PurchaseButtons({
         ) : (
           <>
             <p className="text-xs text-slate-400">{t("installmentHint")}</p>
+            {!isLoggedIn && (
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                <input
+                  type="text"
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value)}
+                  placeholder={t("guestNamePlaceholder")}
+                  className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                />
+                <input
+                  type="tel"
+                  value={guestPhone}
+                  onChange={(e) => setGuestPhone(e.target.value)}
+                  placeholder="+998 90 123 45 67"
+                  className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+                />
+              </div>
+            )}
             <Button
               variant="ghost"
               size="sm"
               className="mt-2 w-full"
-              disabled={leadSubmitting || !termsAccepted}
+              disabled={
+                leadSubmitting ||
+                !termsAccepted ||
+                (!isLoggedIn && (!guestName.trim() || !guestPhone.trim()))
+              }
               onClick={requestInstallment}
             >
               {leadSubmitting ? "..." : t("requestInstallment")}

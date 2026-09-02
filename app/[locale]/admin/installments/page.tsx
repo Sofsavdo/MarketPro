@@ -39,6 +39,10 @@ export default async function AdminInstallmentsPage() {
 
   const { data: profiles } = await supabase.from("profiles").select("id, full_name, phone");
   const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
+  // A guest lead (no user_id — see submitInstallmentLead) is auto-matched to
+  // an account the moment one registers with the same phone, so the admin
+  // never has to manually link the two.
+  const profileByPhone = new Map((profiles ?? []).filter((p) => p.phone).map((p) => [p.phone, p]));
 
   const planIds = (plans ?? []).map((p) => p.id);
   const { data: allInstallments } = planIds.length
@@ -77,7 +81,13 @@ export default async function AdminInstallmentsPage() {
       </p>
       <div className="mt-4 space-y-3">
         {(leads ?? []).map((lead) => {
-          const profile = profileById.get(lead.user_id);
+          const profile = lead.user_id ? profileById.get(lead.user_id) : undefined;
+          const matchedByPhone = !lead.user_id && lead.guest_phone
+            ? profileByPhone.get(lead.guest_phone)
+            : undefined;
+          const matchedUserId = lead.user_id ?? matchedByPhone?.id ?? null;
+          const displayName = profile?.full_name ?? matchedByPhone?.full_name ?? lead.guest_name ?? "—";
+          const displayPhone = profile?.phone ?? matchedByPhone?.phone ?? lead.guest_phone ?? "—";
           return (
             <div
               key={lead.id}
@@ -86,14 +96,18 @@ export default async function AdminInstallmentsPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <p className="text-white">
-                    {profile?.full_name ?? lead.user_id.slice(0, 8)}{" "}
-                    <span className="text-slate-500">— {courseById.get(lead.course_id)}</span>
+                    {displayName} <span className="text-slate-500">— {courseById.get(lead.course_id)}</span>
                   </p>
                   <Badge variant="outline">{LEAD_STATUS_LABELS[lead.status]}</Badge>
                   <Badge>{TIER_LABELS[lead.tier]}</Badge>
+                  {!matchedUserId && (
+                    <Badge variant="outline" className="text-amber-400">
+                      Hali ro&apos;yxatdan o&apos;tmagan
+                    </Badge>
+                  )}
                 </div>
                 <p className="mt-1 text-xs text-slate-500">
-                  {profile?.phone ?? "—"} · oyiga {formatSom(lead.monthly_amount)} × 12 = jami{" "}
+                  {displayPhone} · oyiga {formatSom(lead.monthly_amount)} × 12 = jami{" "}
                   {formatSom(lead.total_amount)} · {formatDate(lead.created_at)}
                 </p>
               </div>
@@ -105,21 +119,23 @@ export default async function AdminInstallmentsPage() {
                     </Button>
                   </form>
                 )}
-                <form
-                  action={convertInstallmentLead.bind(
-                    null,
-                    lead.id,
-                    lead.user_id,
-                    lead.course_id,
-                    lead.tier,
-                    lead.total_amount,
-                    lead.monthly_amount,
-                  )}
-                >
-                  <Button type="submit" size="sm">
-                    Kirish berish
-                  </Button>
-                </form>
+                {matchedUserId && (
+                  <form
+                    action={convertInstallmentLead.bind(
+                      null,
+                      lead.id,
+                      matchedUserId,
+                      lead.course_id,
+                      lead.tier,
+                      lead.total_amount,
+                      lead.monthly_amount,
+                    )}
+                  >
+                    <Button type="submit" size="sm">
+                      Kirish berish
+                    </Button>
+                  </form>
+                )}
                 <form action={declineInstallmentLead.bind(null, lead.id)}>
                   <Button type="submit" variant="ghost" size="sm" className="text-red-400">
                     Rad etish
