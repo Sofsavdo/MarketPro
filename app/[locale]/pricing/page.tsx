@@ -71,7 +71,28 @@ export default async function PricingPage() {
           </CardContent>
         </Card>
 
-        <p className="mt-6 text-center text-sm text-slate-500">{t("pricing.guaranteeNote")}</p>
+        <div className="mt-6 text-center text-sm text-slate-500">
+          <p>{t("pricing.guaranteeNoteMain")}</p>
+          <p className="mt-1">
+            {t("pricing.guaranteeNoteCaveat")}{" "}
+            <Link href="/refund-policy" className="text-amber-400 hover:underline">
+              {t("pricing.guaranteeNoteLink")}
+            </Link>
+          </p>
+        </div>
+      </div>
+
+      {/* Answers "which one should I pick" before the two pricing systems
+          are shown side by side with nothing tying them together. */}
+      <div className="mt-10 grid gap-4 rounded-xl border border-slate-800 bg-slate-900/40 p-5 sm:grid-cols-2">
+        <div>
+          <p className="text-sm font-semibold text-amber-400">{t("pricing.compareSubscriptionTitle")}</p>
+          <p className="mt-1 text-sm text-slate-400">{t("pricing.compareSubscriptionDesc")}</p>
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-amber-400">{t("pricing.compareCourseTitle")}</p>
+          <p className="mt-1 text-sm text-slate-400">{t("pricing.compareCourseDesc")}</p>
+        </div>
       </div>
 
       {/* Three lifetime tariffs — buy one course outright, tiered by how much live/mentor access it includes */}

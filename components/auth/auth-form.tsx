@@ -20,7 +20,6 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [address, setAddress] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -37,11 +36,15 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         phone: normalizedPhone,
         password,
         options: {
-          data: { full_name: fullName, address, terms_accepted_at: new Date().toISOString() },
+          data: { full_name: fullName, terms_accepted_at: new Date().toISOString() },
         },
       });
       if (error) setError(error.message);
       else {
+        // Fire-and-forget: records the signup request's IP server-side
+        // (see route handler) instead of asking the student for a postal
+        // address nobody's ever going to mail anything to.
+        fetch("/api/auth/record-signup-ip", { method: "POST" }).catch(() => {});
         const ref = searchParams.get("ref");
         if (ref) await redeemReferral(ref);
         router.refresh();
@@ -86,18 +89,6 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           required
         />
       </div>
-
-      {mode === "register" && (
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="address">{t("address")}</Label>
-          <Input
-            id="address"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            placeholder={t("addressPlaceholder")}
-          />
-        </div>
-      )}
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="password">{t("password")}</Label>

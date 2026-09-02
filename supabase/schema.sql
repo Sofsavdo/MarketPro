@@ -989,3 +989,18 @@ where key = 'faq';
 -- ============================================================
 alter table public.payments add column if not exists terms_accepted_at timestamptz;
 alter table public.installment_leads add column if not exists terms_accepted_at timestamptz;
+
+-- Registration no longer asks for a postal address (nobody mails anything
+-- to a student) — replaced with the signup request's IP, recorded
+-- server-side (see app/api/auth/record-signup-ip/route.ts) in case of a
+-- future fraud/abuse need to identify an account.
+alter table public.profiles add column if not exists signup_ip text;
+
+-- An installment lead can now come from a logged-out visitor (see
+-- submitInstallmentLead) — requiring full registration just to say "I'm
+-- interested in installments" was friction on a request that isn't a
+-- purchase yet. guest_name/guest_phone hold their info until an account
+-- with a matching phone exists (see admin/installments/page.tsx).
+alter table public.installment_leads alter column user_id drop not null;
+alter table public.installment_leads add column if not exists guest_name text;
+alter table public.installment_leads add column if not exists guest_phone text;

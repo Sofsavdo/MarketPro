@@ -37,6 +37,7 @@ export interface Database {
           longest_streak: number;
           last_active_date: string | null;
           terms_accepted_at: string | null;
+          signup_ip: string | null;
           created_at: string;
         },
         {
@@ -56,6 +57,7 @@ export interface Database {
           current_streak?: number;
           longest_streak?: number;
           last_active_date?: string | null;
+          signup_ip?: string | null;
         }
       >;
       courses: Table<
@@ -363,7 +365,9 @@ export interface Database {
       installment_leads: Table<
         {
           id: string;
-          user_id: string;
+          user_id: string | null;
+          guest_name: string | null;
+          guest_phone: string | null;
           course_id: string;
           tier: AccessLevel;
           monthly_amount: number;
@@ -373,7 +377,9 @@ export interface Database {
           created_at: string;
         },
         {
-          user_id: string;
+          user_id?: string | null;
+          guest_name?: string | null;
+          guest_phone?: string | null;
           course_id: string;
           tier: AccessLevel;
           monthly_amount: number;

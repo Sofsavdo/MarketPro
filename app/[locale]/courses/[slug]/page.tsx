@@ -268,37 +268,32 @@ export default async function CourseDetailPage({
                 {access.accessLevel ? t("course.upgradeTierTitle") : t("course.buyTitle")}
               </p>
             </div>
-            {user ? (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button size="sm">
-                    {t("course.buyFrom")} {formatSom(course.price_start, locale)}
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>
-                      {access.accessLevel ? t("course.upgradeTierTitle") : t("course.buyTitle")}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="mt-2">
-                    <PurchaseButtons
-                      courseId={course.id}
-                      prices={{
-                        start: course.price_start,
-                        standard: course.price_standard,
-                        pro: course.price_pro,
-                      }}
-                      locale={locale}
-                    />
-                  </div>
-                </DialogContent>
-              </Dialog>
-            ) : (
-              <Button asChild size="sm">
-                <Link href="/login">{t("course.loginToBuy")}</Link>
-              </Button>
-            )}
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  {t("course.buyFrom")} {formatSom(course.price_start, locale)}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>
+                    {access.accessLevel ? t("course.upgradeTierTitle") : t("course.buyTitle")}
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="mt-2">
+                  <PurchaseButtons
+                    courseId={course.id}
+                    prices={{
+                      start: course.price_start,
+                      standard: course.price_standard,
+                      pro: course.price_pro,
+                    }}
+                    locale={locale}
+                    isLoggedIn={!!user}
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         )
       )}
