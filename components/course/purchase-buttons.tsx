@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 import { formatSom, cn } from "@/lib/utils";
 import { computeMonthlyInstallment } from "@/lib/pricing";
 import { submitInstallmentLead } from "@/lib/lms/installment-lead-actions";
@@ -22,7 +23,9 @@ export function PurchaseButtons({
   locale: Locale;
 }) {
   const t = useTranslations("course");
+  const tAuth = useTranslations("auth");
   const [tier, setTier] = useState<Tier>("standard");
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState<"click" | "payme" | null>(null);
   const [promoCode, setPromoCode] = useState("");
   const [promoChecking, setPromoChecking] = useState(false);
@@ -78,6 +81,7 @@ export function PurchaseButtons({
   }
 
   async function pay(provider: "click" | "payme") {
+    if (!termsAccepted) return;
     setLoading(provider);
     try {
       const res = await fetch(`/api/payments/${provider}`, {
@@ -87,6 +91,7 @@ export function PurchaseButtons({
           courseId,
           tier,
           promoCode: promoCode.trim() || undefined,
+          termsAccepted: true,
         }),
       });
       const data = await res.json();
@@ -99,9 +104,10 @@ export function PurchaseButtons({
   }
 
   async function requestInstallment() {
+    if (!termsAccepted) return;
     setLeadSubmitting(true);
     try {
-      await submitInstallmentLead(courseId, tier);
+      await submitInstallmentLead(courseId, tier, true);
       setLeadSubmitted(true);
     } finally {
       setLeadSubmitting(false);
@@ -184,14 +190,38 @@ export function PurchaseButtons({
         )}
       </div>
 
+      <label className="flex items-start gap-2 text-xs text-slate-400">
+        <input
+          type="checkbox"
+          checked={termsAccepted}
+          onChange={(e) => setTermsAccepted(e.target.checked)}
+          className="mt-0.5 accent-amber-500"
+        />
+        <span>
+          {tAuth("termsAgreePrefix")}{" "}
+          <Link href="/terms" target="_blank" className="text-amber-400 hover:underline">
+            {tAuth("termsAgreeTerms")}
+          </Link>{" "}
+          {tAuth("termsAgreeAnd")}{" "}
+          <Link href="/refund-policy" target="_blank" className="text-amber-400 hover:underline">
+            {tAuth("termsAgreeRefund")}
+          </Link>{" "}
+          {tAuth("termsAgreeSuffix")}
+        </span>
+      </label>
+
       <div className="flex flex-col gap-2">
-        <Button className="w-full" disabled={loading !== null} onClick={() => pay("click")}>
+        <Button
+          className="w-full"
+          disabled={loading !== null || !termsAccepted}
+          onClick={() => pay("click")}
+        >
           {loading === "click" ? "..." : `${t("buyNow")} — Click`}
         </Button>
         <Button
           className="w-full"
           variant="outline"
-          disabled={loading !== null}
+          disabled={loading !== null || !termsAccepted}
           onClick={() => pay("payme")}
         >
           {loading === "payme" ? "..." : `${t("buyNow")} — Payme`}
@@ -211,7 +241,7 @@ export function PurchaseButtons({
               variant="ghost"
               size="sm"
               className="mt-2 w-full"
-              disabled={leadSubmitting}
+              disabled={leadSubmitting || !termsAccepted}
               onClick={requestInstallment}
             >
               {leadSubmitting ? "..." : t("requestInstallment")}

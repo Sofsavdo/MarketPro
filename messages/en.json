@@ -42,7 +42,7 @@
       "f2Title": "Sequential lesson unlocking",
       "f2Desc": "Each topic unlocks after you finish the previous one and pass its quiz — focused, structured learning.",
       "f3Title": "Guarantee policy",
-      "f3Desc": "Don't like it after the first 2 lessons? Get a 100% refund, no questions asked.",
+      "f3Desc": "Complete every practical assignment and still see no result? We'll refund you. Purchased courses are non-refundable by default.",
       "f4Title": "Taught in 3 languages",
       "f4Desc": "Uzbek, Russian, and English — learn in the language you're most comfortable with."
     },
@@ -65,8 +65,8 @@
       "cta": "See pricing"
     },
     "guarantee": {
-      "title": "The risk is ours, not yours",
-      "desc": "Don't like it after the first 2 live lessons? 100% refund, no questions asked. Complete every assignment and still see no result? We'll refund you in full.",
+      "title": "Fair, transparent terms",
+      "desc": "Purchased courses are non-refundable by default. Complete every assignment and still see no result? We'll refund you. Installment purchases are never refundable, under any circumstance.",
       "cta": "See the full terms"
     },
     "faq": {
@@ -115,7 +115,7 @@
     "subscriptionDesc": "1 month of access to every track's video lessons and community. Live classes aren't included.",
     "subscriptionCta": "Subscribe",
     "mostPopular": "Most popular",
-    "guaranteeNote": "On every plan: 100% refund guarantee after the first 2 lessons",
+    "guaranteeNote": "Complete every assignment and still see no result? We'll refund you. Courses are non-refundable by default, and installment purchases are never refundable.",
     "tiersDesc": "3 tariffs per track — different price, different features. Pay once, your chosen tariff is yours for life.",
     "featVideo": "Video lessons",
     "featMaterials": "Extra materials",
@@ -141,7 +141,12 @@
     "signIn": "Log in",
     "save": "Save",
     "address": "Address",
-    "addressPlaceholder": "City, district, street"
+    "addressPlaceholder": "City, district, street",
+    "termsAgreePrefix": "I agree to the",
+    "termsAgreeTerms": "Public Offer",
+    "termsAgreeAnd": "and",
+    "termsAgreeRefund": "Refund Policy",
+    "termsAgreeSuffix": ""
   },
   "course": {
     "curriculum": "Curriculum",
@@ -263,22 +268,24 @@
       "s3Title": "3. Lesson sequence",
       "s3Body": "Course topics unlock sequentially: moving to the next topic requires finishing the current one and, where applicable, passing its quiz.",
       "s4Title": "4. Payment and installments",
-      "s4Body": "Payment is made via Click or Payme. When choosing installments, the initial payment must be at least 40% of the total. If the payment schedule is missed, course access may be temporarily suspended per the agreement.",
+      "s4Body": "Payment is made via Click or Payme. When choosing installments, the initial payment must be at least 40% of the total. If the payment schedule is missed, course access may be temporarily suspended per the agreement. Payment for a course purchased on an installment plan is never refundable, under any circumstance.",
       "s5Title": "5. Refunds and cancellation",
-      "s5Body": "Refund terms are set out in a separate \"Refund policy\" document — see the link below.",
+      "s5Body": "Purchased courses are non-refundable by default. A refund is only possible if every assignment the mentor gave was fully completed and no result was achieved — full terms are set out in a separate \"Refund policy\" document, see the link below. Agreeing via the checkbox at purchase or registration means accepting these terms in full.",
       "s6Title": "6. Contact",
       "s6Body": "For any questions, reach us through the \"Contact\" page."
     },
     "refund": {
       "title": "Refund policy",
-      "intro": "We take full responsibility to our students — that's why our risk guarantee has two layers.",
-      "coolingTitle": "Cooling-off guarantee",
-      "coolingBody": "On any plan — if you don't like the course after the first 2 live lessons/topics, we'll refund 100%, no questions asked.",
-      "actionTitle": "Action-based guarantee for Standard and Pro plans",
-      "actionBody": "If you complete every lesson and fully submit every assignment but still see no result, we'll refund you in full.",
+      "intro": "Our terms are honest and transparent — this page states exactly when a refund is and isn't given. By purchasing a course (or submitting an installment request), the Student agrees to these terms.",
+      "generalTitle": "General rule: payments are non-refundable",
+      "generalBody": "By default, payment for a purchased course is non-refundable. Course access is granted the moment payment is confirmed and materials are made available immediately — so a refund isn't issued simply because you changed your mind.",
+      "actionTitle": "The one exception: assignments completed, no result",
+      "actionBody": "If you fully and promptly completed every practical assignment the mentor gave, and still didn't achieve the expected result (for example, sales didn't pick up), we're willing to refund your payment. If the assignments weren't completed, or weren't completed in full, We are not at fault, and no refund is issued under any circumstance.",
+      "installmentTitle": "Installment plans — non-refundable",
+      "installmentBody": "Payment for a course purchased on an installment plan is never refundable, under any circumstance, regardless of the exception above. By submitting an installment request, the Student separately agrees to this term.",
       "howTitle": "How do I request a refund?",
-      "howBody": "Reach out via the \"Contact\" page or message the operator/administrator named in your agreement. Refund requests are reviewed within 5 business days.",
-      "note": "If there are overdue installment payments, the refund amount is calculated according to the agreement's terms."
+      "howBody": "Reach out via the \"Contact\" page or message the operator/administrator named in your agreement. Refund requests are reviewed within 5 business days, and assignment completion is verified by the mentor.",
+      "note": "This refund policy is an integral part of the public offer agreement. Agreeing via the checkbox at purchase or registration means accepting these terms in full."
     },
     "contact": {
       "title": "Contact",

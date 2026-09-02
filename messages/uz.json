@@ -42,7 +42,7 @@
       "f2Title": "Ketma-ket ochiladigan dars tizimi",
       "f2Desc": "Har bir mavzu avvalgisini tugatib, testdan o'tgach ochiladi — chalg'imasdan, tizimli o'rganasiz.",
       "f3Title": "Kafolat siyosati",
-      "f3Desc": "Birinchi 2 ta darsdan keyin yoqmasa — pulingizni 100% qaytarib beramiz.",
+      "f3Desc": "Barcha amaliy topshiriqlarni bajarib, natijaga erisha olmasangiz — pulingizni qaytaramiz. Standart holatda sotib olingan kurslar qaytarilmaydi.",
       "f4Title": "3 tilda ta'lim",
       "f4Desc": "O'zbek, rus va ingliz tillarida — qulay tilda o'rganing."
     },
@@ -65,8 +65,8 @@
       "cta": "Narxlarni ko'rish"
     },
     "guarantee": {
-      "title": "Risk sizda emas, bizda",
-      "desc": "Birinchi 2 ta live darsdan keyin yoqmasa — savolsiz, 100% pul qaytarish. Agar barcha topshiriqlarni bajarsangiz-u, natija bo'lmasa — pulingizni to'liq qaytaramiz.",
+      "title": "Halol va shaffof shartlar",
+      "desc": "Standart holatda sotib olingan kurslar qaytarilmaydi. Agar barcha topshiriqlarni bajarsangiz-u, natija bo'lmasa — pulingizni qaytaramiz. Muddatli to'lov (nasiya) esa hech qanday holatda qaytarilmaydi.",
       "cta": "Batafsil shartlar"
     },
     "faq": {
@@ -115,7 +115,7 @@
     "subscriptionDesc": "1 oy davomida barcha yo'nalishlarning video darslari va community'siga kirish. Live darslar bunga kirmaydi.",
     "subscriptionCta": "Obuna bo'lish",
     "mostPopular": "Eng ko'p tanlanadigan",
-    "guaranteeNote": "Barcha tariflarda: birinchi 2 darsdan keyin 100% pul qaytarish kafolati",
+    "guaranteeNote": "Barcha topshiriqlarni bajarib, natija bo'lmasa — pulingizni qaytaramiz. Standart holatda kurslar qaytarilmaydi, muddatli to'lov esa umuman qaytarilmaydi.",
     "tiersDesc": "Har bir yo'nalishda 3 ta tarif — narxi va imkoniyati farq qiladi. Bir marta to'lang, tanlagan tarifingiz umrbod sizniki bo'lib qoladi.",
     "featVideo": "Video darslar",
     "featMaterials": "Qo'shimcha materiallar",
@@ -141,7 +141,12 @@
     "signIn": "Kiring",
     "save": "Saqlash",
     "address": "Manzil",
-    "addressPlaceholder": "Shahar, tuman, ko'cha"
+    "addressPlaceholder": "Shahar, tuman, ko'cha",
+    "termsAgreePrefix": "Men",
+    "termsAgreeTerms": "Ommaviy oferta shartnomasi",
+    "termsAgreeAnd": "va",
+    "termsAgreeRefund": "Qaytarish siyosati",
+    "termsAgreeSuffix": "shartlariga roziman"
   },
   "course": {
     "curriculum": "O'quv dasturi",
@@ -263,22 +268,24 @@
       "s3Title": "3. Darslarning ketma-ketligi",
       "s3Body": "Kurs mavzulari ketma-ket ochiladi: keyingi mavzuga o'tish uchun joriy mavzu va (mavjud bo'lsa) uning bilim tekshirish testi muvaffaqiyatli yakunlanishi shart.",
       "s4Title": "4. To'lov va muddatli to'lov",
-      "s4Body": "To'lov Click yoki Payme orqali amalga oshiriladi. Muddatli to'lov (installment) tanlanganda, boshlang'ich to'lov umumiy summaning kamida 40%ini tashkil qiladi. Belgilangan jadval bo'yicha to'lov kechiktirilsa, kursga kirish shartnoma asosida vaqtincha bloklanishi mumkin.",
+      "s4Body": "To'lov Click yoki Payme orqali amalga oshiriladi. Muddatli to'lov (installment) tanlanganda, boshlang'ich to'lov umumiy summaning kamida 40%ini tashkil qiladi. Belgilangan jadval bo'yicha to'lov kechiktirilsa, kursga kirish shartnoma asosida vaqtincha bloklanishi mumkin. Muddatli to'lov asosida sotib olingan kurs uchun to'lov hech qanday holatda qaytarilmaydi.",
       "s5Title": "5. Qaytarish va bekor qilish",
-      "s5Body": "Qaytarish shartlari alohida \"Qaytarish siyosati\" hujjatida keltirilgan — quyidagi havolaga qarang.",
+      "s5Body": "Sotib olingan kurslar standart holatda qaytarilmaydi. Qaytarish faqat mentor bergan barcha vazifalar to'liq bajarilib, natijaga erishilmagan holatlarda mumkin — to'liq shartlar alohida \"Qaytarish siyosati\" hujjatida keltirilgan, quyidagi havolaga qarang. Kursni sotib olish yoki ro'yxatdan o'tish paytida checkbox orqali rozilik bildirish ushbu shartlarga to'liq qo'shilishni bildiradi.",
       "s6Title": "6. Aloqa",
       "s6Body": "Savollar yuzasidan biz bilan \"Aloqa\" sahifasi orqali bog'lanishingiz mumkin."
     },
     "refund": {
       "title": "Qaytarish siyosati",
-      "intro": "Biz talabalarimiz oldida to'liq javobgarmiz — shuning uchun risk kafolati ikki bosqichli.",
-      "coolingTitle": "Cooling-off kafolati",
-      "coolingBody": "Har qanday tarifda — birinchi 2 ta live dars/mavzudan keyin kurs sizga yoqmasa, savolsiz, 100% pul qaytarib beriladi.",
-      "actionTitle": "Standard va Pro tariflar uchun harakat-asosli kafolat",
-      "actionBody": "Agar barcha darslarni o'zlashtirib, barcha amaliy topshiriqlarni to'liq bajarsangiz-u, natijaga erisha olmasangiz — pulingizni 100% qaytarib beramiz.",
+      "intro": "Shartlarimiz halol va shaffof — quyida qaysi holatda pul qaytarilishi va qaysi holatda qaytarilmasligi aniq ko'rsatilgan. Kursni sotib olish (yoki muddatli to'lov so'rovini yuborish) orqali Student ushbu shartlarga rozilik bildiradi.",
+      "generalTitle": "Umumiy qoida: to'lov qaytarilmaydi",
+      "generalBody": "Standart holatda, sotib olingan kurs uchun to'lov qaytarilmaydi. Kursga kirish huquqi to'lov tasdiqlangan zahoti beriladi va material darhol taqdim etiladi — shuning uchun oddiy \"fikrim o'zgardi\" asosida qaytarish amalga oshirilmaydi.",
+      "actionTitle": "Yagona istisno: vazifa bajarilib, natija bo'lmasa",
+      "actionBody": "Agar mentor bergan barcha amaliy topshiriq va vazifalarni to'liq va o'z vaqtida bajargan bo'lsangiz-u, shunga qaramay kutilgan natijaga (masalan, savdo yurishi) erisha olmasangiz — to'lovni qaytarishga roziligimiz bor. Agar topshiriq va vazifalar bajarilmagan yoki to'liq bajarilmagan bo'lsa, Biz bunga aybdor bo'lmaymiz va to'lov hech qanday holatda qaytarilmaydi.",
+      "installmentTitle": "Muddatli to'lov (nasiya) — qaytarilmaydi",
+      "installmentBody": "Bo'lib to'lash (nasiya) asosida sotib olingan kurslar uchun to'lov, yuqoridagi istisnoga qaramasdan, hech qanday holatda qaytarilmaydi. Muddatli to'lov so'rovini yuborish orqali Student ushbu shartga alohida rozilik bildiradi.",
       "howTitle": "Qaytarishni qanday so'rayman?",
-      "howBody": "\"Aloqa\" sahifasi orqali murojaat qiling yoki shartnomangizda ko'rsatilgan operator/administratorga yozing. Qaytarish so'rovlari 5 ish kuni ichida ko'rib chiqiladi.",
-      "note": "Muddatli to'lov (installment) bo'yicha kechiktirilgan to'lovlar mavjud bo'lsa, qaytarish summasi shartnoma shartlariga muvofiq hisoblanadi."
+      "howBody": "\"Aloqa\" sahifasi orqali murojaat qiling yoki shartnomangizda ko'rsatilgan operator/administratorga yozing. Qaytarish so'rovlari 5 ish kuni ichida ko'rib chiqiladi, vazifalarning bajarilganligi mentor tomonidan tekshiriladi.",
+      "note": "Ushbu qaytarish siyosati Ommaviy oferta shartnomasining ajralmas qismi hisoblanadi. Kurs sotib olishda yoki ro'yxatdan o'tishda checkbox orqali rozilik bildirish shu shartlarga to'liq qo'shilishni anglatadi."
     },
     "contact": {
       "title": "Aloqa",
