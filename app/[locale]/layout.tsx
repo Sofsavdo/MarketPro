@@ -55,7 +55,7 @@ async function OrganizationJsonLd({ locale }: { locale: string }) {
     alternateName: t("name"),
     url: siteUrl,
     description: t("tagline"),
-    sameAs: ["https://t.me/izdosh_academy", "https://instagram.com/izdosh.uz"],
+    sameAs: ["https://t.me/izdosh_akademy", "https://instagram.com/izdosh.academy"],
   };
   return (
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
