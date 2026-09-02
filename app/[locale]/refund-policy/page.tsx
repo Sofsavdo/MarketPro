@@ -12,12 +12,16 @@ export default async function RefundPolicyPage() {
 
       <div className="mt-10 space-y-6">
         <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-          <h2 className="text-lg font-semibold text-white">{t("coolingTitle")}</h2>
-          <p className="mt-2 text-slate-400">{t("coolingBody")}</p>
+          <h2 className="text-lg font-semibold text-white">{t("generalTitle")}</h2>
+          <p className="mt-2 text-slate-400">{t("generalBody")}</p>
         </div>
         <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
           <h2 className="text-lg font-semibold text-white">{t("actionTitle")}</h2>
           <p className="mt-2 text-slate-400">{t("actionBody")}</p>
+        </div>
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-6">
+          <h2 className="text-lg font-semibold text-white">{t("installmentTitle")}</h2>
+          <p className="mt-2 text-slate-400">{t("installmentBody")}</p>
         </div>
         <div>
           <h2 className="text-lg font-semibold text-white">{t("howTitle")}</h2>

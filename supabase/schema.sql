@@ -36,6 +36,10 @@ create table if not exists public.profiles (
   current_streak int not null default 0,
   longest_streak int not null default 0,
   last_active_date date,
+  -- Set from the registration form's required "I agree to the public offer
+  -- and refund policy" checkbox (see components/auth/auth-form.tsx) — proof
+  -- of consent to the terms, not just a UI gate that a request could skip.
+  terms_accepted_at timestamptz,
   created_at timestamptz not null default now()
 );
 
@@ -54,13 +58,14 @@ grant update (full_name, phone, address, avatar_url) on public.profiles to authe
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, full_name, phone, address, referral_code)
+  insert into public.profiles (id, full_name, phone, address, referral_code, terms_accepted_at)
   values (
     new.id,
     new.raw_user_meta_data ->> 'full_name',
     new.phone,
     new.raw_user_meta_data ->> 'address',
-    substr(replace(gen_random_uuid()::text, '-', ''), 1, 8)
+    substr(replace(gen_random_uuid()::text, '-', ''), 1, 8),
+    (new.raw_user_meta_data ->> 'terms_accepted_at')::timestamptz
   );
   return new;
 end;
@@ -950,3 +955,37 @@ create policy "Landing images are publicly readable" on storage.objects
 insert into public.landing_blocks (key, order_index, content) values
   ('gallery', 7, '{"uz": {"title": "Jarayondan lavhalar", "subtitle": "O''quv jarayoni va bitiruvchilar hayotidan", "items": []}, "ru": {"title": "Кадры из процесса", "subtitle": "Из учебного процесса и жизни выпускников", "items": []}, "en": {"title": "Behind the scenes", "subtitle": "From the learning process and our graduates'' lives", "items": []}}'::jsonb)
 on conflict (key) do nothing;
+
+-- ============================================================
+-- Refund-policy correction — the old "first 2 lessons, no questions
+-- asked" cooling-off promise (in the `features` and `guarantee` landing
+-- blocks' seed content above, and in messages/*.json) contradicted the
+-- actual policy: purchased courses are non-refundable by default, with a
+-- refund only if every mentor-assigned task was completed and there's
+-- still no result, and installment/nasiya purchases are never refundable
+-- under any circumstance. Unlike every other landing_blocks seed above
+-- (which uses `on conflict do nothing` so re-running this file never
+-- overwrites an admin's edits), these three UPDATEs deliberately
+-- overwrite the `features`/`guarantee`/`faq` blocks' existing content —
+-- a one-time content correction, not an ordinary re-seed.
+-- ============================================================
+update public.landing_blocks
+set content = '{"uz": {"title": "Nega IZDOSH Academy", "items": [{"title": "Real ekspert tajribasi", "desc": "Nazariyotchi emas — 3 yillik marketplace va 1+ yillik AI-development amaliy tajribaga ega mentor."}, {"title": "Ketma-ket ochiladigan dars tizimi", "desc": "Har bir mavzu avvalgisini tugatib, testdan o''tgach ochiladi — chalg''imasdan, tizimli o''rganasiz."}, {"title": "Kafolat siyosati", "desc": "Barcha amaliy topshiriqlarni bajarib, natijaga erisha olmasangiz — pulingizni qaytaramiz. Standart holatda sotib olingan kurslar uchun to''lov qaytarilmaydi."}, {"title": "3 tilda ta''lim", "desc": "O''zbek, rus va ingliz tillarida — qulay tilda o''rganing."}]}, "ru": {"title": "Почему IZDOSH Academy", "items": [{"title": "Реальный экспертный опыт", "desc": "Не теоретик — ментор с 3-летним опытом на маркетплейсах и 1+ годом практики AI-разработки."}, {"title": "Последовательное открытие уроков", "desc": "Каждая тема открывается после завершения предыдущей и прохождения теста — системное обучение без отвлечений."}, {"title": "Политика гарантии", "desc": "Если выполните все практические задания, но не получите результат — вернём деньги. По умолчанию оплата за приобретённые курсы не возвращается."}, {"title": "Обучение на 3 языках", "desc": "Узбекский, русский и английский — учитесь на удобном языке."}]}, "en": {"title": "Why IZDOSH Academy", "items": [{"title": "Real expert experience", "desc": "Not a theorist — a mentor with 3 years of marketplace selling and 1+ year of hands-on AI development."}, {"title": "Sequential lesson unlocking", "desc": "Each topic unlocks after you finish the previous one and pass its quiz — focused, structured learning."}, {"title": "Guarantee policy", "desc": "Complete every practical assignment and still see no result? We''ll refund you. Purchased courses are non-refundable by default."}, {"title": "Taught in 3 languages", "desc": "Uzbek, Russian, and English — learn in the language you''re most comfortable with."}]}}'::jsonb
+where key = 'features';
+
+update public.landing_blocks
+set content = '{"uz": {"title": "Halol va shaffof shartlar", "desc": "Standart holatda sotib olingan kurslar uchun to''lov qaytarilmaydi. Agar mentor bergan barcha amaliy topshiriqlarni to''liq bajargan bo''lsangiz-u, natijaga erisha olmasangiz — pulingizni qaytaramiz. Topshiriqlar bajarilmagan holatda kompaniya javobgar bo''lmaydi. Muddatli to''lov (nasiya) asosida sotib olingan kurslar uchun to''lov hech qanday holatda qaytarilmaydi."}, "ru": {"title": "Честные и прозрачные условия", "desc": "По умолчанию оплата за приобретённые курсы не возвращается. Если вы полностью выполнили все практические задания от ментора, но не достигли результата — мы вернём деньги. Если задания не выполнены, компания не несёт ответственности. За курсы, купленные в рассрочку, оплата не возвращается ни при каких условиях."}, "en": {"title": "Fair, transparent terms", "desc": "By default, payment for a purchased course is non-refundable. If you fully complete every practical assignment the mentor gives and still don''t achieve results, we''ll refund you. If the assignments aren''t completed, the company isn''t at fault. Courses purchased on an installment plan are never refundable, under any circumstance."}}'::jsonb
+where key = 'guarantee';
+
+update public.landing_blocks
+set content = '{"uz": {"title": "Ko''p so''raladigan savollar", "items": [{"q": "Kursni sotib olish uchun ro''yxatdan o''tishim shartmi?", "a": "Ha. Kursni xarid qilish va darslarni boshlash uchun avval bepul akkaunt yaratishingiz kerak."}, {"q": "Darslarni tartibsiz o''tsa bo''ladimi?", "a": "Yo''q. Har bir mavzu avvalgi mavzuni tugatib, oraliq testdan o''tgandan so''ng ochiladi — bu chuqur va tizimli o''zlashtirishni ta''minlaydi."}, {"q": "Obuna va alohida kurs narxi orasidagi farq nima?", "a": "Alohida kurs — faqat bitta yo''nalishga kirish huquqi beradi. Obuna esa barcha kurslarga bir vaqtning o''zida kirish imkonini beradi va uzoq muddatda ancha tejamli."}, {"q": "To''lovni qanday amalga oshiraman?", "a": "Click va Payme orqali onlayn to''lov qilishingiz mumkin. To''lov tasdiqlangach, kurs darhol ochiladi."}, {"q": "Video darslarni qayerda ko''raman?", "a": "Barcha video darslar to''g''ridan-to''g''ri saytimizda, ichki pleer orqali ko''rsatiladi."}, {"q": "Sotib olgan kursimni qaytarish mumkinmi?", "a": "Standart holatda yo''q. Agar mentor bergan barcha amaliy topshiriqlarni to''liq bajargan bo''lsangiz-u, natijaga erisha olmasangiz, pulingizni qaytaramiz — topshiriqlar bajarilmagan holatda kompaniya javobgar bo''lmaydi. Muddatli to''lov (nasiya) asosida sotib olingan kurslar uchun to''lov hech qanday holatda qaytarilmaydi. To''liq shartlar \"Qaytarish siyosati\" hujjatida keltirilgan."}]}, "ru": {"title": "Часто задаваемые вопросы", "items": [{"q": "Нужно ли регистрироваться для покупки курса?", "a": "Да. Для покупки курса и начала обучения сначала нужно создать бесплатный аккаунт."}, {"q": "Можно ли проходить уроки в произвольном порядке?", "a": "Нет. Каждая тема открывается только после завершения предыдущей темы и прохождения промежуточного теста — это обеспечивает глубокое и системное усвоение."}, {"q": "В чём разница между подпиской и отдельным курсом?", "a": "Отдельный курс даёт доступ только к одному направлению. Подписка даёт доступ ко всем курсам одновременно и намного выгоднее в долгосрочной перспективе."}, {"q": "Как оплатить?", "a": "Вы можете оплатить онлайн через Click или Payme. После подтверждения оплаты курс открывается сразу."}, {"q": "Где я буду смотреть видеоуроки?", "a": "Все видеоуроки показываются прямо на нашем сайте через встроенный плеер."}, {"q": "Можно ли вернуть деньги за купленный курс?", "a": "По умолчанию нет. Если вы полностью выполнили все практические задания от ментора, но не достигли результата, мы вернём деньги — если задания не выполнены, компания не несёт ответственности. За курсы, купленные в рассрочку, оплата не возвращается ни при каких условиях. Полные условия — в документе «Политика возврата»."}]}, "en": {"title": "Frequently asked questions", "items": [{"q": "Do I need to sign up before buying a course?", "a": "Yes. You need a free account before you can purchase a course and start learning."}, {"q": "Can I take the lessons out of order?", "a": "No. Each topic unlocks only after you complete the previous topic and pass its quiz — this ensures deep, systematic learning."}, {"q": "What''s the difference between a subscription and buying a single course?", "a": "A single course gives access to just that one track. A subscription gives access to every course at once, and is far more cost-effective long-term."}, {"q": "How do I pay?", "a": "You can pay online via Click or Payme. The course unlocks immediately once payment is confirmed."}, {"q": "Where do I watch the video lessons?", "a": "All video lessons play directly on our site through the built-in player."}, {"q": "Can I get a refund for a course I bought?", "a": "Not by default. If you fully complete every practical assignment the mentor gives and still don''t achieve results, we''ll refund you — if the assignments aren''t completed, the company isn''t at fault. Courses bought on an installment plan are never refundable, under any circumstance. Full terms are in the Refund Policy."}]}}'::jsonb
+where key = 'faq';
+
+-- ============================================================
+-- Explicit consent tracking — a required checkbox at registration and
+-- again before any purchase (see auth-form.tsx, purchase-buttons.tsx,
+-- subscribe-buttons.tsx) records *when* a student agreed to the public
+-- offer + refund policy, not just that the UI happened to gate a button.
+-- ============================================================
+alter table public.payments add column if not exists terms_accepted_at timestamptz;
+alter table public.installment_leads add column if not exists terms_accepted_at timestamptz;

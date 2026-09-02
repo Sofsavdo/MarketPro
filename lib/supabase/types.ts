@@ -36,6 +36,7 @@ export interface Database {
           current_streak: number;
           longest_streak: number;
           last_active_date: string | null;
+          terms_accepted_at: string | null;
           created_at: string;
         },
         {
@@ -205,6 +206,7 @@ export interface Database {
           installment_payment_id: string | null;
           promo_code: string | null;
           referral_click_token: string | null;
+          terms_accepted_at: string | null;
           created_at: string;
         },
         {
@@ -220,6 +222,7 @@ export interface Database {
           installment_payment_id?: string | null;
           promo_code?: string | null;
           referral_click_token?: string | null;
+          terms_accepted_at?: string | null;
         }
       >;
       installment_plans: Table<
@@ -366,6 +369,7 @@ export interface Database {
           monthly_amount: number;
           total_amount: number;
           status: "new" | "contacted" | "converted" | "declined";
+          terms_accepted_at: string | null;
           created_at: string;
         },
         {
@@ -375,6 +379,7 @@ export interface Database {
           monthly_amount: number;
           total_amount: number;
           status?: "new" | "contacted" | "converted" | "declined";
+          terms_accepted_at?: string | null;
         },
         { status?: "new" | "contacted" | "converted" | "declined" }
       >;

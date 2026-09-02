@@ -14,7 +14,10 @@ import { computeMonthlyInstallment } from "@/lib/pricing";
 export async function submitInstallmentLead(
   courseId: string,
   tier: "start" | "standard" | "pro",
+  termsAccepted: boolean,
 ) {
+  if (!termsAccepted) throw new Error("terms_not_accepted");
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -60,6 +63,7 @@ export async function submitInstallmentLead(
     tier,
     monthly_amount: monthlyAmount,
     total_amount: totalAmount,
+    terms_accepted_at: new Date().toISOString(),
   });
 
   revalidatePath("/admin/installments");

@@ -16,13 +16,21 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { courseId, tier, subscriptionPlan, installmentPaymentId, promoCode } = body as {
+  const { courseId, tier, subscriptionPlan, installmentPaymentId, promoCode, termsAccepted } = body as {
     courseId?: string;
     tier?: "start" | "standard" | "pro";
     subscriptionPlan?: "monthly" | "yearly";
     installmentPaymentId?: string;
     promoCode?: string;
+    termsAccepted?: boolean;
   };
+
+  // A scheduled installment payment (installmentPaymentId) was already
+  // consented to when the plan itself was set up — only a new course or
+  // subscription purchase needs a fresh checkbox.
+  if ((courseId || subscriptionPlan) && !termsAccepted) {
+    return NextResponse.json({ error: "terms_not_accepted" }, { status: 400 });
+  }
 
   const resolved = await resolvePurchase({
     userId: user.id,
@@ -55,6 +63,7 @@ export async function POST(request: NextRequest) {
       installment_payment_id: resolved.installmentPaymentId,
       promo_code: resolved.promoCode,
       referral_click_token: referralClickToken,
+      terms_accepted_at: termsAccepted ? new Date().toISOString() : null,
     })
     .select("id")
     .single();
