@@ -59,6 +59,14 @@
       "empty": "Hozircha kurs mavjud emas",
       "perMonth": "oy"
     },
+    "paths": {
+      "title": "Ikki yo'l — o'zingiz tanlaysiz",
+      "subtitle": "IZDOSH'da o'rganilgan ko'nikma bilan qanday pul topishni siz hal qilasiz.",
+      "path1Title": "O'z biznesingizni quring",
+      "path1Desc": "Marketpleys do'koni, Xitoydan sourcing, dropshipping yoki onlayn mahsulot — xavf va daromad to'liq sizniki. Cheklovsiz o'sish imkoniyati.",
+      "path2Title": "Mutaxassis yoki menejer bo'lib ishlang",
+      "path2Desc": "Xavf qilishni istamasangiz — o'rgangan ko'nikmangiz bilan boshqa bizneslarga marketpleys/sourcing/reklama mutaxassisi sifatida xizmat ko'rsating. Barqaror oylik daromad."
+    },
     "pricingTeaser": {
       "title": "Alohida kurs yoki to'liq obuna",
       "subtitle": "Bitta yo'nalishni chuqur o'rganing yoki obuna orqali barcha kurslarga kirish huquqini oling",

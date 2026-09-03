@@ -3,7 +3,18 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, Sparkles, Layers, Languages, ArrowRight, ImageOff, Star, Wallet } from "lucide-react";
+import {
+  ShieldCheck,
+  Sparkles,
+  Layers,
+  Languages,
+  ArrowRight,
+  ImageOff,
+  Star,
+  Wallet,
+  Rocket,
+  Briefcase,
+} from "lucide-react";
 import { getPublishedCourses, localizedField } from "@/lib/courses";
 import { formatSom } from "@/lib/utils";
 import { computeMonthlyInstallment } from "@/lib/pricing";
@@ -277,6 +288,29 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      <section className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold text-slate-950">{t("home.paths.title")}</h2>
+          <p className="mx-auto mt-2 max-w-xl text-slate-600">{t("home.paths.subtitle")}</p>
+        </div>
+        <div className="mt-10 grid gap-5 sm:mt-12 sm:grid-cols-2">
+          <div className="flex flex-col gap-3 rounded-2xl border border-amber-200 bg-white p-8">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/15">
+              <Rocket className="h-5 w-5 text-amber-700" />
+            </span>
+            <h3 className="text-lg font-semibold text-slate-950">{t("home.paths.path1Title")}</h3>
+            <p className="text-sm text-slate-600">{t("home.paths.path1Desc")}</p>
+          </div>
+          <div className="flex flex-col gap-3 rounded-2xl border border-amber-200 bg-white p-8">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/15">
+              <Briefcase className="h-5 w-5 text-amber-700" />
+            </span>
+            <h3 className="text-lg font-semibold text-slate-950">{t("home.paths.path2Title")}</h3>
+            <p className="text-sm text-slate-600">{t("home.paths.path2Desc")}</p>
+          </div>
+        </div>
+      </section>
 
       {testimonials && visibleOrderedKeys.includes("testimonials") && (
         <section className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
