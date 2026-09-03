@@ -1,13 +1,13 @@
 {
   "brand": {
-    "name": "IZDOSH",
-    "fullName": "IZDOSH Academy",
+    "name": "Izdosh",
+    "fullName": "Izdosh Academy",
     "tagline": "Amaliy kasblarni o'rganing"
   },
   "seo": {
     "homeKeywords": "izdosh, izdosh academy, izdosh.uz, uzum market kursi, marketpleys kursi, marketpleys savdo kursi, xitoydan tovar olib kelish kursi, landing page yaratish kursi, telegram bot yasash kursi, ai dasturlash kursi, vibecoding, startup mvp, onlayn kurs, onlayn ta'lim O'zbekiston, amaliy kasb kurslari",
     "coursesTitle": "Kurslar — Uzum Market, marketpleys, AI dasturlash",
-    "coursesDescription": "IZDOSH Academy'ning barcha yo'nalishlari: Uzum Market savdosi, marketpleys biznesi, Xitoydan tovar olib kelish, Landing page yaratish, Telegram bot yasash, VibeCoding, Startup MVP. Video darslar, testlar va sertifikat bilan.",
+    "coursesDescription": "Izdosh Academy'ning barcha yo'nalishlari: Uzum Market savdosi, marketpleys biznesi, Xitoydan tovar olib kelish, Landing page yaratish, Telegram bot yasash, VibeCoding, Startup MVP. Video darslar, testlar va sertifikat bilan.",
     "coursesKeywords": "uzum market kursi, marketpleys kursi, xitoydan tovar olib kelish, landing page kursi, telegram bot kursi, ai dasturlash kursi, izdosh academy kurslari"
   },
   "nav": {
@@ -36,7 +36,7 @@
       "priceBadge": "{amount}dan — oyiga"
     },
     "features": {
-      "title": "Nega IZDOSH Academy",
+      "title": "Nega Izdosh Academy",
       "f1Title": "Real ekspert tajribasi",
       "f1Desc": "Nazariyotchi emas — 3 yillik marketplace va 1+ yillik AI-development amaliy tajribaga ega mentor.",
       "f2Title": "Ketma-ket ochiladigan dars tizimi",
@@ -61,7 +61,7 @@
     },
     "paths": {
       "title": "Ikki yo'l — o'zingiz tanlaysiz",
-      "subtitle": "IZDOSH'da o'rganilgan ko'nikma bilan qanday pul topishni siz hal qilasiz.",
+      "subtitle": "Izdosh'da o'rganilgan ko'nikma bilan qanday pul topishni siz hal qilasiz.",
       "path1Title": "O'z biznesingizni quring",
       "path1Desc": "Marketpleys do'koni, Xitoydan sourcing, dropshipping yoki onlayn mahsulot — xavf va daromad to'liq sizniki. Cheklovsiz o'sish imkoniyati.",
       "path2Title": "Mutaxassis yoki menejer bo'lib ishlang",
@@ -278,7 +278,7 @@
       "title": "Ommaviy oferta shartnomasi",
       "updated": "Oxirgi yangilanish",
       "s1Title": "1. Umumiy qoidalar",
-      "s1Body": "Ushbu hujjat SellerCloudX MChJ (\"IZDOSH Academy\", \"Biz\") tomonidan taqdim etiladigan onlayn kurslarni sotib olish shartlarini belgilaydi. Kursni sotib olish orqali foydalanuvchi (\"Student\") ushbu shartlarga rozilik bildiradi.",
+      "s1Body": "Ushbu hujjat SellerCloudX MChJ (\"Izdosh Academy\", \"Biz\") tomonidan taqdim etiladigan onlayn kurslarni sotib olish shartlarini belgilaydi. Kursni sotib olish orqali foydalanuvchi (\"Student\") ushbu shartlarga rozilik bildiradi.",
       "s2Title": "2. Kursga kirish huquqi",
       "s2Body": "To'lov tasdiqlangandan so'ng, Student tanlangan tarif (Start/Standard/Pro) doirasida kurs materiallariga kirish huquqiga ega bo'ladi. Obuna xaridida — barcha faol kurslarga, obuna amal qilish muddati davomida kirish huquqi beriladi.",
       "s3Title": "3. Darslarning ketma-ketligi",
@@ -313,7 +313,7 @@
     },
     "about": {
       "title": "Founder haqida",
-      "intro": "IZDOSH Academy — nazariyotchi emas, real amaliyotchi tomonidan qurilgan.",
+      "intro": "Izdosh Academy — nazariyotchi emas, real amaliyotchi tomonidan qurilgan.",
       "stat1Value": "3 yil",
       "stat1Label": "Marketplace tajribasi",
       "stat2Value": "500 mln so'm",

@@ -1,14 +1,14 @@
 {
   "brand": {
-    "name": "IZDOSH",
-    "fullName": "IZDOSH Academy",
+    "name": "Izdosh",
+    "fullName": "Izdosh Academy",
     "tagline": "Learn in-demand skills"
   },
   "seo": {
     "homeKeywords": "izdosh, izdosh academy, izdosh.uz, Uzum Market course, marketplace selling course, China sourcing course, landing page course, Telegram bot course, AI development course, vibecoding, startup MVP, online course Uzbekistan, practical skills courses",
     "coursesTitle": "Courses — Uzum Market, marketplace selling, AI development",
-    "coursesDescription": "Every IZDOSH Academy track: Uzum Market selling, marketplace business, China sourcing, landing page building, Telegram bot development, VibeCoding, Startup MVP. Video lessons, quizzes, and a certificate.",
-    "coursesKeywords": "Uzum Market course, marketplace selling course, China sourcing course, landing page course, Telegram bot course, AI development course, IZDOSH Academy courses"
+    "coursesDescription": "Every Izdosh Academy track: Uzum Market selling, marketplace business, China sourcing, landing page building, Telegram bot development, VibeCoding, Startup MVP. Video lessons, quizzes, and a certificate.",
+    "coursesKeywords": "Uzum Market course, marketplace selling course, China sourcing course, landing page course, Telegram bot course, AI development course, Izdosh Academy courses"
   },
   "nav": {
     "courses": "Courses",
@@ -36,7 +36,7 @@
       "priceBadge": "from {amount} / mo"
     },
     "features": {
-      "title": "Why IZDOSH Academy",
+      "title": "Why Izdosh Academy",
       "f1Title": "Real expert experience",
       "f1Desc": "Not a theorist — a mentor with 3 years of marketplace selling and 1+ year of hands-on AI development.",
       "f2Title": "Sequential lesson unlocking",
@@ -278,7 +278,7 @@
       "title": "Public offer agreement",
       "updated": "Last updated",
       "s1Title": "1. General provisions",
-      "s1Body": "This document sets out the terms for purchasing the online courses provided by SellerCloudX LLC (\"IZDOSH Academy\", \"We\"). By purchasing a course, the user (\"Student\") agrees to these terms.",
+      "s1Body": "This document sets out the terms for purchasing the online courses provided by SellerCloudX LLC (\"Izdosh Academy\", \"We\"). By purchasing a course, the user (\"Student\") agrees to these terms.",
       "s2Title": "2. Course access",
       "s2Body": "Once payment is confirmed, the Student gets access to the course materials under the chosen plan (Start/Standard/Pro). With a subscription, access covers every active course for the subscription's duration.",
       "s3Title": "3. Lesson sequence",
@@ -313,7 +313,7 @@
     },
     "about": {
       "title": "About the founder",
-      "intro": "IZDOSH Academy is built by a practitioner, not a theorist.",
+      "intro": "Izdosh Academy is built by a practitioner, not a theorist.",
       "stat1Value": "3 years",
       "stat1Label": "Marketplace experience",
       "stat2Value": "500M so'm",

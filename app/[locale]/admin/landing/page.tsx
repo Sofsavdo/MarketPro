@@ -22,7 +22,7 @@ const LOCALE_LABELS: Record<Locale, string> = { uz: "O'zbekcha", ru: "Ruscha", e
 
 const BLOCK_LABELS: Record<LandingBlockKey, string> = {
   hero: "Hero banner",
-  features: "Xususiyatlar (\"Nega IZDOSH Academy\")",
+  features: "Xususiyatlar (\"Nega Izdosh Academy\")",
   courses_carousel: "Kurslar bo'limi sarlavhasi",
   testimonials: "Bitiruvchilar (sharhlar)",
   pricing_teaser: "Narx taklifi bloki",
