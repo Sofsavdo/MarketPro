@@ -74,7 +74,7 @@ function CourseJsonLd({
     image: course.cover_url ?? undefined,
     provider: {
       "@type": "EducationalOrganization",
-      name: "IZDOSH Academy",
+      name: "Izdosh Academy",
       sameAs: siteUrl,
     },
     ...(course.price_start > 0 && {

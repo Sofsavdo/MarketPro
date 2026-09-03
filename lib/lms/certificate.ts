@@ -92,7 +92,7 @@ export async function renderCertificatePdf(
     10,
     rgb(0.4, 0.4, 0.4),
   );
-  centered("IZDOSH Academy", 130, serif, 16, ink);
+  centered("Izdosh Academy", 130, serif, 16, ink);
 
   return pdf.save();
 }

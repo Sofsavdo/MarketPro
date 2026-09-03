@@ -1,4 +1,4 @@
--- IZDOSH Academy — demo seed data
+-- Izdosh Academy — demo seed data
 -- Reflects the course catalog from the business plan. "Uzum Market" and
 -- "Marketplace Business" ship with full curricula (published); the other
 -- five tracks are inserted as coming-soon (unpublished, no lessons yet),

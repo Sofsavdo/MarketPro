@@ -34,7 +34,7 @@ export async function GET(
   const locale = (request.nextUrl.searchParams.get("locale") as Locale) ?? "uz";
   const pdfBytes = await renderCertificatePdf(
     certificate,
-    profile?.full_name || "IZDOSH Talabasi",
+    profile?.full_name || "Izdosh Talabasi",
     course,
     locale,
   );
