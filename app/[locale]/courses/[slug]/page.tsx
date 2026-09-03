@@ -190,10 +190,11 @@ export default async function CourseDetailPage({
       : false;
 
   return (
+    <div className="bg-amber-50 text-slate-950">
     <div className="mx-auto max-w-5xl px-4 py-16">
       <CourseJsonLd course={course} locale={locale} slug={slug} />
       {course.cover_url && (
-        <div className="animate-fade-up relative mb-8 aspect-[21/9] w-full overflow-hidden rounded-xl bg-slate-800">
+        <div className="animate-fade-up relative mb-8 aspect-[21/9] w-full overflow-hidden rounded-xl bg-amber-100">
           <Image
             src={course.cover_url}
             alt=""
@@ -202,19 +203,21 @@ export default async function CourseDetailPage({
             priority
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/10 to-transparent" />
         </div>
       )}
       <div className="animate-fade-up" style={{ animationDelay: course.cover_url ? "60ms" : "0ms" }}>
-        <Badge variant={course.is_published ? "default" : "outline"}>
+        <Badge
+          variant={course.is_published ? "default" : "outline"}
+          className={course.is_published ? "" : "border-amber-300 bg-white text-amber-700"}
+        >
           {course.is_published
             ? t("home.coursesSection.badgePopular")
             : t("home.coursesSection.badgeComingSoon")}
         </Badge>
-        <h1 className="mt-4 text-3xl font-bold text-white sm:text-4xl">
+        <h1 className="mt-4 text-3xl font-bold text-slate-950 sm:text-4xl">
           {localizedField(course, "title", locale)}
         </h1>
-        <p className="mt-3 max-w-2xl text-slate-400">
+        <p className="mt-3 max-w-2xl text-slate-600">
           {localizedField(course, "description", locale)}
         </p>
 
@@ -230,16 +233,16 @@ export default async function CourseDetailPage({
 
         {course.is_published && (
           <div className="mt-6 flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-300">
-              <Clock className="h-3.5 w-3.5 text-amber-500" />
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-white px-3 py-1.5 text-xs text-slate-600">
+              <Clock className="h-3.5 w-3.5 text-amber-600" />
               {course.duration_months} {t("home.coursesSection.months")}
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-300">
-              <Layers className="h-3.5 w-3.5 text-amber-500" />
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-white px-3 py-1.5 text-xs text-slate-600">
+              <Layers className="h-3.5 w-3.5 text-amber-600" />
               {modules.length} {t("course.modules")}
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-300">
-              <BookOpen className="h-3.5 w-3.5 text-amber-500" />
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-white px-3 py-1.5 text-xs text-slate-600">
+              <BookOpen className="h-3.5 w-3.5 text-amber-600" />
               {allLessons.length} {t("course.lessons")}
             </span>
           </div>
@@ -247,9 +250,9 @@ export default async function CourseDetailPage({
       </div>
 
       {!course.is_published ? (
-        <div className="animate-fade-up mt-8 max-w-xl rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-          <h2 className="text-lg font-semibold text-white">{t("course.waitlistTitle")}</h2>
-          <p className="mt-1 text-sm text-slate-400">{t("course.waitlistDesc")}</p>
+        <div className="animate-fade-up mt-8 max-w-xl rounded-2xl border border-amber-200 bg-white p-6">
+          <h2 className="text-lg font-semibold text-slate-950">{t("course.waitlistTitle")}</h2>
+          <p className="mt-1 text-sm text-slate-600">{t("course.waitlistDesc")}</p>
           <div className="mt-4">
             <WaitlistForm courseId={course.id} />
           </div>
@@ -258,13 +261,13 @@ export default async function CourseDetailPage({
         access.accessLevel !== "pro" && (
           <div
             id="purchase"
-            className="animate-fade-up mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/40 bg-amber-500/5 px-5 py-4 scroll-mt-24"
+            className="animate-fade-up mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-300 bg-amber-100/60 px-5 py-4 scroll-mt-24"
           >
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/15">
-                <ShoppingBag className="h-4 w-4 text-amber-400" />
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/20">
+                <ShoppingBag className="h-4 w-4 text-amber-700" />
               </span>
-              <p className="text-sm font-medium text-white">
+              <p className="text-sm font-medium text-slate-950">
                 {access.accessLevel ? t("course.upgradeTierTitle") : t("course.buyTitle")}
               </p>
             </div>
@@ -300,7 +303,7 @@ export default async function CourseDetailPage({
 
       {course.is_published && (
         <>
-          <h2 className="mt-14 text-2xl font-bold text-white">{t("course.curriculum")}</h2>
+          <h2 className="mt-14 text-2xl font-bold text-slate-950">{t("course.curriculum")}</h2>
           {/* Collapsed by default, first module open — a 20-30 lesson course
               read as one long flat list is exactly the kind of "tiring"
               scroll this is meant to avoid; a module the student can
@@ -318,14 +321,14 @@ export default async function CourseDetailPage({
                 <AccordionItem
                   key={mod.id}
                   value={mod.id}
-                  className="mb-3 rounded-xl border border-slate-800 bg-slate-900/30 px-4"
+                  className="mb-3 rounded-xl border border-amber-200 bg-white px-4"
                 >
                   <AccordionTrigger className="py-4 text-sm">
                     <span className="flex min-w-0 flex-1 items-center gap-3">
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-800 text-xs font-semibold text-slate-300">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-semibold text-amber-800">
                         {mi + 1}
                       </span>
-                      <span className="min-w-0 flex-1 truncate pr-1 text-left font-semibold text-white">
+                      <span className="min-w-0 flex-1 truncate pr-1 text-left font-semibold text-slate-950">
                         {localizedField(mod, "title", locale)}
                       </span>
                       <span className="shrink-0 text-xs font-normal text-slate-500">
@@ -345,11 +348,11 @@ export default async function CourseDetailPage({
                             key={lesson.id}
                             href={locked ? "#" : `/courses/${course.slug}/lessons/${lesson.id}`}
                             className={cn(
-                              "flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2.5 text-sm transition-colors",
-                              locked ? "cursor-not-allowed opacity-60" : "hover:border-amber-500/50",
+                              "flex items-center gap-3 rounded-lg border border-amber-100 bg-amber-50/60 px-3 py-2.5 text-sm transition-colors",
+                              locked ? "cursor-not-allowed opacity-60" : "hover:border-amber-400",
                             )}
                           >
-                            <span className="relative flex h-9 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-slate-800 sm:h-11 sm:w-[72px]">
+                            <span className="relative flex h-9 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-amber-100 sm:h-11 sm:w-[72px]">
                               {lesson.thumbnail_url ? (
                                 <Image
                                   src={lesson.thumbnail_url}
@@ -359,21 +362,24 @@ export default async function CourseDetailPage({
                                   className="object-cover"
                                 />
                               ) : (
-                                <PlayCircle className="h-4 w-4 text-slate-600" />
+                                <PlayCircle className="h-4 w-4 text-amber-400" />
                               )}
-                              <span className="absolute bottom-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-slate-950/80">
+                              <span className="absolute bottom-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-white/90">
                                 {locked ? (
-                                  <Lock className="h-2.5 w-2.5 text-slate-400" />
+                                  <Lock className="h-2.5 w-2.5 text-slate-500" />
                                 ) : (
-                                  <PlayCircle className="h-2.5 w-2.5 text-amber-500" />
+                                  <PlayCircle className="h-2.5 w-2.5 text-amber-600" />
                                 )}
                               </span>
                             </span>
-                            <span className="min-w-0 flex-1 truncate text-slate-200">
+                            <span className="min-w-0 flex-1 truncate text-slate-700">
                               {localizedField(lesson, "title", locale)}
                             </span>
                             {isFreePreview(lesson) && (
-                              <Badge variant="outline" className="hidden shrink-0 sm:inline-flex">
+                              <Badge
+                                variant="outline"
+                                className="hidden shrink-0 border-amber-300 bg-white text-amber-700 sm:inline-flex"
+                              >
                                 {t("course.freePreview")}
                               </Badge>
                             )}
@@ -401,6 +407,7 @@ export default async function CourseDetailPage({
           />
         </>
       )}
+    </div>
     </div>
   );
 }
