@@ -12,8 +12,8 @@ export async function DownsellBanner() {
   const t = await getTranslations("dashboard");
 
   return (
-    <div className="mt-6 flex flex-col items-start justify-between gap-3 rounded-xl border border-amber-500/40 bg-amber-500/5 p-4 sm:flex-row sm:items-center">
-      <p className="text-sm text-slate-200">{t("downsellBanner")}</p>
+    <div className="mt-6 flex flex-col items-start justify-between gap-3 rounded-xl border border-amber-300 bg-amber-100/60 p-4 sm:flex-row sm:items-center">
+      <p className="text-sm text-slate-800">{t("downsellBanner")}</p>
       <a
         href={OPERATOR_TELEGRAM_URL}
         target="_blank"

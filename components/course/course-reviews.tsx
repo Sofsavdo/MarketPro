@@ -23,7 +23,7 @@ function StarRow({ rating, size = 16 }: { rating: number; size?: number }) {
           key={n}
           width={size}
           height={size}
-          className={n <= rating ? "fill-amber-500 text-amber-500" : "text-slate-700"}
+          className={n <= rating ? "fill-amber-500 text-amber-500" : "text-slate-300"}
         />
       ))}
     </div>
@@ -55,21 +55,21 @@ export function CourseReviews({
   const [rating, setRating] = useState(existingReview?.rating ?? 5);
 
   return (
-    <section className="mt-16 border-t border-slate-800/80 pt-10">
+    <section className="mt-16 border-t border-amber-200 pt-10">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <h2 className="text-2xl font-bold text-white">{t("title")}</h2>
+        <h2 className="text-2xl font-bold text-slate-950">{t("title")}</h2>
         {average !== null && (
-          <div className="flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1.5 text-sm">
+          <div className="flex items-center gap-2 rounded-full border border-amber-200 bg-white px-3 py-1.5 text-sm">
             <StarRow rating={Math.round(average)} />
-            <span className="font-semibold text-white">{average.toFixed(1)}</span>
+            <span className="font-semibold text-slate-950">{average.toFixed(1)}</span>
             <span className="text-slate-500">({reviews.length})</span>
           </div>
         )}
       </div>
 
       {existingReview?.status === "pending" && (
-        <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 p-4 text-sm text-amber-200/90">
-          <Clock className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+        <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-dashed border-amber-400 bg-amber-50 p-4 text-sm text-amber-800">
+          <Clock className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
           <p>{t("pendingNotice")}</p>
         </div>
       )}
@@ -77,9 +77,9 @@ export function CourseReviews({
       {canReview && (
         <form
           action={action}
-          className="mt-5 rounded-xl border border-slate-800 bg-slate-900/40 p-5 transition-colors focus-within:border-amber-500/40"
+          className="mt-5 rounded-xl border border-amber-200 bg-white p-5 transition-colors focus-within:border-amber-400"
         >
-          <p className="text-sm font-medium text-slate-300">{t("yourRating")}</p>
+          <p className="text-sm font-medium text-slate-700">{t("yourRating")}</p>
           <div className="mt-2 flex gap-1">
             {[1, 2, 3, 4, 5].map((n) => (
               <button
@@ -92,7 +92,7 @@ export function CourseReviews({
                 <Star
                   width={24}
                   height={24}
-                  className={n <= rating ? "fill-amber-500 text-amber-500" : "text-slate-700"}
+                  className={n <= rating ? "fill-amber-500 text-amber-500" : "text-slate-300"}
                 />
               </button>
             ))}
@@ -103,7 +103,7 @@ export function CourseReviews({
             rows={3}
             defaultValue=""
             placeholder={t("commentPlaceholder")}
-            className="mt-3 w-full resize-none rounded-lg border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+            className="mt-3 w-full resize-none rounded-lg border border-amber-200 bg-amber-50/60 px-3 py-2.5 text-sm text-slate-950 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
           />
           <Button type="submit" size="sm" className="mt-3">
             {existingReview ? t("update") : t("submit")}
@@ -115,18 +115,18 @@ export function CourseReviews({
         {reviews.map((r) => (
           <div
             key={r.id}
-            className="rounded-xl border border-slate-800 bg-slate-900/30 p-4 transition-colors hover:border-slate-700"
+            className="rounded-xl border border-amber-200 bg-white p-4 transition-colors hover:border-amber-300"
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2.5">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-xs font-semibold text-amber-400">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-semibold text-amber-700">
                   {initials(r.full_name)}
                 </span>
                 <div className="min-w-0">
-                  <span className="block truncate text-sm font-medium text-slate-200">
+                  <span className="block truncate text-sm font-medium text-slate-800">
                     {r.full_name || t("anon")}
                   </span>
-                  <span className="flex items-center gap-1 text-[11px] text-emerald-400/90">
+                  <span className="flex items-center gap-1 text-[11px] text-emerald-700">
                     <ShieldCheck className="h-3 w-3" /> {t("verified")}
                   </span>
                 </div>
@@ -136,7 +136,7 @@ export function CourseReviews({
             <div className="mt-3">
               <StarRow rating={r.rating} />
             </div>
-            {r.comment && <p className="mt-2 text-sm leading-relaxed text-slate-400">{r.comment}</p>}
+            {r.comment && <p className="mt-2 text-sm leading-relaxed text-slate-600">{r.comment}</p>}
           </div>
         ))}
         {!reviews.length && (

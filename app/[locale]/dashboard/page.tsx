@@ -139,6 +139,7 @@ export default async function DashboardPage() {
     : 0;
 
   return (
+    <div className="bg-amber-50 text-slate-950">
     <div className="mx-auto max-w-5xl px-4 py-16">
       {daysUntilExpiry !== null && daysUntilExpiry <= 3 && (
         <ExpiryPopup daysLeft={daysUntilExpiry} />
@@ -146,25 +147,28 @@ export default async function DashboardPage() {
 
       <div className="animate-fade-up flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="text-3xl font-bold text-slate-950">
             {profile?.full_name ? `${t("dashboard.title")}, ${profile.full_name.split(" ")[0]}` : t("dashboard.title")}
           </h1>
-          <p className="mt-1 text-slate-400">{t("dashboard.subtitle")}</p>
+          <p className="mt-1 text-slate-600">{t("dashboard.subtitle")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {!!profile?.current_streak && (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-sm text-amber-400">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-100 px-3 py-1.5 text-sm text-amber-800">
               <Flame className="h-3.5 w-3.5" />
               {t("dashboard.streak", { count: profile.current_streak })}
             </span>
           )}
-          <Badge variant={subscription ? "default" : "outline"}>
+          <Badge
+            variant={subscription ? "default" : "outline"}
+            className={subscription ? "" : "border-amber-300 bg-white text-amber-700"}
+          >
             {subscription ? t("dashboard.subscriptionActive") : t("dashboard.subscriptionNone")}
           </Badge>
-          <Button asChild variant="outline" size="sm">
+          <Button asChild variant="outline" size="sm" className="border-amber-300 bg-white text-slate-800 hover:bg-amber-50">
             <Link href="/live">{t("nav.live")}</Link>
           </Button>
-          <Button asChild variant="outline" size="sm">
+          <Button asChild variant="outline" size="sm" className="border-amber-300 bg-white text-slate-800 hover:bg-amber-50">
             <Link href="/profile">{t("dashboard.profile")}</Link>
           </Button>
         </div>
@@ -175,29 +179,29 @@ export default async function DashboardPage() {
           className="animate-fade-up mt-8 grid grid-cols-3 gap-3 sm:gap-4"
           style={{ animationDelay: "60ms" }}
         >
-          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10">
-              <BookOpen className="h-4 w-4 text-amber-500" />
+          <div className="rounded-xl border border-amber-200 bg-white p-4">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100">
+              <BookOpen className="h-4 w-4 text-amber-600" />
             </span>
-            <p className="mt-3 font-mono text-xl font-semibold text-white sm:text-2xl">
+            <p className="mt-3 font-mono text-xl font-semibold text-slate-950 sm:text-2xl">
               {courseAccess.length}
             </p>
             <p className="mt-0.5 text-xs text-slate-500">{t("dashboard.statCourses")}</p>
           </div>
-          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
-              <TrendingUp className="h-4 w-4 text-emerald-500" />
+          <div className="rounded-xl border border-amber-200 bg-white p-4">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100">
+              <TrendingUp className="h-4 w-4 text-emerald-600" />
             </span>
-            <p className="mt-3 font-mono text-xl font-semibold text-white sm:text-2xl">
+            <p className="mt-3 font-mono text-xl font-semibold text-slate-950 sm:text-2xl">
               {avgProgress}%
             </p>
             <p className="mt-0.5 text-xs text-slate-500">{t("dashboard.statAvgProgress")}</p>
           </div>
-          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10">
-              <Flame className="h-4 w-4 text-amber-500" />
+          <div className="rounded-xl border border-amber-200 bg-white p-4">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100">
+              <Flame className="h-4 w-4 text-amber-600" />
             </span>
-            <p className="mt-3 font-mono text-xl font-semibold text-white sm:text-2xl">
+            <p className="mt-3 font-mono text-xl font-semibold text-slate-950 sm:text-2xl">
               {profile?.current_streak ?? 0}
             </p>
             <p className="mt-0.5 text-xs text-slate-500">{t("dashboard.streakLabel")}</p>
@@ -208,11 +212,11 @@ export default async function DashboardPage() {
       {subscription && <DownsellBanner />}
 
       {!courseAccess.length ? (
-        <div className="animate-fade-up mt-16 flex flex-col items-center gap-4 rounded-2xl border border-dashed border-slate-800 bg-slate-900/30 px-6 py-16 text-center">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/10">
-            <BookOpen className="h-6 w-6 text-amber-500" />
+        <div className="animate-fade-up mt-16 flex flex-col items-center gap-4 rounded-2xl border border-dashed border-amber-300 bg-white px-6 py-16 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100">
+            <BookOpen className="h-6 w-6 text-amber-600" />
           </span>
-          <p className="text-slate-400">{t("dashboard.noCourses")}</p>
+          <p className="text-slate-600">{t("dashboard.noCourses")}</p>
           <Button asChild>
             <Link href="/courses">{t("dashboard.browseCourses")}</Link>
           </Button>
@@ -228,10 +232,10 @@ export default async function DashboardPage() {
             return (
               <div
                 key={courseId}
-                className="card-lift animate-fade-up overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 hover:border-amber-500/40"
+                className="card-lift animate-fade-up overflow-hidden rounded-xl border border-amber-200 bg-white hover:border-amber-400"
                 style={{ animationDelay: `${100 + i * 60}ms` }}
               >
-                <div className="relative aspect-[21/9] w-full overflow-hidden bg-slate-800">
+                <div className="relative aspect-[21/9] w-full overflow-hidden bg-amber-100">
                   {course.cover_url ? (
                     <Image
                       src={course.cover_url}
@@ -242,37 +246,40 @@ export default async function DashboardPage() {
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center">
-                      <ImageOff className="h-6 w-6 text-slate-600" />
+                      <ImageOff className="h-6 w-6 text-amber-300" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/10 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 flex items-center justify-between p-4">
                     <span className="line-clamp-1 font-semibold text-white">
                       {localizedField(course, "title", locale)}
                     </span>
-                    <Badge variant={accessLevel === "start" ? "outline" : "default"}>
+                    <Badge
+                      variant={accessLevel === "start" ? "outline" : "default"}
+                      className={accessLevel === "start" ? "border-white/40 bg-black/30 text-white" : ""}
+                    >
                       {t(`course.tier${accessLevel.charAt(0).toUpperCase()}${accessLevel.slice(1)}`)}
                     </Badge>
                   </div>
                 </div>
 
                 <div className="space-y-3 p-5">
-                  <div className="flex items-center justify-between text-sm text-slate-400">
+                  <div className="flex items-center justify-between text-sm text-slate-600">
                     <span>{t("dashboard.progress")}</span>
-                    <span className="font-mono text-white">{pct}%</span>
+                    <span className="font-mono text-slate-950">{pct}%</span>
                   </div>
-                  <Progress value={pct} />
+                  <Progress value={pct} className="bg-amber-100" />
 
                   {nextInstallment && (
                     <div
                       className={`rounded-lg border p-3 text-sm ${
                         overdue
-                          ? "border-red-500/40 bg-red-500/5"
-                          : "border-slate-800 bg-slate-900/40"
+                          ? "border-red-300 bg-red-50"
+                          : "border-amber-200 bg-amber-50/60"
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className={overdue ? "flex items-center gap-1.5 text-red-400" : "text-slate-300"}>
+                        <span className={overdue ? "flex items-center gap-1.5 text-red-600" : "text-slate-700"}>
                           {overdue && <AlertTriangle className="h-4 w-4" />}
                           {t("dashboard.nextInstallment")}: {formatSom(nextInstallment.amount, locale)}
                         </span>
@@ -287,15 +294,19 @@ export default async function DashboardPage() {
                   )}
 
                   {accessLevel === "start" && (
-                    <p className="rounded-lg border border-dashed border-slate-800 p-2 text-center text-xs text-slate-500">
+                    <p className="rounded-lg border border-dashed border-amber-300 p-2 text-center text-xs text-slate-500">
                       {t("dashboard.startAccessNote")}{" "}
-                      <Link href={`/courses/${course.slug}`} className="text-amber-400 hover:underline">
+                      <Link href={`/courses/${course.slug}`} className="text-amber-700 hover:underline">
                         {t("course.upgradeTierTitle")}
                       </Link>
                     </p>
                   )}
 
-                  <Button asChild variant="outline" className="w-full">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="w-full border-amber-300 bg-white text-slate-800 hover:bg-amber-50"
+                  >
                     <Link href={`/courses/${course.slug}`}>
                       {pct >= 100
                         ? t("course.completed")
@@ -306,9 +317,13 @@ export default async function DashboardPage() {
                   </Button>
 
                   {pct >= 100 && (
-                    <Button asChild variant="outline" className="w-full gap-1.5">
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="w-full gap-1.5 border-amber-300 bg-white text-slate-800 hover:bg-amber-50"
+                    >
                       <a href={`/api/certificates/${courseId}?locale=${locale}`}>
-                        <Award className="h-4 w-4 text-amber-500" />
+                        <Award className="h-4 w-4 text-amber-600" />
                         {t("course.downloadCertificate")}
                       </a>
                     </Button>
@@ -321,15 +336,15 @@ export default async function DashboardPage() {
       )}
 
       {hasCompletedACourse && suggestedCourse && (
-        <div className="animate-fade-up mt-10 flex flex-col gap-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="animate-fade-up mt-10 flex flex-col gap-4 rounded-xl border border-amber-300 bg-amber-100/60 p-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-500/15">
-              <Sparkles className="h-5 w-5 text-amber-500" />
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-500/20">
+              <Sparkles className="h-5 w-5 text-amber-700" />
             </span>
             <div>
-              <h2 className="text-lg font-semibold text-white">{t("dashboard.upsellTitle")}</h2>
-              <p className="mt-1 text-sm text-slate-400">{t("dashboard.upsellDesc")}</p>
-              <p className="mt-2 text-slate-200">{localizedField(suggestedCourse, "title", locale)}</p>
+              <h2 className="text-lg font-semibold text-slate-950">{t("dashboard.upsellTitle")}</h2>
+              <p className="mt-1 text-sm text-slate-600">{t("dashboard.upsellDesc")}</p>
+              <p className="mt-2 text-slate-800">{localizedField(suggestedCourse, "title", locale)}</p>
             </div>
           </div>
           <Button asChild size="sm" className="shrink-0">
@@ -337,6 +352,7 @@ export default async function DashboardPage() {
           </Button>
         </div>
       )}
+    </div>
     </div>
   );
 }

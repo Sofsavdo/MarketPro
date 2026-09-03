@@ -46,13 +46,13 @@ export function ExpiryPopup({ daysLeft }: { daysLeft: number }) {
   if (!open) return null;
 
   return (
-    <div className="mb-6 flex items-start gap-3 rounded-xl border border-red-500/40 bg-red-500/5 p-4">
-      <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
+    <div className="mb-6 flex items-start gap-3 rounded-xl border border-red-300 bg-red-50 p-4">
+      <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
       <div className="flex-1">
-        <p className="text-sm font-medium text-white">
+        <p className="text-sm font-medium text-slate-950">
           {daysLeft <= 0 ? t("expiryPopupToday") : t("expiryPopupTitle", { days: daysLeft })}
         </p>
-        <p className="mt-1 text-sm text-slate-400">{t("expiryPopupDesc")}</p>
+        <p className="mt-1 text-sm text-slate-600">{t("expiryPopupDesc")}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button asChild size="sm">
             <Link href="/pricing">{t("expiryPopupRenew")}</Link>
@@ -68,7 +68,7 @@ export function ExpiryPopup({ daysLeft }: { daysLeft: number }) {
         type="button"
         onClick={dismiss}
         aria-label="Close"
-        className="shrink-0 text-slate-500 hover:text-white"
+        className="shrink-0 text-slate-500 hover:text-slate-950"
       >
         <X className="h-4 w-4" />
       </button>

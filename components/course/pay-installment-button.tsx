@@ -26,7 +26,13 @@ export function PayInstallmentButton({ installmentPaymentId }: { installmentPaym
       <Button size="sm" disabled={loading !== null} onClick={() => pay("click")}>
         {loading === "click" ? "..." : "Click"}
       </Button>
-      <Button size="sm" variant="outline" disabled={loading !== null} onClick={() => pay("payme")}>
+      <Button
+        size="sm"
+        variant="outline"
+        className="border-amber-300 bg-white text-slate-800 hover:bg-amber-50"
+        disabled={loading !== null}
+        onClick={() => pay("payme")}
+      >
         {loading === "payme" ? "..." : "Payme"}
       </Button>
     </div>

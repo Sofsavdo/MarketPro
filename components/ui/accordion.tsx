@@ -13,7 +13,7 @@ const AccordionItem = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AccordionPrimitive.Item
     ref={ref}
-    className={cn("border-b border-slate-800", className)}
+    className={cn("border-b border-amber-200", className)}
     {...props}
   />
 ));
@@ -32,13 +32,13 @@ const AccordionTrigger = React.forwardRef<
         // lets a long title inside (e.g. the course curriculum's module
         // names) push this trigger — and the whole page — wider than the
         // viewport instead of letting its own truncate do its job.
-        "flex min-w-0 flex-1 items-center justify-between py-4 text-left text-sm font-medium text-white transition-all [&[data-state=open]>svg]:rotate-180",
+        "flex min-w-0 flex-1 items-center justify-between py-4 text-left text-sm font-medium text-slate-950 transition-all [&[data-state=open]>svg]:rotate-180",
         className,
       )}
       {...props}
     >
       {children}
-      <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200" />
+      <ChevronDown className="h-4 w-4 shrink-0 text-amber-600 transition-transform duration-200" />
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
 ));
@@ -50,7 +50,7 @@ const AccordionContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Content
     ref={ref}
-    className="overflow-hidden text-sm text-slate-400 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+    className="overflow-hidden text-sm text-slate-600 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
     {...props}
   >
     <div className={cn("pb-4", className)}>{children}</div>

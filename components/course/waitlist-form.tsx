@@ -35,6 +35,7 @@ export function WaitlistForm({ courseId }: { courseId: string }) {
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row sm:items-end">
       <div className="flex-1">
         <Input
+          className="border-amber-200 bg-white text-slate-950 placeholder:text-slate-400 focus-visible:ring-amber-500"
           type="email"
           placeholder="email@example.com"
           value={email}
@@ -44,6 +45,7 @@ export function WaitlistForm({ courseId }: { courseId: string }) {
       </div>
       <div className="flex-1">
         <Input
+          className="border-amber-200 bg-white text-slate-950 placeholder:text-slate-400 focus-visible:ring-amber-500"
           type="tel"
           placeholder="+998 90 123 45 67"
           value={phone}
