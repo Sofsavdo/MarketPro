@@ -59,6 +59,14 @@
       "empty": "No courses available yet",
       "perMonth": "mo"
     },
+    "paths": {
+      "title": "Two paths — you choose",
+      "subtitle": "How you turn the skills you learn into income is up to you.",
+      "path1Title": "Build your own business",
+      "path1Desc": "A marketplace store, sourcing from China, dropshipping, or an online product — the risk and the income are entirely yours. Unlimited growth potential.",
+      "path2Title": "Work as a specialist or manager",
+      "path2Desc": "Prefer not to take the risk? Use what you learned to serve other businesses as a marketplace, sourcing, or ads specialist. Steady monthly income."
+    },
     "pricingTeaser": {
       "title": "A single course or a full subscription",
       "subtitle": "Go deep on one track, or unlock every course with a subscription",
