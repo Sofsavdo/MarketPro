@@ -2,19 +2,21 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { createAdminClient } from "@/lib/supabase/server";
 
 /**
- * Custom tools the AI Marketing Department can call to persist its work —
+ * Custom tools every specialist agent can call to persist its work —
  * without these, ideas/tasks/notes would only ever exist as chat text and
- * disappear once the conversation scrolls. web_search is Anthropic's own
- * server-side tool (no execution code needed here) for current-info
- * research (spec's fact-checking + competitor/trend research requirement).
+ * disappear once the conversation scrolls. Every insert/update is tagged
+ * with the calling agent's key (see executeAiDepartmentTool's agentKey
+ * param) so the admin UI can show which specialist produced what.
  *
- * Deliberately the *basic* 20250305 variant, not the newer 20260209
- * dynamic-filtering one: that variant runs on an internal code-execution
- * container and requires echoing a container_id back on the next turn —
- * our conversation history round-trips through Postgres JSONB storage
- * between turns, which doesn't preserve that linkage, so the newer variant
- * fails with "container_id is required..." as soon as a second turn
- * follows a web_search call. The basic variant has no such requirement.
+ * web_search is Anthropic's own server-side tool (no execution code
+ * needed here) for current-info research. Deliberately the *basic*
+ * 20250305 variant, not the newer 20260209 dynamic-filtering one: that
+ * variant runs on an internal code-execution container and requires
+ * echoing a container_id back on the next turn — our conversation
+ * history round-trips through Postgres JSONB storage between turns,
+ * which doesn't preserve that linkage, so the newer variant fails with
+ * "container_id is required..." as soon as a second turn follows a
+ * web_search call. The basic variant has no such requirement.
  */
 export const AI_DEPARTMENT_TOOLS: Anthropic.ToolUnion[] = [
   {
@@ -25,7 +27,7 @@ export const AI_DEPARTMENT_TOOLS: Anthropic.ToolUnion[] = [
   {
     name: "save_content_idea",
     description:
-      "Kontent g'oyasini (Reels/post/story) bazaga saqlaydi, keyin admin panelda ko'rinadi va tasdiqlanishi mumkin. Har doim score_* maydonlarini ham to'ldir — bu spec'ning content score tizimi (VALUE/HOOK/RETENTION/SHAREABILITY/SAVEABILITY/BRAND_FIT/ORIGINALITY/CONVERSION, har biri 1-10).",
+      "Kontent g'oyasini (Reels/post/story) bazaga saqlaydi, keyin admin panelda ko'rinadi va tasdiqlanishi mumkin. Har doim score_* maydonlarini ham to'ldir — bu spec'ning content score tizimi (VALUE/HOOK/RETENTION/SHAREABILITY/SAVEABILITY/BRAND_FIT/ORIGINALITY/CONVERSION, har biri 1-10). Muvaffaqiyatli chaqiruv natijasidagi id'ni keyinchalik save_script/update_content_schedule uchun content_idea_id sifatida ishlat.",
     input_schema: {
       type: "object",
       properties: {
@@ -52,16 +54,34 @@ export const AI_DEPARTMENT_TOOLS: Anthropic.ToolUnion[] = [
   {
     name: "save_script",
     description:
-      "Mavjud kontent g'oyasi uchun to'liq Reels/post skripti (va caption/CTA) saqlaydi. Avval save_content_idea bilan g'oya yaratilgan bo'lishi kerak, uning id'sini content_idea_id sifatida ber.",
+      "Content g'oyasining ishlab chiqarish materialini saqlaydi/yangilaydi — script (ssenarist), caption/cta (copywriter) va direction_notes (rejissor) bir xil content_idea_id ostida to'planadi. Faqat o'zing to'ldirayotgan maydonlarni yubor — boshqa mutaxassis oldin to'ldirgan maydonlar o'chib ketmaydi.",
     input_schema: {
       type: "object",
       properties: {
         content_idea_id: { type: "string" },
-        script: { type: "string", description: "To'liq skript matni (sahna-sahna yoki gap-gap)" },
-        caption: { type: "string" },
-        cta: { type: "string" },
+        script: { type: "string", description: "To'liq skript matni (sahna-sahna yoki gap-gap) — ssenarist to'ldiradi" },
+        caption: { type: "string", description: "Instagram caption — copywriter to'ldiradi" },
+        cta: { type: "string", description: "Call-to-action matni — copywriter to'ldiradi" },
+        direction_notes: {
+          type: "string",
+          description: "Format, kadr, joylashuv, pace, b-roll ko'rsatmalari — rejissor to'ldiradi",
+        },
       },
-      required: ["content_idea_id", "script"],
+      required: ["content_idea_id"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "update_content_schedule",
+    description: "Mavjud content g'oyasini kalendarga joylashtiradi (scheduled_for) va/yoki statusini yangilaydi.",
+    input_schema: {
+      type: "object",
+      properties: {
+        content_idea_id: { type: "string" },
+        scheduled_for: { type: "string", description: "YYYY-MM-DD" },
+        status: { type: "string", enum: ["idea", "draft", "review", "approved", "published"] },
+      },
+      required: ["content_idea_id"],
       additionalProperties: false,
     },
   },
@@ -142,6 +162,7 @@ type ToolResult = { tool_use_id: string; content: string; is_error?: boolean };
 
 export async function executeAiDepartmentTool(
   toolUse: Anthropic.ToolUseBlock,
+  agentKey: string,
 ): Promise<ToolResult> {
   const admin = await createAdminClient();
   const input = toolUse.input as Record<string, unknown>;
@@ -167,6 +188,7 @@ export async function executeAiDepartmentTool(
             score_brand_fit: (input.score_brand_fit as number) ?? null,
             score_originality: (input.score_originality as number) ?? null,
             score_conversion: (input.score_conversion as number) ?? null,
+            agent_key: agentKey,
           })
           .select("id")
           .single();
@@ -175,14 +197,32 @@ export async function executeAiDepartmentTool(
       }
 
       case "save_script": {
-        const { error } = await admin.from("ai_scripts").insert({
+        const payload: Record<string, unknown> = {
           content_idea_id: input.content_idea_id as string,
-          script: input.script as string,
-          caption: (input.caption as string) ?? null,
-          cta: (input.cta as string) ?? null,
-        });
+          agent_key: agentKey,
+        };
+        if (input.script !== undefined) payload.script = input.script;
+        if (input.caption !== undefined) payload.caption = input.caption;
+        if (input.cta !== undefined) payload.cta = input.cta;
+        if (input.direction_notes !== undefined) payload.direction_notes = input.direction_notes;
+
+        const { error } = await admin
+          .from("ai_scripts")
+          .upsert(payload as never, { onConflict: "content_idea_id" });
         if (error) throw error;
-        return { tool_use_id: toolUse.id, content: "Skript saqlandi." };
+        return { tool_use_id: toolUse.id, content: "Saqlandi." };
+      }
+
+      case "update_content_schedule": {
+        const payload: Record<string, unknown> = {};
+        if (input.scheduled_for !== undefined) payload.scheduled_for = input.scheduled_for;
+        if (input.status !== undefined) payload.status = input.status;
+        const { error } = await admin
+          .from("ai_content_ideas")
+          .update(payload as never)
+          .eq("id", input.content_idea_id as string);
+        if (error) throw error;
+        return { tool_use_id: toolUse.id, content: "Kalendar yangilandi." };
       }
 
       case "save_objection_response": {
@@ -193,6 +233,7 @@ export async function executeAiDepartmentTool(
             clarification: (input.clarification as string) ?? null,
             value_explanation: (input.value_explanation as string) ?? null,
             suggested_offer: (input.suggested_offer as string) ?? null,
+            agent_key: agentKey,
             updated_at: new Date().toISOString(),
           },
           { onConflict: "objection_text" },
@@ -212,6 +253,7 @@ export async function executeAiDepartmentTool(
             start: (input.start as string) ?? null,
             continue_doing: (input.continue_doing as string) ?? null,
           },
+          agent_key: agentKey,
         });
         if (error) throw error;
         return { tool_use_id: toolUse.id, content: "Hisobot saqlandi." };
@@ -226,6 +268,7 @@ export async function executeAiDepartmentTool(
             brand: (input.brand as "amaliy_biznes" | "izdosh_academy") ?? null,
             priority: (input.priority as "low" | "normal" | "high") ?? "normal",
             deadline: (input.deadline as string) ?? null,
+            agent_key: agentKey,
           })
           .select("id")
           .single();
@@ -258,6 +301,7 @@ export async function executeAiDepartmentTool(
           competitor_id: competitor.id,
           summary: input.summary as string,
           source_url: (input.source_url as string) ?? null,
+          agent_key: agentKey,
         });
         if (error) throw error;
         return { tool_use_id: toolUse.id, content: "Raqobatchi tahlili saqlandi." };

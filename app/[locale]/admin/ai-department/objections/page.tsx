@@ -1,7 +1,7 @@
-import { listObjections } from "@/lib/ai-department/data-actions";
+import { listObjections, getAgentNameMap } from "@/lib/ai-department/data-actions";
 
 export default async function ObjectionsPage() {
-  const objections = await listObjections();
+  const [objections, agentNames] = await Promise.all([listObjections(), getAgentNameMap()]);
 
   if (objections.length === 0) {
     return <p className="text-sm text-slate-500">Hozircha e&apos;tiroz javoblari yo&apos;q.</p>;
@@ -11,7 +11,12 @@ export default async function ObjectionsPage() {
     <div className="flex flex-col gap-3">
       {objections.map((o) => (
         <div key={o.id} className="rounded-xl border border-slate-800 bg-slate-900 p-4">
-          <h3 className="text-base font-semibold text-white">&quot;{o.objection_text}&quot;</h3>
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-base font-semibold text-white">&quot;{o.objection_text}&quot;</h3>
+            {o.agent_key && (
+              <span className="shrink-0 text-xs text-slate-600">{agentNames[o.agent_key] ?? o.agent_key}</span>
+            )}
+          </div>
           <p className="mt-2 text-sm text-slate-300">{o.empathetic_response}</p>
           {o.clarification && (
             <p className="mt-2 text-sm text-slate-400">

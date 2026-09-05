@@ -11,7 +11,7 @@ import {
 } from "@/lib/ai-department/chat-actions";
 
 type ConversationSummary = { id: string; title: string | null; updated_at: string };
-type DisplayMessage = { role: "user" | "assistant"; text: string };
+type DisplayMessage = { role: "user" | "assistant"; text: string; agentNames?: string[] };
 
 function extractDisplayMessages(raw: ChatMessage[]): DisplayMessage[] {
   const out: DisplayMessage[] = [];
@@ -80,7 +80,10 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
       }
       try {
         const reply = await sendChatMessage(conversationId, text);
-        setMessages((prev) => [...prev, { role: "assistant", text: reply }]);
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", text: reply.text, agentNames: reply.agentNames },
+        ]);
       } catch (err) {
         setMessages((prev) => [
           ...prev,
@@ -124,20 +127,31 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
           ) : (
             <div className="flex flex-col gap-4">
               {messages.map((m, i) => (
-                <div
-                  key={i}
-                  className={`max-w-[85%] rounded-xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
-                    m.role === "user"
-                      ? "ml-auto bg-amber-500 text-slate-950"
-                      : "bg-slate-800 text-slate-100"
-                  }`}
-                >
-                  {m.text}
+                <div key={i} className={m.role === "user" ? "ml-auto max-w-[85%]" : "max-w-[85%]"}>
+                  {m.agentNames && m.agentNames.length > 0 && (
+                    <div className="mb-1 flex flex-wrap gap-1">
+                      {m.agentNames.map((name) => (
+                        <span
+                          key={name}
+                          className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-400"
+                        >
+                          {name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div
+                    className={`rounded-xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
+                      m.role === "user" ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-slate-100"
+                    }`}
+                  >
+                    {m.text}
+                  </div>
                 </div>
               ))}
               {isPending && (
                 <div className="flex items-center gap-2 text-sm text-slate-500">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Yozmoqda...
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Mutaxassislar ishlamoqda...
                 </div>
               )}
             </div>

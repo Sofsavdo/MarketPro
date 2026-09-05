@@ -46,7 +46,15 @@ function averageScore(idea: ContentIdea): number | null {
   return Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10;
 }
 
-export function ContentIdeaCard({ idea, brandLabel }: { idea: ContentIdea; brandLabel: string }) {
+export function ContentIdeaCard({
+  idea,
+  brandLabel,
+  agentName,
+}: {
+  idea: ContentIdea;
+  brandLabel: string;
+  agentName?: string;
+}) {
   const [isPending, startTransition] = useTransition();
   const next = NEXT_STATUS[idea.status];
   const avg = averageScore(idea);
@@ -58,6 +66,7 @@ export function ContentIdeaCard({ idea, brandLabel }: { idea: ContentIdea; brand
           <Badge variant="outline">{brandLabel}</Badge>
           {idea.pillar && <Badge variant="outline">{idea.pillar}</Badge>}
           <span className="text-xs text-slate-500">{STATUS_LABELS[idea.status]}</span>
+          {agentName && <span className="text-xs text-slate-600">· {agentName}</span>}
           {avg !== null && (
             <span
               className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
@@ -91,9 +100,9 @@ export function ContentIdeaCard({ idea, brandLabel }: { idea: ContentIdea; brand
           {idea.scripts.map((s) => (
             <details key={s.id} className="rounded-lg bg-slate-950 p-3">
               <summary className="cursor-pointer text-xs font-medium text-amber-400">
-                Skript ko&apos;rish
+                Ishlab chiqarish materiali ko&apos;rish
               </summary>
-              <p className="mt-2 text-sm whitespace-pre-wrap text-slate-300">{s.script}</p>
+              {s.script && <p className="mt-2 text-sm whitespace-pre-wrap text-slate-300">{s.script}</p>}
               {s.caption && (
                 <p className="mt-2 text-xs text-slate-400">
                   <span className="font-medium text-slate-300">Caption:</span> {s.caption}
@@ -102,6 +111,12 @@ export function ContentIdeaCard({ idea, brandLabel }: { idea: ContentIdea; brand
               {s.cta && (
                 <p className="mt-1 text-xs text-slate-400">
                   <span className="font-medium text-slate-300">CTA:</span> {s.cta}
+                </p>
+              )}
+              {s.direction_notes && (
+                <p className="mt-1 text-xs text-slate-400">
+                  <span className="font-medium text-slate-300">Rejissor ko&apos;rsatmasi:</span>{" "}
+                  {s.direction_notes}
                 </p>
               )}
             </details>

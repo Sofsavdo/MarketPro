@@ -1,7 +1,7 @@
 /**
  * Typed shapes for ai_brand_memory's four JSONB columns — used so the
  * admin edits structured fields (name/bio/lists) instead of raw JSON text.
- * See lib/ai-department/system-prompt.ts, which just JSON.stringifies
+ * See lib/ai-department/agents.ts's buildBrandContext(), which just JSON.stringifies
  * whatever's stored here — these types only constrain the admin UI/action,
  * not what the AI itself can read.
  */

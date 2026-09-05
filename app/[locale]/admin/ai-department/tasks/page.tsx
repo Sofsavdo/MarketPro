@@ -1,4 +1,4 @@
-import { listTasks } from "@/lib/ai-department/data-actions";
+import { listTasks, getAgentNameMap } from "@/lib/ai-department/data-actions";
 import { TaskColumn } from "@/components/admin/task-column";
 import type { Database } from "@/lib/supabase/types";
 
@@ -14,7 +14,7 @@ const COLUMNS: { status: Status; label: string }[] = [
 ];
 
 export default async function TasksPage() {
-  const tasks = await listTasks();
+  const [tasks, agentNames] = await Promise.all([listTasks(), getAgentNameMap()]);
 
   return (
     <div className="flex gap-4 overflow-x-auto pb-4">
@@ -24,6 +24,7 @@ export default async function TasksPage() {
           label={col.label}
           status={col.status}
           tasks={tasks.filter((t) => t.status === col.status)}
+          agentNames={agentNames}
         />
       ))}
     </div>
