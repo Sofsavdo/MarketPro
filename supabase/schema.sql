@@ -1131,3 +1131,32 @@ create table if not exists public.ai_reports (
   created_at timestamptz not null default now()
 );
 alter table public.ai_reports enable row level security;
+
+-- Content score (spec §39: VALUE/HOOK/RETENTION/SHAREABILITY/SAVEABILITY/
+-- BRAND_FIT/ORIGINALITY/CONVERSION, 1-10 each) — the AI sets these when it
+-- saves a content idea, so a low-scoring idea is visibly flagged for
+-- rework in the admin UI instead of silently blending into the list.
+alter table public.ai_content_ideas add column if not exists score_value smallint;
+alter table public.ai_content_ideas add column if not exists score_hook smallint;
+alter table public.ai_content_ideas add column if not exists score_retention smallint;
+alter table public.ai_content_ideas add column if not exists score_shareability smallint;
+alter table public.ai_content_ideas add column if not exists score_saveability smallint;
+alter table public.ai_content_ideas add column if not exists score_brand_fit smallint;
+alter table public.ai_content_ideas add column if not exists score_originality smallint;
+alter table public.ai_content_ideas add column if not exists score_conversion smallint;
+
+-- Objection library (spec §32) — a reusable playbook of how to answer a
+-- buyer's pushback, so the AI (and G'ayratjon himself) don't reinvent the
+-- same DM/comment reply every time. Seeded once below with the 12
+-- objections named in the spec; the AI can add more via save_objection_response.
+create table if not exists public.ai_objections (
+  id uuid primary key default gen_random_uuid(),
+  objection_text text not null unique,
+  empathetic_response text not null,
+  clarification text,
+  value_explanation text,
+  suggested_offer text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.ai_objections enable row level security;

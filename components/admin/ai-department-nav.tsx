@@ -3,13 +3,15 @@
 import { usePathname } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { MessageSquare, Lightbulb, Users, ListChecks, BrainCircuit } from "lucide-react";
+import { MessageSquare, Lightbulb, Users, ListChecks, BrainCircuit, ShieldQuestion, FileBarChart } from "lucide-react";
 
 const TABS = [
   { href: "/admin/ai-department", label: "Chat", icon: MessageSquare },
   { href: "/admin/ai-department/content", label: "Kontent", icon: Lightbulb },
   { href: "/admin/ai-department/competitors", label: "Raqobatchilar", icon: Users },
   { href: "/admin/ai-department/tasks", label: "Tasklar", icon: ListChecks },
+  { href: "/admin/ai-department/objections", label: "E'tirozlar", icon: ShieldQuestion },
+  { href: "/admin/ai-department/reports", label: "Hisobotlar", icon: FileBarChart },
   { href: "/admin/ai-department/brand", label: "Brend xotirasi", icon: BrainCircuit },
 ] as const;
 

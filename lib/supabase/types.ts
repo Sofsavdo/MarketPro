@@ -504,6 +504,14 @@ export interface Database {
           body: string | null;
           status: "idea" | "draft" | "review" | "approved" | "published";
           scheduled_for: string | null;
+          score_value: number | null;
+          score_hook: number | null;
+          score_retention: number | null;
+          score_shareability: number | null;
+          score_saveability: number | null;
+          score_brand_fit: number | null;
+          score_originality: number | null;
+          score_conversion: number | null;
           created_at: string;
           updated_at: string;
         },
@@ -516,6 +524,14 @@ export interface Database {
           body?: string | null;
           status?: "idea" | "draft" | "review" | "approved" | "published";
           scheduled_for?: string | null;
+          score_value?: number | null;
+          score_hook?: number | null;
+          score_retention?: number | null;
+          score_shareability?: number | null;
+          score_saveability?: number | null;
+          score_brand_fit?: number | null;
+          score_originality?: number | null;
+          score_conversion?: number | null;
         },
         { status?: "idea" | "draft" | "review" | "approved" | "published"; body?: string | null }
       >;
@@ -587,6 +603,26 @@ export interface Database {
           period_start: string;
           period_end: string;
           content: Record<string, unknown>;
+        }
+      >;
+      ai_objections: Table<
+        {
+          id: string;
+          objection_text: string;
+          empathetic_response: string;
+          clarification: string | null;
+          value_explanation: string | null;
+          suggested_offer: string | null;
+          created_at: string;
+          updated_at: string;
+        },
+        {
+          objection_text: string;
+          empathetic_response: string;
+          clarification?: string | null;
+          value_explanation?: string | null;
+          suggested_offer?: string | null;
+          updated_at?: string;
         }
       >;
     };
