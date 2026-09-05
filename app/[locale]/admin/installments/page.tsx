@@ -93,9 +93,9 @@ export default async function AdminInstallmentsPage() {
               key={lead.id}
               className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4"
             >
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="text-white">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="break-words text-white">
                     {displayName} <span className="text-slate-500">— {courseById.get(lead.course_id)}</span>
                   </p>
                   <Badge variant="outline">{LEAD_STATUS_LABELS[lead.status]}</Badge>
@@ -111,7 +111,7 @@ export default async function AdminInstallmentsPage() {
                   {formatSom(lead.total_amount)} · {formatDate(lead.created_at)}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {lead.status === "new" && (
                   <form action={markInstallmentLeadContacted.bind(null, lead.id)}>
                     <Button type="submit" variant="outline" size="sm">

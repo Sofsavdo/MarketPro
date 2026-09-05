@@ -43,6 +43,16 @@ create table if not exists public.profiles (
   created_at timestamptz not null default now()
 );
 
+-- The column above was added by editing this CREATE TABLE in place, which
+-- only takes effect on a fresh database — it silently did NOT reach the
+-- already-existing live `profiles` table (confirmed missing live: querying
+-- it failed with "column does not exist", meaning handle_new_user() below
+-- had been failing to record consent for every real signup). An explicit
+-- `add column if not exists`, like payments/installment_leads already have
+-- for the same field, is what actually applies to a table that already
+-- exists — re-editing a `create table if not exists` block never does.
+alter table public.profiles add column if not exists terms_accepted_at timestamptz;
+
 -- RLS's `for update using (auth.uid() = id)` only restricts *which rows* the
 -- authenticated role can touch, not *which columns* — without this, any
 -- logged-in student could PATCH their own `role` to 'admin' (or rewrite
@@ -1216,3 +1226,78 @@ alter table public.ai_objections add column if not exists agent_key text;
 -- instead of one row per idea per specialist.
 alter table public.ai_scripts alter column script drop not null;
 alter table public.ai_scripts add constraint ai_scripts_content_idea_id_key unique (content_idea_id);
+
+-- ============================================================
+-- Production-readiness audit (security + performance hardening)
+-- ============================================================
+
+-- handle_new_user() and rls_auto_enable() are trigger/event-trigger
+-- functions — Postgres refuses to invoke either one directly outside its
+-- trigger context, so this changes nothing about how they actually run,
+-- but Supabase's linter flags them as unnecessarily reachable via
+-- PostgREST RPC (they're granted to PUBLIC, which anon/authenticated
+-- inherit, by default on function creation).
+revoke execute on function public.handle_new_user() from public;
+revoke execute on function public.rls_auto_enable() from public;
+
+-- RLS policies calling auth.uid() directly get it re-evaluated once per
+-- row; wrapping it as (select auth.uid()) lets Postgres cache it once per
+-- query (InitPlan) instead — same access semantics, better performance at
+-- scale. Flagged by Supabase's advisor on every policy below.
+alter policy "Users see their own certificates" on public.certificates
+  using ((select auth.uid()) = user_id);
+alter policy "Approved reviews are public, own review always visible" on public.course_reviews
+  using ((status = 'approved'::text) OR ((select auth.uid()) = user_id));
+alter policy "Only students who finished the course can review" on public.course_reviews
+  with check (((select auth.uid()) = user_id) AND has_completed_course(course_id));
+alter policy "Users can update their own review" on public.course_reviews
+  using ((select auth.uid()) = user_id)
+  with check (((select auth.uid()) = user_id) AND (status = 'pending'::text));
+alter policy "Users see their own enrollments" on public.enrollments
+  using ((select auth.uid()) = user_id);
+alter policy "Users can create their own installment lead" on public.installment_leads
+  with check ((select auth.uid()) = user_id);
+alter policy "Users see their own installment leads" on public.installment_leads
+  using ((select auth.uid()) = user_id);
+alter policy "Users see their own installment payments" on public.installment_payments
+  using (exists (
+    select 1 from installment_plans p
+    where p.id = installment_payments.plan_id and p.user_id = (select auth.uid())
+  ));
+alter policy "Users see their own installment plans" on public.installment_plans
+  using ((select auth.uid()) = user_id);
+alter policy "Users can post comments if they have access" on public.lesson_comments
+  with check (((select auth.uid()) = user_id) AND has_quiz_access(lesson_id));
+alter policy "Users see their own payments" on public.payments
+  using ((select auth.uid()) = user_id);
+alter policy "Profiles are self-readable" on public.profiles
+  using ((select auth.uid()) = id);
+alter policy "Profiles are self-updatable" on public.profiles
+  using ((select auth.uid()) = id);
+alter policy "Users see their own referrals" on public.referrals
+  using ((select auth.uid()) = referrer_id);
+alter policy "Users can post questions on accessible sessions" on public.session_questions
+  with check (((select auth.uid()) = user_id) AND has_live_session_access(session_id));
+alter policy "Users see their own subscriptions" on public.subscriptions
+  using ((select auth.uid()) = user_id);
+alter policy "Users can update their own progress" on public.user_progress
+  using ((select auth.uid()) = user_id);
+alter policy "Users can upsert their own progress" on public.user_progress
+  with check ((select auth.uid()) = user_id);
+alter policy "Users see their own progress" on public.user_progress
+  using ((select auth.uid()) = user_id);
+
+-- Every ai_agents/ai_brand_memory/ai_competitor_notes/ai_competitors/
+-- ai_content_ideas/ai_conversations/ai_objections/ai_products/ai_reports/
+-- ai_scripts/ai_tasks/operator_call_logs/promo_codes table has RLS enabled
+-- with zero policies, by design — every read/write to these goes through
+-- lib/*/*-actions.ts's createAdminClient() (service role, bypasses RLS),
+-- never a browser-side anon/authenticated client, so "enabled, no policy"
+-- correctly means "admin-only, deny everyone else" rather than a gap.
+-- Confirmed via grep before relying on this: no client-side Supabase call
+-- touches any of them. Left as-is; noted here since Supabase's advisor
+-- flags it and a future reader shouldn't have to re-derive this.
+
+-- NOTE — Supabase Auth "leaked password protection" (HaveIBeenPwned check)
+-- is off. That's an Auth setting, not schema — enable it from the Supabase
+-- dashboard (Authentication → Providers → Password), not from this file.
