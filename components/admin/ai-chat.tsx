@@ -24,6 +24,7 @@ type LiveRun = { agentKey: string; text: string; actions: string[] };
 function extractDisplayMessages(
   raw: ChatMessage[],
   liveRuns: LiveRun[],
+  processing: boolean,
   agentNames: Record<string, string>,
 ): DisplayMessage[] {
   const out: DisplayMessage[] = [];
@@ -37,15 +38,15 @@ function extractDisplayMessages(
         .join("\n")
         .trim();
       // Reloaded history only has the orchestrator-level transcript — the
-      // per-specialist breakdown is live-only (see ChatReply), so past
-      // turns show just the orchestrator's synthesis.
+      // per-specialist breakdown is live-only (see `live_specialist_runs`),
+      // so past turns show just the orchestrator's synthesis.
       if (text) out.push({ kind: "orchestrator", text });
     }
   }
-  // A non-empty live_specialist_runs means the last turn was cut off
-  // mid-delegation (crash/timeout/redeploy) before it could finish and
-  // fold into `messages` — show whatever specialists did manage to
-  // complete instead of silently hiding it, plus a plain explanation.
+  // A non-empty live_specialist_runs means the current turn is either
+  // still running (processing=true — each specialist finishing shows up
+  // here as it completes) or was cut off before it could finish and fold
+  // into `messages` (processing=false — a genuinely stuck/failed turn).
   if (liveRuns.length > 0) {
     for (const run of liveRuns) {
       out.push({
@@ -55,10 +56,12 @@ function extractDisplayMessages(
         actions: run.actions,
       });
     }
-    out.push({
-      kind: "notice",
-      text: "Bu so'rov to'liq tugallanmagan (server uzilib qolgan). Yuqoridagi mutaxassislar ulgurgan ishlar — bazaga saqlangan. Qolganini olish uchun so'rovni qayta yuboring.",
-    });
+    if (!processing) {
+      out.push({
+        kind: "notice",
+        text: "Bu so'rov to'liq tugallanmagan (server uzilib qolgan). Yuqoridagi mutaxassislar ulgurgan ishlar — bazaga saqlangan. Qolganini olish uchun so'rovni qayta yuboring.",
+      });
+    }
   }
   return out;
 }
@@ -100,23 +103,62 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
   const [input, setInput] = useState("");
   const [isPending, startTransition] = useTransition();
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [agentNames, setAgentNames] = useState<Record<string, string>>({});
   const bottomRef = useRef<HTMLDivElement>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     getAgentNameMap().then(setAgentNames);
   }, []);
 
+  function stopPolling() {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }
+
+  async function refreshConversation(id: string) {
+    const conv = await getConversation(id);
+    const raw = (conv?.messages as unknown as ChatMessage[]) ?? [];
+    const liveRuns = (conv?.live_specialist_runs as unknown as LiveRun[]) ?? [];
+    const stillProcessing = conv?.processing ?? false;
+    setMessages(extractDisplayMessages(raw, liveRuns, stillProcessing, agentNames));
+    setProcessing(stillProcessing);
+    if (!stillProcessing) stopPolling();
+    return stillProcessing;
+  }
+
+  // A turn can take minutes (real research, several specialists). The
+  // server starts it in the background and returns immediately, so the
+  // client polls for progress instead of waiting on one long request —
+  // that's what was causing "An unexpected response was received from the
+  // server": the browser/proxy was giving up on the connection long before
+  // the work finished, even though the server kept going.
+  function startPolling(id: string) {
+    stopPolling();
+    pollRef.current = setInterval(() => {
+      refreshConversation(id);
+    }, 3000);
+  }
+
   useEffect(() => {
     if (!activeId) return;
     setLoadingHistory(true);
+    stopPolling();
     getConversation(activeId)
       .then((conv) => {
         const raw = (conv?.messages as unknown as ChatMessage[]) ?? [];
         const liveRuns = (conv?.live_specialist_runs as unknown as LiveRun[]) ?? [];
-        setMessages(extractDisplayMessages(raw, liveRuns, agentNames));
+        const stillProcessing = conv?.processing ?? false;
+        setMessages(extractDisplayMessages(raw, liveRuns, stillProcessing, agentNames));
+        setProcessing(stillProcessing);
+        if (stillProcessing) startPolling(activeId);
       })
       .finally(() => setLoadingHistory(false));
+    return () => stopPolling();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeId, agentNames]);
 
   useEffect(() => {
@@ -124,10 +166,12 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
   }, [messages]);
 
   async function handleNewChat() {
+    stopPolling();
     const id = await createConversation();
     setConversations((prev) => [{ id, title: null, updated_at: new Date().toISOString() }, ...prev]);
     setActiveId(id);
     setMessages([]);
+    setProcessing(false);
   }
 
   function handleSend() {
@@ -148,14 +192,9 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
         ]);
       }
       try {
-        const reply = await sendChatMessage(conversationId, text);
-        setMessages((prev) => [
-          ...prev,
-          ...reply.specialistReplies.map(
-            (s): DisplayMessage => ({ kind: "specialist", agentName: s.agentName, text: s.text, actions: s.actions }),
-          ),
-          { kind: "orchestrator", text: reply.orchestratorText },
-        ]);
+        await sendChatMessage(conversationId, text);
+        setProcessing(true);
+        startPolling(conversationId);
       } catch (err) {
         setMessages((prev) => [
           ...prev,
@@ -231,9 +270,10 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
                   </div>
                 );
               })}
-              {isPending && (
+              {(isPending || processing) && (
                 <div className="flex items-center gap-2 text-sm text-slate-500">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Mutaxassislar ishlamoqda...
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Mutaxassislar ishlamoqda... (bu bir necha daqiqa
+                  davom etishi mumkin — sahifani yopmasangiz ham bo&apos;ladi, natija shu yerda paydo bo&apos;ladi)
                 </div>
               )}
             </div>
@@ -255,7 +295,7 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
             rows={1}
             className="flex-1 resize-none rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
           />
-          <Button size="icon" onClick={handleSend} disabled={isPending || !input.trim()}>
+          <Button size="icon" onClick={handleSend} disabled={isPending || processing || !input.trim()}>
             <Send className="h-4 w-4" />
           </Button>
         </div>
