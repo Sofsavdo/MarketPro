@@ -7,10 +7,18 @@ import { createAdminClient } from "@/lib/supabase/server";
  * disappear once the conversation scrolls. web_search is Anthropic's own
  * server-side tool (no execution code needed here) for current-info
  * research (spec's fact-checking + competitor/trend research requirement).
+ *
+ * Deliberately the *basic* 20250305 variant, not the newer 20260209
+ * dynamic-filtering one: that variant runs on an internal code-execution
+ * container and requires echoing a container_id back on the next turn —
+ * our conversation history round-trips through Postgres JSONB storage
+ * between turns, which doesn't preserve that linkage, so the newer variant
+ * fails with "container_id is required..." as soon as a second turn
+ * follows a web_search call. The basic variant has no such requirement.
  */
 export const AI_DEPARTMENT_TOOLS: Anthropic.ToolUnion[] = [
   {
-    type: "web_search_20260209",
+    type: "web_search_20250305",
     name: "web_search",
     max_uses: 5,
   },
