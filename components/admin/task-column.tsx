@@ -39,8 +39,10 @@ export function TaskColumn({
         {tasks.map((task) => (
           <div key={task.id} className="rounded-lg border border-slate-800 bg-slate-900 p-3">
             <p className={`text-xs font-medium ${PRIORITY_COLOR[task.priority]}`}>{task.priority}</p>
-            <p className="mt-1 text-sm font-medium text-white">{task.title}</p>
-            {task.description && <p className="mt-1 text-xs text-slate-400">{task.description}</p>}
+            <p className="mt-1 text-sm font-medium break-words text-white">{task.title}</p>
+            {task.description && (
+              <p className="mt-1 text-xs whitespace-pre-wrap break-words text-slate-400">{task.description}</p>
+            )}
             {task.deadline && <p className="mt-1 text-xs text-slate-500">Muddat: {task.deadline}</p>}
             {task.agent_key && (
               <p className="mt-1 text-xs text-slate-600">{agentNames[task.agent_key] ?? task.agent_key}</p>

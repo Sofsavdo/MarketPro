@@ -35,24 +35,28 @@ export default async function ReportsPage() {
                 <span className="text-xs text-slate-600">{agentNames[r.agent_key] ?? r.agent_key}</span>
               )}
             </div>
-            {content.summary && <p className="mt-2 text-sm text-slate-300">{content.summary}</p>}
+            {content.summary && (
+              <p className="mt-2 text-sm whitespace-pre-wrap break-words text-slate-300">{content.summary}</p>
+            )}
             <div className="mt-3 grid gap-3 border-t border-slate-800 pt-3 sm:grid-cols-3">
               {content.stop && (
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs font-semibold text-red-400">STOP</p>
-                  <p className="mt-1 text-xs text-slate-400">{content.stop}</p>
+                  <p className="mt-1 text-xs whitespace-pre-wrap break-words text-slate-400">{content.stop}</p>
                 </div>
               )}
               {content.start && (
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs font-semibold text-emerald-400">START</p>
-                  <p className="mt-1 text-xs text-slate-400">{content.start}</p>
+                  <p className="mt-1 text-xs whitespace-pre-wrap break-words text-slate-400">{content.start}</p>
                 </div>
               )}
               {content.continue_doing && (
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs font-semibold text-amber-400">CONTINUE</p>
-                  <p className="mt-1 text-xs text-slate-400">{content.continue_doing}</p>
+                  <p className="mt-1 text-xs whitespace-pre-wrap break-words text-slate-400">
+                    {content.continue_doing}
+                  </p>
                 </div>
               )}
             </div>

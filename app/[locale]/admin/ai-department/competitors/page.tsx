@@ -17,22 +17,29 @@ export default async function CompetitorsPage() {
       {competitors.map((c) => (
         <div key={c.id} className="rounded-xl border border-slate-800 bg-slate-900 p-4">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-base font-semibold text-white">{c.name}</h3>
+            <h3 className="min-w-0 break-words text-base font-semibold text-white">{c.name}</h3>
             <Badge variant="outline">{c.category}</Badge>
             {c.handle_or_url && (
-              <a href={c.handle_or_url} target="_blank" rel="noreferrer" className="text-xs text-amber-400">
+              <a
+                href={c.handle_or_url}
+                target="_blank"
+                rel="noreferrer"
+                className="min-w-0 text-xs break-all text-amber-400"
+              >
                 {c.handle_or_url}
               </a>
             )}
           </div>
-          {c.positioning && <p className="mt-1 text-sm text-slate-400">{c.positioning}</p>}
+          {c.positioning && (
+            <p className="mt-1 text-sm whitespace-pre-wrap break-words text-slate-400">{c.positioning}</p>
+          )}
           <div className="mt-3 flex flex-col gap-2 border-t border-slate-800 pt-3">
             {c.notes.length === 0 ? (
               <p className="text-xs text-slate-600">Hali tahlil yozuvi yo&apos;q.</p>
             ) : (
               c.notes.map((n) => (
                 <div key={n.id} className="text-sm text-slate-300">
-                  <p>{n.summary}</p>
+                  <p className="whitespace-pre-wrap break-words">{n.summary}</p>
                   <p className="mt-0.5 text-xs text-slate-500">
                     {new Date(n.retrieved_at).toLocaleDateString("uz-UZ")}
                     {n.agent_key && <> · {agentNames[n.agent_key] ?? n.agent_key}</>}

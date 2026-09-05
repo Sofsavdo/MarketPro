@@ -89,9 +89,13 @@ export function ContentIdeaCard({
           </Button>
         )}
       </div>
-      <h3 className="mt-2 text-base font-semibold text-white">{idea.title}</h3>
-      {idea.hook && <p className="mt-1 text-sm text-amber-400">Hook: {idea.hook}</p>}
-      {idea.body && <p className="mt-2 text-sm whitespace-pre-wrap text-slate-300">{idea.body}</p>}
+      <h3 className="mt-2 text-base font-semibold break-words text-white">{idea.title}</h3>
+      {idea.hook && (
+        <p className="mt-1 text-sm break-words text-amber-400">
+          Hook: <span className="whitespace-pre-wrap">{idea.hook}</span>
+        </p>
+      )}
+      {idea.body && <p className="mt-2 text-sm whitespace-pre-wrap break-words text-slate-300">{idea.body}</p>}
       {idea.scheduled_for && (
         <p className="mt-2 text-xs text-slate-500">Rejalashtirilgan sana: {idea.scheduled_for}</p>
       )}
@@ -102,19 +106,21 @@ export function ContentIdeaCard({
               <summary className="cursor-pointer text-xs font-medium text-amber-400">
                 Ishlab chiqarish materiali ko&apos;rish
               </summary>
-              {s.script && <p className="mt-2 text-sm whitespace-pre-wrap text-slate-300">{s.script}</p>}
+              {s.script && (
+                <p className="mt-2 text-sm whitespace-pre-wrap break-words text-slate-300">{s.script}</p>
+              )}
               {s.caption && (
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-xs whitespace-pre-wrap break-words text-slate-400">
                   <span className="font-medium text-slate-300">Caption:</span> {s.caption}
                 </p>
               )}
               {s.cta && (
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs whitespace-pre-wrap break-words text-slate-400">
                   <span className="font-medium text-slate-300">CTA:</span> {s.cta}
                 </p>
               )}
               {s.direction_notes && (
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs whitespace-pre-wrap break-words text-slate-400">
                   <span className="font-medium text-slate-300">Rejissor ko&apos;rsatmasi:</span>{" "}
                   {s.direction_notes}
                 </p>
