@@ -5,12 +5,8 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/lms/admin-actions";
 import { createAdminClient } from "@/lib/supabase/server";
 import { runOrchestrator, type SpecialistRun } from "@/lib/ai-department/orchestrator";
-import { getAgentRoster } from "@/lib/ai-department/agents";
 
 export type ChatMessage = { role: "user" | "assistant"; content: Anthropic.MessageParam["content"] };
-
-export type SpecialistReply = { agentName: string; text: string; actions: string[] };
-export type ChatReply = { orchestratorText: string; specialistReplies: SpecialistReply[] };
 
 /**
  * A turn that got interrupted (crash, timeout, redeploy) mid-delegation
@@ -72,15 +68,22 @@ export async function getConversation(id: string) {
 }
 
 /**
- * Sends one user turn to the CEO/Orchestrator agent, which delegates to
- * whichever specialists the request needs (see lib/ai-department/
- * orchestrator.ts), persists the full orchestrator-level transcript, and
- * returns EVERY specialist's own reply (its text plus a concrete action
- * log of what it actually saved) alongside the orchestrator's synthesis —
- * the chat UI renders each specialist's reply as its own message, not
- * just an anonymous "AI did something" summary.
+ * A real turn — the orchestrator delegating to several specialists, each
+ * doing its own multi-step research/writing — can take minutes. Running
+ * that inside one synchronous request means the browser (or an
+ * intermediate proxy) gives up long before it's done, which is exactly
+ * what was happening: the client was seeing "An unexpected response was
+ * received from the server" after the connection was closed out from
+ * under it, even though the server kept working. So `sendChatMessage`
+ * only does the fast part synchronously (persist the user's message,
+ * mark the conversation as processing) and returns immediately; the
+ * actual orchestration runs in the background on this same long-running
+ * server process (not a serverless function — the process survives past
+ * the request), persisting its own progress via the hooks below. The
+ * chat UI polls `getConversation` and renders `live_specialist_runs` /
+ * `processing` until the turn finishes.
  */
-export async function sendChatMessage(conversationId: string, userText: string): Promise<ChatReply> {
+export async function sendChatMessage(conversationId: string, userText: string): Promise<void> {
   await requireAdmin();
   const admin = await createAdminClient();
 
@@ -96,41 +99,72 @@ export async function sendChatMessage(conversationId: string, userText: string):
   messages.push({ role: "user", content: userText });
 
   const title = conversation.title ?? userText.slice(0, 60);
-  const liveRuns: SpecialistRun[] = [];
-
-  const { finalText, specialistRuns } = await runOrchestrator(messages, {
-    onDelegationStarted: async (msgs) => {
-      // Persist the delegation itself immediately — if everything after
-      // this crashes, the conversation still shows a (repairable) record
-      // that this turn was attempted, instead of vanishing entirely.
-      await admin
-        .from("ai_conversations")
-        .update({ messages: msgs as unknown as never, title, live_specialist_runs: [] as unknown as never })
-        .eq("id", conversationId);
-    },
-    onSpecialistDone: async (run) => {
-      liveRuns.push(run);
-      await admin
-        .from("ai_conversations")
-        .update({ live_specialist_runs: liveRuns as unknown as never })
-        .eq("id", conversationId);
-    },
-  });
 
   await admin
     .from("ai_conversations")
-    .update({ messages: messages as unknown as never, title, live_specialist_runs: [] as unknown as never })
+    .update({ messages: messages as unknown as never, title, processing: true })
     .eq("id", conversationId);
 
-  const roster = await getAgentRoster();
-  const byKey = new Map(roster.map((a) => [a.key, a.name]));
-
-  const specialistReplies: SpecialistReply[] = specialistRuns.map((run) => ({
-    agentName: byKey.get(run.agentKey) ?? run.agentKey,
-    text: run.text,
-    actions: run.actions,
-  }));
-
   revalidatePath("/admin/ai-department");
-  return { orchestratorText: finalText, specialistReplies };
+
+  // Deliberately not awaited — see the doc comment above.
+  void runTurnInBackground(admin, conversationId, messages, title);
+}
+
+async function runTurnInBackground(
+  admin: Awaited<ReturnType<typeof createAdminClient>>,
+  conversationId: string,
+  messages: Anthropic.MessageParam[],
+  title: string,
+): Promise<void> {
+  const liveRuns: SpecialistRun[] = [];
+  try {
+    await runOrchestrator(messages, {
+      onDelegationStarted: async (msgs) => {
+        // Persist the delegation itself immediately — if everything after
+        // this crashes, the conversation still shows a (repairable) record
+        // that this turn was attempted, instead of vanishing entirely.
+        await admin
+          .from("ai_conversations")
+          .update({ messages: msgs as unknown as never, title, live_specialist_runs: [] as unknown as never })
+          .eq("id", conversationId);
+      },
+      onSpecialistDone: async (run) => {
+        liveRuns.push(run);
+        await admin
+          .from("ai_conversations")
+          .update({ live_specialist_runs: liveRuns as unknown as never })
+          .eq("id", conversationId);
+      },
+    });
+
+    await admin
+      .from("ai_conversations")
+      .update({
+        messages: messages as unknown as never,
+        title,
+        live_specialist_runs: [] as unknown as never,
+        processing: false,
+      })
+      .eq("id", conversationId);
+  } catch (err) {
+    messages.push({
+      role: "assistant",
+      content: [
+        {
+          type: "text",
+          text: `Xatolik: ${err instanceof Error ? err.message : "noma'lum xatolik"}. Iltimos, qayta urinib ko'ring.`,
+        },
+      ],
+    });
+    await admin
+      .from("ai_conversations")
+      .update({
+        messages: messages as unknown as never,
+        title,
+        live_specialist_runs: [] as unknown as never,
+        processing: false,
+      })
+      .eq("id", conversationId);
+  }
 }

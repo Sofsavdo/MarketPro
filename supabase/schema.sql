@@ -1128,6 +1128,17 @@ alter table public.ai_conversations enable row level security;
 alter table public.ai_conversations
   add column if not exists live_specialist_runs jsonb not null default '[]'::jsonb;
 
+-- A turn (orchestrator + its specialist fan-out) can genuinely take minutes
+-- — real web-search-backed research across several specialists, each up to
+-- 6 tool-use iterations. Running that inside a single synchronous HTTP
+-- request means the browser (or an intermediate proxy) gives up long before
+-- the work finishes. `processing` lets the request return immediately after
+-- persisting the user's message and kicking off the turn in the background;
+-- the client polls the conversation and shows live progress until it flips
+-- back to false.
+alter table public.ai_conversations
+  add column if not exists processing boolean not null default false;
+
 -- Weekly/monthly report snapshots, generated on request from a chat
 -- command (see spec §48-49) rather than a cron job in this MVP.
 create table if not exists public.ai_reports (

@@ -613,6 +613,7 @@ export interface Database {
           title: string | null;
           messages: unknown[];
           live_specialist_runs: unknown[];
+          processing: boolean;
           created_at: string;
           updated_at: string;
         },
@@ -620,8 +621,9 @@ export interface Database {
           title?: string | null;
           messages?: unknown[];
           live_specialist_runs?: unknown[];
+          processing?: boolean;
         },
-        { title?: string | null; messages?: unknown[]; live_specialist_runs?: unknown[] }
+        { title?: string | null; messages?: unknown[]; live_specialist_runs?: unknown[]; processing?: boolean }
       >;
       ai_reports: Table<
         {
