@@ -48,23 +48,23 @@ export function ReferralCard({
           </Button>
         </div>
 
-        <div className="flex gap-2">
-          <Button asChild size="sm" variant="outline" className="flex-1">
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button asChild size="sm" variant="outline" className="min-w-0 flex-1 whitespace-normal">
             <a
               href={`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(t("shareTelegram"))}`}
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Send className="mr-1.5 h-4 w-4" /> {t("shareTelegram")}
+              <Send className="h-4 w-4 shrink-0" /> {t("shareTelegram")}
             </a>
           </Button>
-          <Button asChild size="sm" variant="outline" className="flex-1">
+          <Button asChild size="sm" variant="outline" className="min-w-0 flex-1 whitespace-normal">
             <a
               href={`https://wa.me/?text=${encodeURIComponent(`${link}`)}`}
               target="_blank"
               rel="noopener noreferrer"
             >
-              <MessageCircle className="mr-1.5 h-4 w-4" /> {t("shareWhatsapp")}
+              <MessageCircle className="h-4 w-4 shrink-0" /> {t("shareWhatsapp")}
             </a>
           </Button>
         </div>
