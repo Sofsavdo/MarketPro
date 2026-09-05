@@ -9,6 +9,9 @@ import { getAgentRoster } from "@/lib/ai-department/agents";
 
 export type ChatMessage = { role: "user" | "assistant"; content: Anthropic.MessageParam["content"] };
 
+export type SpecialistReply = { agentName: string; text: string; actions: string[] };
+export type ChatReply = { orchestratorText: string; specialistReplies: SpecialistReply[] };
+
 export async function createConversation(): Promise<string> {
   await requireAdmin();
   const admin = await createAdminClient();
@@ -44,13 +47,12 @@ export async function getConversation(id: string) {
  * Sends one user turn to the CEO/Orchestrator agent, which delegates to
  * whichever specialists the request needs (see lib/ai-department/
  * orchestrator.ts), persists the full orchestrator-level transcript, and
- * returns the synthesized reply plus which specialists were involved —
- * the admin chat UI shows both, so this never reads as one anonymous bot.
+ * returns EVERY specialist's own reply (its text plus a concrete action
+ * log of what it actually saved) alongside the orchestrator's synthesis —
+ * the chat UI renders each specialist's reply as its own message, not
+ * just an anonymous "AI did something" summary.
  */
-export async function sendChatMessage(
-  conversationId: string,
-  userText: string,
-): Promise<{ text: string; agentNames: string[] }> {
+export async function sendChatMessage(conversationId: string, userText: string): Promise<ChatReply> {
   await requireAdmin();
   const admin = await createAdminClient();
 
@@ -64,7 +66,7 @@ export async function sendChatMessage(
   const messages = (conversation.messages as unknown as Anthropic.MessageParam[]) ?? [];
   messages.push({ role: "user", content: userText });
 
-  const { finalText, delegatedAgents } = await runOrchestrator(messages);
+  const { finalText, specialistRuns } = await runOrchestrator(messages);
 
   const title = conversation.title ?? userText.slice(0, 60);
   await admin
@@ -72,13 +74,15 @@ export async function sendChatMessage(
     .update({ messages: messages as unknown as never, title })
     .eq("id", conversationId);
 
-  let agentNames: string[] = [];
-  if (delegatedAgents.length > 0) {
-    const roster = await getAgentRoster();
-    const byKey = new Map(roster.map((a) => [a.key, a.name]));
-    agentNames = delegatedAgents.map((key) => byKey.get(key) ?? key);
-  }
+  const roster = await getAgentRoster();
+  const byKey = new Map(roster.map((a) => [a.key, a.name]));
+
+  const specialistReplies: SpecialistReply[] = specialistRuns.map((run) => ({
+    agentName: byKey.get(run.agentKey) ?? run.agentKey,
+    text: run.text,
+    actions: run.actions,
+  }));
 
   revalidatePath("/admin/ai-department");
-  return { text: finalText, agentNames };
+  return { orchestratorText: finalText, specialistReplies };
 }
