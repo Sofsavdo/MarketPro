@@ -7,11 +7,14 @@ import { createAdminClient } from "@/lib/supabase/server";
 export async function listContentIdeas() {
   await requireAdmin();
   const admin = await createAdminClient();
-  const { data } = await admin
-    .from("ai_content_ideas")
-    .select("*")
-    .order("created_at", { ascending: false });
-  return data ?? [];
+  const [{ data: ideas }, { data: scripts }] = await Promise.all([
+    admin.from("ai_content_ideas").select("*").order("created_at", { ascending: false }),
+    admin.from("ai_scripts").select("*").order("created_at", { ascending: false }),
+  ]);
+  return (ideas ?? []).map((idea) => ({
+    ...idea,
+    scripts: (scripts ?? []).filter((s) => s.content_idea_id === idea.id),
+  }));
 }
 
 export async function updateContentIdeaStatus(
@@ -52,6 +55,20 @@ export async function listCompetitorsWithNotes() {
     ...c,
     notes: (notes ?? []).filter((n) => n.competitor_id === c.id),
   }));
+}
+
+export async function listObjections() {
+  await requireAdmin();
+  const admin = await createAdminClient();
+  const { data } = await admin.from("ai_objections").select("*").order("created_at", { ascending: false });
+  return data ?? [];
+}
+
+export async function listReports() {
+  await requireAdmin();
+  const admin = await createAdminClient();
+  const { data } = await admin.from("ai_reports").select("*").order("period_start", { ascending: false });
+  return data ?? [];
 }
 
 export async function getBrandMemory() {

@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { updateContentIdeaStatus } from "@/lib/ai-department/data-actions";
 import type { Database } from "@/lib/supabase/types";
 
-type ContentIdea = Database["public"]["Tables"]["ai_content_ideas"]["Row"];
+type ContentIdea = Database["public"]["Tables"]["ai_content_ideas"]["Row"] & {
+  scripts: Database["public"]["Tables"]["ai_scripts"]["Row"][];
+};
 type Status = ContentIdea["status"];
 
 const STATUS_LABELS: Record<Status, string> = {
@@ -25,9 +27,29 @@ const NEXT_STATUS: Record<Status, Status | null> = {
   published: null,
 };
 
+const SCORE_LABELS: { key: keyof ContentIdea; label: string }[] = [
+  { key: "score_value", label: "Foyda" },
+  { key: "score_hook", label: "Hook" },
+  { key: "score_retention", label: "Retention" },
+  { key: "score_shareability", label: "Ulashish" },
+  { key: "score_saveability", label: "Saqlash" },
+  { key: "score_brand_fit", label: "Brendga mos" },
+  { key: "score_originality", label: "Originallik" },
+  { key: "score_conversion", label: "Konversiya" },
+];
+
+function averageScore(idea: ContentIdea): number | null {
+  const values = SCORE_LABELS.map(({ key }) => idea[key] as number | null).filter(
+    (v): v is number => typeof v === "number",
+  );
+  if (values.length === 0) return null;
+  return Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10;
+}
+
 export function ContentIdeaCard({ idea, brandLabel }: { idea: ContentIdea; brandLabel: string }) {
   const [isPending, startTransition] = useTransition();
   const next = NEXT_STATUS[idea.status];
+  const avg = averageScore(idea);
 
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
@@ -36,6 +58,16 @@ export function ContentIdeaCard({ idea, brandLabel }: { idea: ContentIdea; brand
           <Badge variant="outline">{brandLabel}</Badge>
           {idea.pillar && <Badge variant="outline">{idea.pillar}</Badge>}
           <span className="text-xs text-slate-500">{STATUS_LABELS[idea.status]}</span>
+          {avg !== null && (
+            <span
+              className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                avg >= 7 ? "bg-emerald-500/15 text-emerald-400" : "bg-amber-500/15 text-amber-400"
+              }`}
+              title={SCORE_LABELS.map(({ key, label }) => `${label}: ${idea[key] ?? "-"}`).join(", ")}
+            >
+              Score: {avg}/10
+            </span>
+          )}
         </div>
         {next && (
           <Button
@@ -53,6 +85,28 @@ export function ContentIdeaCard({ idea, brandLabel }: { idea: ContentIdea; brand
       {idea.body && <p className="mt-2 text-sm whitespace-pre-wrap text-slate-300">{idea.body}</p>}
       {idea.scheduled_for && (
         <p className="mt-2 text-xs text-slate-500">Rejalashtirilgan sana: {idea.scheduled_for}</p>
+      )}
+      {idea.scripts.length > 0 && (
+        <div className="mt-3 flex flex-col gap-2 border-t border-slate-800 pt-3">
+          {idea.scripts.map((s) => (
+            <details key={s.id} className="rounded-lg bg-slate-950 p-3">
+              <summary className="cursor-pointer text-xs font-medium text-amber-400">
+                Skript ko&apos;rish
+              </summary>
+              <p className="mt-2 text-sm whitespace-pre-wrap text-slate-300">{s.script}</p>
+              {s.caption && (
+                <p className="mt-2 text-xs text-slate-400">
+                  <span className="font-medium text-slate-300">Caption:</span> {s.caption}
+                </p>
+              )}
+              {s.cta && (
+                <p className="mt-1 text-xs text-slate-400">
+                  <span className="font-medium text-slate-300">CTA:</span> {s.cta}
+                </p>
+              )}
+            </details>
+          ))}
+        </div>
       )}
     </div>
   );

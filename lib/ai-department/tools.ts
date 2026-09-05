@@ -17,7 +17,7 @@ export const AI_DEPARTMENT_TOOLS: Anthropic.ToolUnion[] = [
   {
     name: "save_content_idea",
     description:
-      "Kontent g'oyasini (Reels/post/story) bazaga saqlaydi, keyin admin panelda ko'rinadi va tasdiqlanishi mumkin.",
+      "Kontent g'oyasini (Reels/post/story) bazaga saqlaydi, keyin admin panelda ko'rinadi va tasdiqlanishi mumkin. Har doim score_* maydonlarini ham to'ldir — bu spec'ning content score tizimi (VALUE/HOOK/RETENTION/SHAREABILITY/SAVEABILITY/BRAND_FIT/ORIGINALITY/CONVERSION, har biri 1-10).",
     input_schema: {
       type: "object",
       properties: {
@@ -28,8 +28,68 @@ export const AI_DEPARTMENT_TOOLS: Anthropic.ToolUnion[] = [
         hook: { type: "string" },
         body: { type: "string", description: "G'oyaning to'liq tavsifi/skript qoralamasi" },
         scheduled_for: { type: "string", description: "YYYY-MM-DD, ixtiyoriy" },
+        score_value: { type: "integer", minimum: 1, maximum: 10 },
+        score_hook: { type: "integer", minimum: 1, maximum: 10 },
+        score_retention: { type: "integer", minimum: 1, maximum: 10 },
+        score_shareability: { type: "integer", minimum: 1, maximum: 10 },
+        score_saveability: { type: "integer", minimum: 1, maximum: 10 },
+        score_brand_fit: { type: "integer", minimum: 1, maximum: 10 },
+        score_originality: { type: "integer", minimum: 1, maximum: 10 },
+        score_conversion: { type: "integer", minimum: 1, maximum: 10 },
       },
       required: ["brand", "title"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "save_script",
+    description:
+      "Mavjud kontent g'oyasi uchun to'liq Reels/post skripti (va caption/CTA) saqlaydi. Avval save_content_idea bilan g'oya yaratilgan bo'lishi kerak, uning id'sini content_idea_id sifatida ber.",
+    input_schema: {
+      type: "object",
+      properties: {
+        content_idea_id: { type: "string" },
+        script: { type: "string", description: "To'liq skript matni (sahna-sahna yoki gap-gap)" },
+        caption: { type: "string" },
+        cta: { type: "string" },
+      },
+      required: ["content_idea_id", "script"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "save_objection_response",
+    description:
+      "Yangi mijoz e'tirozi va unga javobni objection library'ga saqlaydi (agar shu e'tiroz uchun allaqachon yozuv bo'lsa, uni yangilaydi).",
+    input_schema: {
+      type: "object",
+      properties: {
+        objection_text: { type: "string" },
+        empathetic_response: { type: "string" },
+        clarification: { type: "string" },
+        value_explanation: { type: "string" },
+        suggested_offer: { type: "string" },
+      },
+      required: ["objection_text", "empathetic_response"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "generate_report",
+    description:
+      "Haftalik yoki oylik hisobotni bazaga saqlaydi (spec §48-49) — admin /admin/ai-department/reports sahifasida ko'radi. Hisobot matnini shu tool orqali strukturaviy saqla, faqat chatda aytib qo'yma.",
+    input_schema: {
+      type: "object",
+      properties: {
+        period: { type: "string", enum: ["weekly", "monthly"] },
+        period_start: { type: "string", description: "YYYY-MM-DD" },
+        period_end: { type: "string", description: "YYYY-MM-DD" },
+        summary: { type: "string", description: "Executive summary" },
+        stop: { type: "string", description: "Keyingi davrda to'xtatish kerak bo'lgan narsalar" },
+        start: { type: "string", description: "Keyingi davrda boshlash kerak bo'lgan narsalar" },
+        continue_doing: { type: "string", description: "Davom ettirish kerak bo'lgan narsalar" },
+      },
+      required: ["period", "period_start", "period_end", "summary"],
       additionalProperties: false,
     },
   },
@@ -91,11 +151,62 @@ export async function executeAiDepartmentTool(
             hook: (input.hook as string) ?? null,
             body: (input.body as string) ?? null,
             scheduled_for: (input.scheduled_for as string) ?? null,
+            score_value: (input.score_value as number) ?? null,
+            score_hook: (input.score_hook as number) ?? null,
+            score_retention: (input.score_retention as number) ?? null,
+            score_shareability: (input.score_shareability as number) ?? null,
+            score_saveability: (input.score_saveability as number) ?? null,
+            score_brand_fit: (input.score_brand_fit as number) ?? null,
+            score_originality: (input.score_originality as number) ?? null,
+            score_conversion: (input.score_conversion as number) ?? null,
           })
           .select("id")
           .single();
         if (error) throw error;
         return { tool_use_id: toolUse.id, content: `Saqlandi. id=${data.id}` };
+      }
+
+      case "save_script": {
+        const { error } = await admin.from("ai_scripts").insert({
+          content_idea_id: input.content_idea_id as string,
+          script: input.script as string,
+          caption: (input.caption as string) ?? null,
+          cta: (input.cta as string) ?? null,
+        });
+        if (error) throw error;
+        return { tool_use_id: toolUse.id, content: "Skript saqlandi." };
+      }
+
+      case "save_objection_response": {
+        const { error } = await admin.from("ai_objections").upsert(
+          {
+            objection_text: input.objection_text as string,
+            empathetic_response: input.empathetic_response as string,
+            clarification: (input.clarification as string) ?? null,
+            value_explanation: (input.value_explanation as string) ?? null,
+            suggested_offer: (input.suggested_offer as string) ?? null,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "objection_text" },
+        );
+        if (error) throw error;
+        return { tool_use_id: toolUse.id, content: "E'tiroz javobi saqlandi." };
+      }
+
+      case "generate_report": {
+        const { error } = await admin.from("ai_reports").insert({
+          period: input.period as "weekly" | "monthly",
+          period_start: input.period_start as string,
+          period_end: input.period_end as string,
+          content: {
+            summary: input.summary as string,
+            stop: (input.stop as string) ?? null,
+            start: (input.start as string) ?? null,
+            continue_doing: (input.continue_doing as string) ?? null,
+          },
+        });
+        if (error) throw error;
+        return { tool_use_id: toolUse.id, content: "Hisobot saqlandi." };
       }
 
       case "create_task": {

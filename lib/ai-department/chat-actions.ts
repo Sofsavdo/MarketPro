@@ -8,7 +8,7 @@ import { buildSystemPrompt } from "@/lib/ai-department/system-prompt";
 import { AI_DEPARTMENT_TOOLS, executeAiDepartmentTool } from "@/lib/ai-department/tools";
 
 const MODEL = "claude-opus-5";
-const MAX_TOOL_ITERATIONS = 6;
+const MAX_TOOL_ITERATIONS = 8;
 
 let client: Anthropic | null = null;
 function getClient() {
