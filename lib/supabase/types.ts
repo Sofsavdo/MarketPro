@@ -425,6 +425,170 @@ export interface Database {
           content?: Record<string, unknown>;
         }
       >;
+      ai_brand_memory: Table<
+        {
+          id: string;
+          singleton: boolean;
+          person: Record<string, unknown>;
+          brand_amaliy_biznes: Record<string, unknown>;
+          brand_izdosh: Record<string, unknown>;
+          voice_rules: Record<string, unknown>;
+          updated_at: string;
+        },
+        {
+          singleton?: boolean;
+          person?: Record<string, unknown>;
+          brand_amaliy_biznes?: Record<string, unknown>;
+          brand_izdosh?: Record<string, unknown>;
+          voice_rules?: Record<string, unknown>;
+        }
+      >;
+      ai_products: Table<
+        {
+          id: string;
+          name: string;
+          status: "active" | "upcoming";
+          tariffs: unknown[];
+          notes: string | null;
+          updated_at: string;
+        },
+        {
+          name: string;
+          status?: "active" | "upcoming";
+          tariffs?: unknown[];
+          notes?: string | null;
+        }
+      >;
+      ai_competitors: Table<
+        {
+          id: string;
+          name: string;
+          category: string;
+          platform: string | null;
+          handle_or_url: string | null;
+          positioning: string | null;
+          created_at: string;
+        },
+        {
+          name: string;
+          category: string;
+          platform?: string | null;
+          handle_or_url?: string | null;
+          positioning?: string | null;
+        }
+      >;
+      ai_competitor_notes: Table<
+        {
+          id: string;
+          competitor_id: string;
+          summary: string;
+          source_url: string | null;
+          retrieved_at: string;
+          created_at: string;
+        },
+        {
+          competitor_id: string;
+          summary: string;
+          source_url?: string | null;
+          retrieved_at?: string;
+        }
+      >;
+      ai_content_ideas: Table<
+        {
+          id: string;
+          brand: "amaliy_biznes" | "izdosh_academy";
+          pillar: string | null;
+          format: string | null;
+          hook: string | null;
+          title: string;
+          body: string | null;
+          status: "idea" | "draft" | "review" | "approved" | "published";
+          scheduled_for: string | null;
+          created_at: string;
+          updated_at: string;
+        },
+        {
+          brand: "amaliy_biznes" | "izdosh_academy";
+          pillar?: string | null;
+          format?: string | null;
+          hook?: string | null;
+          title: string;
+          body?: string | null;
+          status?: "idea" | "draft" | "review" | "approved" | "published";
+          scheduled_for?: string | null;
+        },
+        { status?: "idea" | "draft" | "review" | "approved" | "published"; body?: string | null }
+      >;
+      ai_scripts: Table<
+        {
+          id: string;
+          content_idea_id: string;
+          script: string;
+          caption: string | null;
+          cta: string | null;
+          created_at: string;
+        },
+        {
+          content_idea_id: string;
+          script: string;
+          caption?: string | null;
+          cta?: string | null;
+        }
+      >;
+      ai_tasks: Table<
+        {
+          id: string;
+          title: string;
+          description: string | null;
+          brand: "amaliy_biznes" | "izdosh_academy" | null;
+          status: "backlog" | "planned" | "in_progress" | "review" | "approved" | "published";
+          priority: "low" | "normal" | "high";
+          deadline: string | null;
+          related_content_idea_id: string | null;
+          created_at: string;
+          updated_at: string;
+        },
+        {
+          title: string;
+          description?: string | null;
+          brand?: "amaliy_biznes" | "izdosh_academy" | null;
+          status?: "backlog" | "planned" | "in_progress" | "review" | "approved" | "published";
+          priority?: "low" | "normal" | "high";
+          deadline?: string | null;
+          related_content_idea_id?: string | null;
+        },
+        { status?: "backlog" | "planned" | "in_progress" | "review" | "approved" | "published" }
+      >;
+      ai_conversations: Table<
+        {
+          id: string;
+          title: string | null;
+          messages: unknown[];
+          created_at: string;
+          updated_at: string;
+        },
+        {
+          title?: string | null;
+          messages?: unknown[];
+        },
+        { title?: string | null; messages?: unknown[] }
+      >;
+      ai_reports: Table<
+        {
+          id: string;
+          period: "weekly" | "monthly";
+          period_start: string;
+          period_end: string;
+          content: Record<string, unknown>;
+          created_at: string;
+        },
+        {
+          period: "weekly" | "monthly";
+          period_start: string;
+          period_end: string;
+          content: Record<string, unknown>;
+        }
+      >;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

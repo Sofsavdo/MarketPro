@@ -1004,3 +1004,130 @@ alter table public.profiles add column if not exists signup_ip text;
 alter table public.installment_leads alter column user_id drop not null;
 alter table public.installment_leads add column if not exists guest_name text;
 alter table public.installment_leads add column if not exists guest_phone text;
+
+-- ============================================================
+-- AI Marketing Department — admin-only assistant that generates content
+-- ideas, scripts, competitor analysis and manages tasks for @amaliy.biznes
+-- and @izdosh.academy. Every table here is RLS-enabled with NO policies —
+-- same convention as landing_blocks/promo_codes: all reads/writes happen
+-- server-side via the service-role admin client, gated by the existing
+-- `profiles.role = 'admin'` check in app/[locale]/admin/*, never through
+-- the anon/authenticated Supabase role. See lib/ai-department/*.
+-- ============================================================
+
+-- Single-row brand memory: G'ayratjon's bio, positioning, voice rules, and
+-- both brands' content pillars — assembled into the AI's system prompt at
+-- request time instead of being hardcoded, so editing it needs no deploy.
+create table if not exists public.ai_brand_memory (
+  id uuid primary key default gen_random_uuid(),
+  singleton boolean not null default true unique,
+  person jsonb not null default '{}'::jsonb,
+  brand_amaliy_biznes jsonb not null default '{}'::jsonb,
+  brand_izdosh jsonb not null default '{}'::jsonb,
+  voice_rules jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.ai_brand_memory enable row level security;
+
+-- Product/course facts the AI must quote verbatim (tariffs, prices,
+-- subscription/installment terms) — kept separate from ai_brand_memory so a
+-- price correction doesn't require touching narrative brand content.
+create table if not exists public.ai_products (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  status text not null default 'active' check (status in ('active', 'upcoming')),
+  tariffs jsonb not null default '[]'::jsonb,
+  notes text,
+  updated_at timestamptz not null default now()
+);
+alter table public.ai_products enable row level security;
+
+create table if not exists public.ai_competitors (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  category text not null,
+  platform text,
+  handle_or_url text,
+  positioning text,
+  created_at timestamptz not null default now()
+);
+alter table public.ai_competitors enable row level security;
+
+-- Research notes on a competitor — source_url/retrieved_at let the admin
+-- (and the AI) tell a current fact from a stale one, per the spec's
+-- fact-checking requirement.
+create table if not exists public.ai_competitor_notes (
+  id uuid primary key default gen_random_uuid(),
+  competitor_id uuid not null references public.ai_competitors(id) on delete cascade,
+  summary text not null,
+  source_url text,
+  retrieved_at timestamptz not null default now(),
+  created_at timestamptz not null default now()
+);
+alter table public.ai_competitor_notes enable row level security;
+
+create table if not exists public.ai_content_ideas (
+  id uuid primary key default gen_random_uuid(),
+  brand text not null check (brand in ('amaliy_biznes', 'izdosh_academy')),
+  pillar text,
+  format text,
+  hook text,
+  title text not null,
+  body text,
+  status text not null default 'idea'
+    check (status in ('idea', 'draft', 'review', 'approved', 'published')),
+  scheduled_for date,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.ai_content_ideas enable row level security;
+
+-- Full Reel/caption script for a content idea — separate table since one
+-- idea can go through several script drafts before approval.
+create table if not exists public.ai_scripts (
+  id uuid primary key default gen_random_uuid(),
+  content_idea_id uuid not null references public.ai_content_ideas(id) on delete cascade,
+  script text not null,
+  caption text,
+  cta text,
+  created_at timestamptz not null default now()
+);
+alter table public.ai_scripts enable row level security;
+
+create table if not exists public.ai_tasks (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text,
+  brand text check (brand in ('amaliy_biznes', 'izdosh_academy')),
+  status text not null default 'backlog'
+    check (status in ('backlog', 'planned', 'in_progress', 'review', 'approved', 'published')),
+  priority text not null default 'normal' check (priority in ('low', 'normal', 'high')),
+  deadline date,
+  related_content_idea_id uuid references public.ai_content_ideas(id) on delete set null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.ai_tasks enable row level security;
+
+-- One row per chat thread; messages is the full Anthropic message array
+-- (role/content), replayed as conversation history on each turn.
+create table if not exists public.ai_conversations (
+  id uuid primary key default gen_random_uuid(),
+  title text,
+  messages jsonb not null default '[]'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.ai_conversations enable row level security;
+
+-- Weekly/monthly report snapshots, generated on request from a chat
+-- command (see spec §48-49) rather than a cron job in this MVP.
+create table if not exists public.ai_reports (
+  id uuid primary key default gen_random_uuid(),
+  period text not null check (period in ('weekly', 'monthly')),
+  period_start date not null,
+  period_end date not null,
+  content jsonb not null,
+  created_at timestamptz not null default now()
+);
+alter table public.ai_reports enable row level security;
