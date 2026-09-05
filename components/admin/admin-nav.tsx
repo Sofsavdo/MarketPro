@@ -14,6 +14,7 @@ import {
   Tag,
   Star,
   MonitorSmartphone,
+  Sparkles,
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -41,6 +42,10 @@ const NAV_GROUPS = [
       { href: "/admin/promo-codes", label: "Promo-kodlar", icon: Tag },
       { href: "/admin/reviews", label: "Sharhlar", icon: Star },
     ],
+  },
+  {
+    label: "AI",
+    items: [{ href: "/admin/ai-department", label: "AI Department", icon: Sparkles }],
   },
 ] as const;
 
