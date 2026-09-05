@@ -62,7 +62,7 @@ export function ContentIdeaCard({
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline">{brandLabel}</Badge>
           {idea.pillar && <Badge variant="outline">{idea.pillar}</Badge>}
           <span className="text-xs text-slate-500">{STATUS_LABELS[idea.status]}</span>
