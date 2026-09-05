@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/lms/admin-actions";
 import { createAdminClient } from "@/lib/supabase/server";
+import type { PersonMemory, AmaliyBiznesMemory, IzdoshMemory, VoiceRulesMemory } from "@/lib/ai-department/brand-types";
 
 export async function listContentIdeas() {
   await requireAdmin();
@@ -79,30 +80,21 @@ export async function getBrandMemory() {
 }
 
 export async function updateBrandMemory(fields: {
-  person?: string;
-  brand_amaliy_biznes?: string;
-  brand_izdosh?: string;
-  voice_rules?: string;
+  person: PersonMemory;
+  brand_amaliy_biznes: AmaliyBiznesMemory;
+  brand_izdosh: IzdoshMemory;
+  voice_rules: VoiceRulesMemory;
 }) {
   await requireAdmin();
   const admin = await createAdminClient();
 
-  function parse(key: string, value: string | undefined): Record<string, unknown> | undefined {
-    if (value === undefined) return undefined;
-    try {
-      return JSON.parse(value);
-    } catch {
-      throw new Error(`invalid_json:${key}`);
-    }
-  }
-
   await admin
     .from("ai_brand_memory")
     .update({
-      person: parse("person", fields.person),
-      brand_amaliy_biznes: parse("brand_amaliy_biznes", fields.brand_amaliy_biznes),
-      brand_izdosh: parse("brand_izdosh", fields.brand_izdosh),
-      voice_rules: parse("voice_rules", fields.voice_rules),
+      person: fields.person,
+      brand_amaliy_biznes: fields.brand_amaliy_biznes,
+      brand_izdosh: fields.brand_izdosh,
+      voice_rules: fields.voice_rules,
     })
     .eq("singleton", true);
   revalidatePath("/admin/ai-department/brand");
