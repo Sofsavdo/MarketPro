@@ -9,15 +9,23 @@ import {
   sendChatMessage,
   type ChatMessage,
 } from "@/lib/ai-department/chat-actions";
+import { getAgentNameMap } from "@/lib/ai-department/data-actions";
 
 type ConversationSummary = { id: string; title: string | null; updated_at: string };
 
 type DisplayMessage =
   | { kind: "user"; text: string }
   | { kind: "orchestrator"; text: string }
-  | { kind: "specialist"; agentName: string; text: string; actions: string[] };
+  | { kind: "specialist"; agentName: string; text: string; actions: string[] }
+  | { kind: "notice"; text: string };
 
-function extractDisplayMessages(raw: ChatMessage[]): DisplayMessage[] {
+type LiveRun = { agentKey: string; text: string; actions: string[] };
+
+function extractDisplayMessages(
+  raw: ChatMessage[],
+  liveRuns: LiveRun[],
+  agentNames: Record<string, string>,
+): DisplayMessage[] {
   const out: DisplayMessage[] = [];
   for (const message of raw) {
     if (message.role === "user" && typeof message.content === "string") {
@@ -33,6 +41,24 @@ function extractDisplayMessages(raw: ChatMessage[]): DisplayMessage[] {
       // turns show just the orchestrator's synthesis.
       if (text) out.push({ kind: "orchestrator", text });
     }
+  }
+  // A non-empty live_specialist_runs means the last turn was cut off
+  // mid-delegation (crash/timeout/redeploy) before it could finish and
+  // fold into `messages` — show whatever specialists did manage to
+  // complete instead of silently hiding it, plus a plain explanation.
+  if (liveRuns.length > 0) {
+    for (const run of liveRuns) {
+      out.push({
+        kind: "specialist",
+        agentName: agentNames[run.agentKey] ?? run.agentKey,
+        text: run.text,
+        actions: run.actions,
+      });
+    }
+    out.push({
+      kind: "notice",
+      text: "Bu so'rov to'liq tugallanmagan (server uzilib qolgan). Yuqoridagi mutaxassislar ulgurgan ishlar — bazaga saqlangan. Qolganini olish uchun so'rovni qayta yuboring.",
+    });
   }
   return out;
 }
@@ -74,7 +100,12 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
   const [input, setInput] = useState("");
   const [isPending, startTransition] = useTransition();
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [agentNames, setAgentNames] = useState<Record<string, string>>({});
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    getAgentNameMap().then(setAgentNames);
+  }, []);
 
   useEffect(() => {
     if (!activeId) return;
@@ -82,10 +113,11 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
     getConversation(activeId)
       .then((conv) => {
         const raw = (conv?.messages as unknown as ChatMessage[]) ?? [];
-        setMessages(extractDisplayMessages(raw));
+        const liveRuns = (conv?.live_specialist_runs as unknown as LiveRun[]) ?? [];
+        setMessages(extractDisplayMessages(raw, liveRuns, agentNames));
       })
       .finally(() => setLoadingHistory(false));
-  }, [activeId]);
+  }, [activeId, agentNames]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -179,6 +211,16 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
                 }
                 if (m.kind === "specialist") {
                   return <SpecialistBubble key={i} agentName={m.agentName} text={m.text} actions={m.actions} />;
+                }
+                if (m.kind === "notice") {
+                  return (
+                    <div
+                      key={i}
+                      className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-300"
+                    >
+                      {m.text}
+                    </div>
+                  );
                 }
                 return (
                   <div key={i} className="max-w-[85%]">
