@@ -4,8 +4,6 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
 import "../globals.css";
 
 // Brand book §7: Inter or Manrope for the primary typeface.
@@ -78,11 +76,7 @@ export default async function LocaleLayout({
     <html lang={locale} className={`${sans.variable} ${mono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-slate-950">
         <OrganizationJsonLd locale={locale} />
-        <NextIntlClientProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </NextIntlClientProvider>
+        <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>
   );
