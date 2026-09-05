@@ -17,19 +17,38 @@ function getClient() {
   return client;
 }
 
+export type SpecialistRun = {
+  agentKey: string;
+  taskInstruction: string;
+  text: string;
+  actions: string[];
+};
+
 /**
  * Runs one specialist's own tool-use loop to completion, in a fresh,
  * isolated conversation (it does not see the admin's chat history — only
  * the exact task the orchestrator hands it). Every tool call it makes is
- * tagged with its agent key so the admin UI can attribute the result.
+ * tagged with its agent key so the admin UI can attribute the result, and
+ * every tool result is also collected into `actions` — a concrete,
+ * checkable log ("Saqlandi. id=...") distinct from the specialist's own
+ * prose, so the admin can verify what actually got written to the
+ * database instead of trusting the model's self-report.
  */
-async function runSpecialistAgent(agentKey: string, taskInstruction: string): Promise<string> {
+async function runSpecialistAgent(agentKey: string, taskInstruction: string): Promise<SpecialistRun> {
   const agent = await getAgent(agentKey);
-  if (!agent) return `Xatolik: "${agentKey}" nomli mutaxassis topilmadi.`;
+  if (!agent) {
+    return {
+      agentKey,
+      taskInstruction,
+      text: `Xatolik: "${agentKey}" nomli mutaxassis topilmadi.`,
+      actions: [],
+    };
+  }
 
   const anthropic = getClient();
   const system = await buildSpecialistSystemPrompt(agent, taskInstruction);
   const messages: Anthropic.MessageParam[] = [{ role: "user", content: taskInstruction }];
+  const actions: string[] = [];
 
   let finalText = "";
   for (let i = 0; i < MAX_SPECIALIST_ITERATIONS; i++) {
@@ -58,7 +77,11 @@ async function runSpecialistAgent(agentKey: string, taskInstruction: string): Pr
 
     const toolResults = await Promise.all(
       toolUses.map(async (toolUse) => {
+        // web_search never reaches here (Anthropic-hosted, resolved inline
+        // in the response) — every tool_use that does is one of our own
+        // persistence tools, so it's always worth logging as an action.
         const result = await executeAiDepartmentTool(toolUse, agentKey);
+        actions.push(`${toolUse.name}: ${result.content}`);
         return {
           type: "tool_result" as const,
           tool_use_id: result.tool_use_id,
@@ -71,10 +94,15 @@ async function runSpecialistAgent(agentKey: string, taskInstruction: string): Pr
     messages.push({ role: "user", content: toolResults });
   }
 
-  return finalText || "(bu mutaxassis matn qaytarmadi, lekin tool orqali ish bajargan bo'lishi mumkin)";
+  return {
+    agentKey,
+    taskInstruction,
+    text: finalText || "(matn qaytarmadi, lekin quyidagi amallarni bajargan)",
+    actions,
+  };
 }
 
-export type OrchestratorResult = { finalText: string; delegatedAgents: string[] };
+export type OrchestratorResult = { finalText: string; specialistRuns: SpecialistRun[] };
 
 /**
  * The CEO/Orchestrator agent: reads the admin's message (with full chat
@@ -82,13 +110,14 @@ export type OrchestratorResult = { finalText: string; delegatedAgents: string[] 
  * and calls each via the delegate_to_agent tool — possibly several in
  * parallel, since Claude can emit multiple tool_use blocks in one turn.
  * Each delegated specialist runs its own isolated tool loop
- * (runSpecialistAgent) and only its final text comes back to the
- * orchestrator, which then synthesizes one reply for the admin.
+ * (runSpecialistAgent); its full result (text + concrete action log) comes
+ * back both to the orchestrator (as a compact tool_result, so it can
+ * synthesize a reply) and out to the caller via `specialistRuns`, so the
+ * chat UI can show every specialist's own message — not just the
+ * orchestrator's summary of it.
  *
  * Mutates `messages` in place (appends the full orchestrator-level
- * transcript) so the caller can persist it for chat history — the
- * specialists' own internal exchanges are not persisted, only referenced
- * through their final text as a tool_result.
+ * transcript) so the caller can persist it for chat history.
  */
 export async function runOrchestrator(messages: Anthropic.MessageParam[]): Promise<OrchestratorResult> {
   const anthropic = getClient();
@@ -114,7 +143,7 @@ export async function runOrchestrator(messages: Anthropic.MessageParam[]): Promi
     },
   };
 
-  const delegatedAgents = new Set<string>();
+  const specialistRuns: SpecialistRun[] = [];
   let finalText = "";
 
   for (let i = 0; i < MAX_ORCHESTRATOR_ITERATIONS; i++) {
@@ -144,12 +173,18 @@ export async function runOrchestrator(messages: Anthropic.MessageParam[]): Promi
     const toolResults = await Promise.all(
       toolUses.map(async (toolUse) => {
         const input = toolUse.input as { agent_key: string; task_instruction: string };
-        delegatedAgents.add(input.agent_key);
-        const resultText = await runSpecialistAgent(input.agent_key, input.task_instruction);
+        const run = await runSpecialistAgent(input.agent_key, input.task_instruction);
+        specialistRuns.push(run);
+        // The orchestrator only needs a compact summary to synthesize its
+        // own reply — the full text/actions go to the caller separately.
+        const summary =
+          run.actions.length > 0
+            ? `${run.text}\n\nBajarilgan amallar: ${run.actions.length} ta.`
+            : run.text;
         return {
           type: "tool_result" as const,
           tool_use_id: toolUse.id,
-          content: resultText,
+          content: summary,
         };
       }),
     );
@@ -157,5 +192,5 @@ export async function runOrchestrator(messages: Anthropic.MessageParam[]): Promi
     messages.push({ role: "user", content: toolResults });
   }
 
-  return { finalText: finalText || "(javob bo'sh qaytdi)", delegatedAgents: Array.from(delegatedAgents) };
+  return { finalText: finalText || "(javob bo'sh qaytdi)", specialistRuns };
 }
