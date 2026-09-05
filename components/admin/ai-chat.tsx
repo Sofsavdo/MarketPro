@@ -205,7 +205,7 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[220px_1fr]">
       <div className="flex flex-col gap-2">
         <Button size="sm" onClick={handleNewChat} className="w-full justify-start gap-2">
           <Plus className="h-4 w-4" /> Yangi suhbat

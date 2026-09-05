@@ -17,7 +17,7 @@ export default async function TasksPage() {
   const [tasks, agentNames] = await Promise.all([listTasks(), getAgentNameMap()]);
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {COLUMNS.map((col) => (
         <TaskColumn
           key={col.status}

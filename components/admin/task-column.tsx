@@ -31,7 +31,7 @@ export function TaskColumn({
   const next = STATUS_ORDER[currentIndex + 1];
 
   return (
-    <div className="flex w-64 shrink-0 flex-col gap-2">
+    <div className="flex min-w-0 flex-col gap-2">
       <h3 className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
         {label} ({tasks.length})
       </h3>
