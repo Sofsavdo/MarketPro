@@ -1160,3 +1160,40 @@ create table if not exists public.ai_objections (
   updated_at timestamptz not null default now()
 );
 alter table public.ai_objections enable row level security;
+
+-- ============================================================
+-- Multi-agent architecture (spec §36) — the AI Department is not one
+-- generic chat persona but a roster of specialist "employees" plus a
+-- CEO/Orchestrator that delegates to them and synthesizes their work.
+-- Personas live here (not hardcoded) so they're editable from
+-- /admin/ai-department/agents the same way brand memory is — see
+-- lib/ai-department/orchestrator.ts.
+-- ============================================================
+create table if not exists public.ai_agents (
+  id uuid primary key default gen_random_uuid(),
+  key text not null unique,
+  name text not null,
+  role_title text not null,
+  system_prompt text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.ai_agents enable row level security;
+
+-- Ownership/traceability: which specialist produced each row, so the
+-- admin UI can show "SMM Strategist tomonidan" instead of an anonymous
+-- "AI" byline, and so the orchestrator's delegation is auditable.
+alter table public.ai_content_ideas add column if not exists agent_key text;
+alter table public.ai_scripts add column if not exists agent_key text;
+alter table public.ai_scripts add column if not exists direction_notes text;
+alter table public.ai_tasks add column if not exists agent_key text;
+alter table public.ai_competitor_notes add column if not exists agent_key text;
+alter table public.ai_reports add column if not exists agent_key text;
+alter table public.ai_objections add column if not exists agent_key text;
+
+-- One production row per content idea (script + caption + cta +
+-- direction_notes), filled in incrementally by different specialists
+-- (scriptwriter/copywriter/director) via upsert on content_idea_id,
+-- instead of one row per idea per specialist.
+alter table public.ai_scripts alter column script drop not null;
+alter table public.ai_scripts add constraint ai_scripts_content_idea_id_key unique (content_idea_id);

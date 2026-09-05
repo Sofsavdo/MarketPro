@@ -484,6 +484,7 @@ export interface Database {
           summary: string;
           source_url: string | null;
           retrieved_at: string;
+          agent_key: string | null;
           created_at: string;
         },
         {
@@ -491,6 +492,7 @@ export interface Database {
           summary: string;
           source_url?: string | null;
           retrieved_at?: string;
+          agent_key?: string | null;
         }
       >;
       ai_content_ideas: Table<
@@ -512,6 +514,7 @@ export interface Database {
           score_brand_fit: number | null;
           score_originality: number | null;
           score_conversion: number | null;
+          agent_key: string | null;
           created_at: string;
           updated_at: string;
         },
@@ -532,8 +535,13 @@ export interface Database {
           score_brand_fit?: number | null;
           score_originality?: number | null;
           score_conversion?: number | null;
+          agent_key?: string | null;
         },
-        { status?: "idea" | "draft" | "review" | "approved" | "published"; body?: string | null }
+        {
+          status?: "idea" | "draft" | "review" | "approved" | "published";
+          body?: string | null;
+          scheduled_for?: string | null;
+        }
       >;
       ai_scripts: Table<
         {
@@ -542,13 +550,17 @@ export interface Database {
           script: string;
           caption: string | null;
           cta: string | null;
+          direction_notes: string | null;
+          agent_key: string | null;
           created_at: string;
         },
         {
           content_idea_id: string;
-          script: string;
+          script?: string;
           caption?: string | null;
           cta?: string | null;
+          direction_notes?: string | null;
+          agent_key?: string | null;
         }
       >;
       ai_tasks: Table<
@@ -561,6 +573,7 @@ export interface Database {
           priority: "low" | "normal" | "high";
           deadline: string | null;
           related_content_idea_id: string | null;
+          agent_key: string | null;
           created_at: string;
           updated_at: string;
         },
@@ -572,8 +585,27 @@ export interface Database {
           priority?: "low" | "normal" | "high";
           deadline?: string | null;
           related_content_idea_id?: string | null;
+          agent_key?: string | null;
         },
         { status?: "backlog" | "planned" | "in_progress" | "review" | "approved" | "published" }
+      >;
+      ai_agents: Table<
+        {
+          id: string;
+          key: string;
+          name: string;
+          role_title: string;
+          system_prompt: string;
+          created_at: string;
+          updated_at: string;
+        },
+        {
+          key: string;
+          name: string;
+          role_title: string;
+          system_prompt: string;
+        },
+        { name?: string; role_title?: string; system_prompt?: string }
       >;
       ai_conversations: Table<
         {
@@ -596,6 +628,7 @@ export interface Database {
           period_start: string;
           period_end: string;
           content: Record<string, unknown>;
+          agent_key: string | null;
           created_at: string;
         },
         {
@@ -603,6 +636,7 @@ export interface Database {
           period_start: string;
           period_end: string;
           content: Record<string, unknown>;
+          agent_key?: string | null;
         }
       >;
       ai_objections: Table<
@@ -613,6 +647,7 @@ export interface Database {
           clarification: string | null;
           value_explanation: string | null;
           suggested_offer: string | null;
+          agent_key: string | null;
           created_at: string;
           updated_at: string;
         },
@@ -622,6 +657,7 @@ export interface Database {
           clarification?: string | null;
           value_explanation?: string | null;
           suggested_offer?: string | null;
+          agent_key?: string | null;
           updated_at?: string;
         }
       >;

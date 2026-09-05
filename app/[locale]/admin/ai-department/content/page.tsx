@@ -1,4 +1,4 @@
-import { listContentIdeas } from "@/lib/ai-department/data-actions";
+import { listContentIdeas, getAgentNameMap } from "@/lib/ai-department/data-actions";
 import { ContentIdeaCard } from "@/components/admin/content-idea-card";
 
 const BRAND_LABELS: Record<string, string> = {
@@ -7,7 +7,7 @@ const BRAND_LABELS: Record<string, string> = {
 };
 
 export default async function ContentIdeasPage() {
-  const ideas = await listContentIdeas();
+  const [ideas, agentNames] = await Promise.all([listContentIdeas(), getAgentNameMap()]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -18,7 +18,12 @@ export default async function ContentIdeasPage() {
         </p>
       ) : (
         ideas.map((idea) => (
-          <ContentIdeaCard key={idea.id} idea={idea} brandLabel={BRAND_LABELS[idea.brand] ?? idea.brand} />
+          <ContentIdeaCard
+            key={idea.id}
+            idea={idea}
+            brandLabel={BRAND_LABELS[idea.brand] ?? idea.brand}
+            agentName={idea.agent_key ? agentNames[idea.agent_key] : undefined}
+          />
         ))
       )}
     </div>

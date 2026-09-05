@@ -1,20 +1,11 @@
 "use server";
 
-import Anthropic from "@anthropic-ai/sdk";
+import type Anthropic from "@anthropic-ai/sdk";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/lms/admin-actions";
 import { createAdminClient } from "@/lib/supabase/server";
-import { buildSystemPrompt } from "@/lib/ai-department/system-prompt";
-import { AI_DEPARTMENT_TOOLS, executeAiDepartmentTool } from "@/lib/ai-department/tools";
-
-const MODEL = "claude-opus-5";
-const MAX_TOOL_ITERATIONS = 8;
-
-let client: Anthropic | null = null;
-function getClient() {
-  if (!client) client = new Anthropic();
-  return client;
-}
+import { runOrchestrator } from "@/lib/ai-department/orchestrator";
+import { getAgentRoster } from "@/lib/ai-department/agents";
 
 export type ChatMessage = { role: "user" | "assistant"; content: Anthropic.MessageParam["content"] };
 
@@ -50,16 +41,18 @@ export async function getConversation(id: string) {
 }
 
 /**
- * Sends one user turn, runs the tool-use loop to completion (executing
- * save_content_idea/create_task/save_competitor_note ourselves; web_search
- * is Anthropic-hosted and needs no handling here), persists the full
- * message history, and returns only the assistant's final text — the tool
- * round-trips are an implementation detail the chat UI doesn't need to see.
+ * Sends one user turn to the CEO/Orchestrator agent, which delegates to
+ * whichever specialists the request needs (see lib/ai-department/
+ * orchestrator.ts), persists the full orchestrator-level transcript, and
+ * returns the synthesized reply plus which specialists were involved —
+ * the admin chat UI shows both, so this never reads as one anonymous bot.
  */
-export async function sendChatMessage(conversationId: string, userText: string): Promise<string> {
+export async function sendChatMessage(
+  conversationId: string,
+  userText: string,
+): Promise<{ text: string; agentNames: string[] }> {
   await requireAdmin();
   const admin = await createAdminClient();
-  const anthropic = getClient();
 
   const { data: conversation } = await admin
     .from("ai_conversations")
@@ -71,49 +64,7 @@ export async function sendChatMessage(conversationId: string, userText: string):
   const messages = (conversation.messages as unknown as Anthropic.MessageParam[]) ?? [];
   messages.push({ role: "user", content: userText });
 
-  const system = await buildSystemPrompt();
-
-  let finalText = "";
-  for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
-    const response = await anthropic.messages.create({
-      model: MODEL,
-      max_tokens: 4096,
-      system,
-      messages,
-      tools: AI_DEPARTMENT_TOOLS,
-      thinking: { type: "adaptive" },
-      output_config: { effort: "medium" },
-    });
-
-    messages.push({ role: "assistant", content: response.content });
-
-    const toolUses = response.content.filter(
-      (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
-    );
-
-    finalText = response.content
-      .filter((block): block is Anthropic.TextBlock => block.type === "text")
-      .map((block) => block.text)
-      .join("\n");
-
-    if (response.stop_reason !== "tool_use" || toolUses.length === 0) break;
-
-    const toolResults = await Promise.all(
-      toolUses.map(async (toolUse) => {
-        // web_search is handled entirely server-side by Anthropic — it
-        // never reaches here as a tool_use block needing our execution.
-        const result = await executeAiDepartmentTool(toolUse);
-        return {
-          type: "tool_result" as const,
-          tool_use_id: result.tool_use_id,
-          content: result.content,
-          is_error: result.is_error,
-        };
-      }),
-    );
-
-    messages.push({ role: "user", content: toolResults });
-  }
+  const { finalText, delegatedAgents } = await runOrchestrator(messages);
 
   const title = conversation.title ?? userText.slice(0, 60);
   await admin
@@ -121,6 +72,13 @@ export async function sendChatMessage(conversationId: string, userText: string):
     .update({ messages: messages as unknown as never, title })
     .eq("id", conversationId);
 
+  let agentNames: string[] = [];
+  if (delegatedAgents.length > 0) {
+    const roster = await getAgentRoster();
+    const byKey = new Map(roster.map((a) => [a.key, a.name]));
+    agentNames = delegatedAgents.map((key) => byKey.get(key) ?? key);
+  }
+
   revalidatePath("/admin/ai-department");
-  return finalText || "(javob bo'sh qaytdi — qayta urinib ko'ring)";
+  return { text: finalText, agentNames };
 }

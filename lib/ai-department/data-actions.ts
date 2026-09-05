@@ -72,6 +72,29 @@ export async function listReports() {
   return data ?? [];
 }
 
+export async function listAgentsForAdmin() {
+  await requireAdmin();
+  const admin = await createAdminClient();
+  const { data } = await admin.from("ai_agents").select("*").order("created_at");
+  return data ?? [];
+}
+
+/** key -> display name, for attributing a content idea/task/note/report/objection to the specialist that produced it. */
+export async function getAgentNameMap(): Promise<Record<string, string>> {
+  const agents = await listAgentsForAdmin();
+  return Object.fromEntries(agents.map((a) => [a.key, a.name]));
+}
+
+export async function updateAgentPrompt(key: string, fields: { name: string; role_title: string; system_prompt: string }) {
+  await requireAdmin();
+  const admin = await createAdminClient();
+  await admin
+    .from("ai_agents")
+    .update({ name: fields.name, role_title: fields.role_title, system_prompt: fields.system_prompt })
+    .eq("key", key);
+  revalidatePath("/admin/ai-department/agents");
+}
+
 export async function getBrandMemory() {
   await requireAdmin();
   const admin = await createAdminClient();

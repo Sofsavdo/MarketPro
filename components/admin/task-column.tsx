@@ -15,7 +15,17 @@ const PRIORITY_COLOR: Record<Task["priority"], string> = {
   high: "text-amber-400",
 };
 
-export function TaskColumn({ label, status, tasks }: { label: string; status: Status; tasks: Task[] }) {
+export function TaskColumn({
+  label,
+  status,
+  tasks,
+  agentNames,
+}: {
+  label: string;
+  status: Status;
+  tasks: Task[];
+  agentNames: Record<string, string>;
+}) {
   const [isPending, startTransition] = useTransition();
   const currentIndex = STATUS_ORDER.indexOf(status);
   const next = STATUS_ORDER[currentIndex + 1];
@@ -32,6 +42,9 @@ export function TaskColumn({ label, status, tasks }: { label: string; status: St
             <p className="mt-1 text-sm font-medium text-white">{task.title}</p>
             {task.description && <p className="mt-1 text-xs text-slate-400">{task.description}</p>}
             {task.deadline && <p className="mt-1 text-xs text-slate-500">Muddat: {task.deadline}</p>}
+            {task.agent_key && (
+              <p className="mt-1 text-xs text-slate-600">{agentNames[task.agent_key] ?? task.agent_key}</p>
+            )}
             {next && (
               <button
                 disabled={isPending}

@@ -1,8 +1,8 @@
-import { listCompetitorsWithNotes } from "@/lib/ai-department/data-actions";
+import { listCompetitorsWithNotes, getAgentNameMap } from "@/lib/ai-department/data-actions";
 import { Badge } from "@/components/ui/badge";
 
 export default async function CompetitorsPage() {
-  const competitors = await listCompetitorsWithNotes();
+  const [competitors, agentNames] = await Promise.all([listCompetitorsWithNotes(), getAgentNameMap()]);
 
   if (competitors.length === 0) {
     return (
@@ -35,6 +35,7 @@ export default async function CompetitorsPage() {
                   <p>{n.summary}</p>
                   <p className="mt-0.5 text-xs text-slate-500">
                     {new Date(n.retrieved_at).toLocaleDateString("uz-UZ")}
+                    {n.agent_key && <> · {agentNames[n.agent_key] ?? n.agent_key}</>}
                     {n.source_url && (
                       <>
                         {" · "}

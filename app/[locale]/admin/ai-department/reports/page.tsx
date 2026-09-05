@@ -1,10 +1,10 @@
-import { listReports } from "@/lib/ai-department/data-actions";
+import { listReports, getAgentNameMap } from "@/lib/ai-department/data-actions";
 import { Badge } from "@/components/ui/badge";
 
 const PERIOD_LABELS: Record<string, string> = { weekly: "Haftalik", monthly: "Oylik" };
 
 export default async function ReportsPage() {
-  const reports = await listReports();
+  const [reports, agentNames] = await Promise.all([listReports(), getAgentNameMap()]);
 
   if (reports.length === 0) {
     return (
@@ -31,6 +31,9 @@ export default async function ReportsPage() {
               <span className="text-xs text-slate-500">
                 {r.period_start} — {r.period_end}
               </span>
+              {r.agent_key && (
+                <span className="text-xs text-slate-600">{agentNames[r.agent_key] ?? r.agent_key}</span>
+              )}
             </div>
             {content.summary && <p className="mt-2 text-sm text-slate-300">{content.summary}</p>}
             <div className="mt-3 grid gap-3 border-t border-slate-800 pt-3 sm:grid-cols-3">
