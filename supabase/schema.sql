@@ -1120,6 +1120,14 @@ create table if not exists public.ai_conversations (
 );
 alter table public.ai_conversations enable row level security;
 
+-- Written incrementally as each delegated specialist finishes inside a
+-- turn (before the turn as a whole has completed), so that if the request
+-- dies mid-fan-out the specialists' completed work is not silently lost —
+-- cleared back to '[]' once the turn finishes normally and its results are
+-- folded into `messages`.
+alter table public.ai_conversations
+  add column if not exists live_specialist_runs jsonb not null default '[]'::jsonb;
+
 -- Weekly/monthly report snapshots, generated on request from a chat
 -- command (see spec §48-49) rather than a cron job in this MVP.
 create table if not exists public.ai_reports (

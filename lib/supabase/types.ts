@@ -612,14 +612,16 @@ export interface Database {
           id: string;
           title: string | null;
           messages: unknown[];
+          live_specialist_runs: unknown[];
           created_at: string;
           updated_at: string;
         },
         {
           title?: string | null;
           messages?: unknown[];
+          live_specialist_runs?: unknown[];
         },
-        { title?: string | null; messages?: unknown[] }
+        { title?: string | null; messages?: unknown[]; live_specialist_runs?: unknown[] }
       >;
       ai_reports: Table<
         {

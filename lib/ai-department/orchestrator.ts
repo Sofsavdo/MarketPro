@@ -24,6 +24,13 @@ export type SpecialistRun = {
   actions: string[];
 };
 
+export type OrchestratorHooks = {
+  /** Fired once, right after the orchestrator decides what to delegate — before any specialist has run. Lets the caller persist the delegation itself so it isn't lost if everything after this point dies. */
+  onDelegationStarted?: (messages: Anthropic.MessageParam[]) => Promise<void>;
+  /** Fired once per specialist, as soon as that specialist finishes (success or failure) — independent of whether the rest of the turn ever completes. */
+  onSpecialistDone?: (run: SpecialistRun) => Promise<void>;
+};
+
 /**
  * Runs one specialist's own tool-use loop to completion, in a fresh,
  * isolated conversation (it does not see the admin's chat history — only
@@ -54,7 +61,7 @@ async function runSpecialistAgent(agentKey: string, taskInstruction: string): Pr
   for (let i = 0; i < MAX_SPECIALIST_ITERATIONS; i++) {
     const response = await anthropic.messages.create({
       model: MODEL,
-      max_tokens: 4096,
+      max_tokens: 8192,
       system,
       messages,
       tools: AI_DEPARTMENT_TOOLS,
@@ -119,7 +126,10 @@ export type OrchestratorResult = { finalText: string; specialistRuns: Specialist
  * Mutates `messages` in place (appends the full orchestrator-level
  * transcript) so the caller can persist it for chat history.
  */
-export async function runOrchestrator(messages: Anthropic.MessageParam[]): Promise<OrchestratorResult> {
+export async function runOrchestrator(
+  messages: Anthropic.MessageParam[],
+  hooks: OrchestratorHooks = {},
+): Promise<OrchestratorResult> {
   const anthropic = getClient();
   const [system, roster] = await Promise.all([buildOrchestratorSystemPrompt(), getAgentRoster()]);
   const specialistKeys = roster.filter((a) => a.key !== "orchestrator").map((a) => a.key);
@@ -149,7 +159,7 @@ export async function runOrchestrator(messages: Anthropic.MessageParam[]): Promi
   for (let i = 0; i < MAX_ORCHESTRATOR_ITERATIONS; i++) {
     const response = await anthropic.messages.create({
       model: MODEL,
-      max_tokens: 4096,
+      max_tokens: 8192,
       system,
       messages,
       tools: [delegateTool],
@@ -170,11 +180,30 @@ export async function runOrchestrator(messages: Anthropic.MessageParam[]): Promi
 
     if (response.stop_reason !== "tool_use" || toolUses.length === 0) break;
 
+    // Persist the delegation itself before running any specialist, so a
+    // crash or timeout during the (potentially long) fan-out below doesn't
+    // lose the fact that this turn was ever attempted.
+    await hooks.onDelegationStarted?.(messages);
+
     const toolResults = await Promise.all(
       toolUses.map(async (toolUse) => {
-        const input = toolUse.input as { agent_key: string; task_instruction: string };
-        const run = await runSpecialistAgent(input.agent_key, input.task_instruction);
+        const input = toolUse.input as { agent_key?: string; task_instruction?: string };
+        let run: SpecialistRun;
+        if (!input.agent_key || !input.task_instruction) {
+          // Seen in production: a truncated tool_use block (the model's
+          // response got cut off mid-JSON) missing a required field.
+          // Fail this one delegation cleanly instead of crashing the turn.
+          run = {
+            agentKey: input.agent_key ?? "noma'lum",
+            taskInstruction: input.task_instruction ?? "",
+            text: "Xatolik: bu topshiriq to'liq shakllanmadi (vazifa matni yetib kelmadi). Iltimos, so'rovni qayta yuboring.",
+            actions: [],
+          };
+        } else {
+          run = await runSpecialistAgent(input.agent_key, input.task_instruction);
+        }
         specialistRuns.push(run);
+        await hooks.onSpecialistDone?.(run);
         // The orchestrator only needs a compact summary to synthesize its
         // own reply — the full text/actions go to the caller separately.
         const summary =

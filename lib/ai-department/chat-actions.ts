@@ -4,13 +4,41 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/lms/admin-actions";
 import { createAdminClient } from "@/lib/supabase/server";
-import { runOrchestrator } from "@/lib/ai-department/orchestrator";
+import { runOrchestrator, type SpecialistRun } from "@/lib/ai-department/orchestrator";
 import { getAgentRoster } from "@/lib/ai-department/agents";
 
 export type ChatMessage = { role: "user" | "assistant"; content: Anthropic.MessageParam["content"] };
 
 export type SpecialistReply = { agentName: string; text: string; actions: string[] };
 export type ChatReply = { orchestratorText: string; specialistReplies: SpecialistReply[] };
+
+/**
+ * A turn that got interrupted (crash, timeout, redeploy) mid-delegation
+ * leaves the transcript ending on an assistant message with `tool_use`
+ * blocks that were never answered. The Anthropic API requires every
+ * `tool_use` to be immediately followed by a matching `tool_result` — so
+ * before appending a new user turn onto a conversation like that, close
+ * out the dangling calls with a synthetic "interrupted" result. Without
+ * this, every future message in that conversation fails and the thread is
+ * permanently stuck.
+ */
+function repairDanglingToolUse(messages: Anthropic.MessageParam[]): void {
+  const last = messages[messages.length - 1];
+  if (!last || last.role !== "assistant" || !Array.isArray(last.content)) return;
+  const toolUses = last.content.filter(
+    (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
+  );
+  if (toolUses.length === 0) return;
+  messages.push({
+    role: "user",
+    content: toolUses.map((toolUse) => ({
+      type: "tool_result" as const,
+      tool_use_id: toolUse.id,
+      content: "Bu topshiriq oldingi seansda uzilib qolgan (server qayta ishga tushdi yoki vaqt tugadi). Bekor qilindi.",
+      is_error: true,
+    })),
+  });
+}
 
 export async function createConversation(): Promise<string> {
   await requireAdmin();
@@ -64,14 +92,34 @@ export async function sendChatMessage(conversationId: string, userText: string):
   if (!conversation) throw new Error("conversation_not_found");
 
   const messages = (conversation.messages as unknown as Anthropic.MessageParam[]) ?? [];
+  repairDanglingToolUse(messages);
   messages.push({ role: "user", content: userText });
 
-  const { finalText, specialistRuns } = await runOrchestrator(messages);
-
   const title = conversation.title ?? userText.slice(0, 60);
+  const liveRuns: SpecialistRun[] = [];
+
+  const { finalText, specialistRuns } = await runOrchestrator(messages, {
+    onDelegationStarted: async (msgs) => {
+      // Persist the delegation itself immediately — if everything after
+      // this crashes, the conversation still shows a (repairable) record
+      // that this turn was attempted, instead of vanishing entirely.
+      await admin
+        .from("ai_conversations")
+        .update({ messages: msgs as unknown as never, title, live_specialist_runs: [] as unknown as never })
+        .eq("id", conversationId);
+    },
+    onSpecialistDone: async (run) => {
+      liveRuns.push(run);
+      await admin
+        .from("ai_conversations")
+        .update({ live_specialist_runs: liveRuns as unknown as never })
+        .eq("id", conversationId);
+    },
+  });
+
   await admin
     .from("ai_conversations")
-    .update({ messages: messages as unknown as never, title })
+    .update({ messages: messages as unknown as never, title, live_specialist_runs: [] as unknown as never })
     .eq("id", conversationId);
 
   const roster = await getAgentRoster();
