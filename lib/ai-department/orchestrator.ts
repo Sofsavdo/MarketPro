@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { AI_DEPARTMENT_TOOLS, executeAiDepartmentTool } from "@/lib/ai-department/tools";
 import {
+  buildDirectChatSystemPrompt,
   buildOrchestratorSystemPrompt,
   buildSpecialistSystemPrompt,
   getAgent,
@@ -11,6 +12,7 @@ import { createMessageWithFallback } from "@/lib/ai-department/gemini-fallback";
 const MODEL = "claude-opus-5";
 const MAX_ORCHESTRATOR_ITERATIONS = 4;
 const MAX_SPECIALIST_ITERATIONS = 6;
+const MAX_DIRECT_CHAT_ITERATIONS = 6;
 
 let client: Anthropic | null = null;
 function getClient() {
@@ -42,7 +44,7 @@ export type OrchestratorHooks = {
  * prose, so the admin can verify what actually got written to the
  * database instead of trusting the model's self-report.
  */
-async function runSpecialistAgent(agentKey: string, taskInstruction: string): Promise<SpecialistRun> {
+export async function runSpecialistAgent(agentKey: string, taskInstruction: string): Promise<SpecialistRun> {
   const agent = await getAgent(agentKey);
   if (!agent) {
     return {
@@ -223,4 +225,62 @@ export async function runOrchestrator(
   }
 
   return { finalText: finalText || "(javob bo'sh qaytdi)", specialistRuns };
+}
+
+/**
+ * A direct, ongoing 1:1 conversation with a single specialist — no
+ * orchestrator delegation in between. Unlike runSpecialistAgent (a fresh,
+ * isolated conversation per one-off task), this mutates the same
+ * `messages` array turn after turn, exactly like runOrchestrator does, so
+ * the specialist remembers everything G'ayratjon has told it across the
+ * whole thread.
+ */
+export async function runDirectAgentChat(agentKey: string, messages: Anthropic.MessageParam[]): Promise<string> {
+  const agent = await getAgent(agentKey);
+  if (!agent) return `Xatolik: "${agentKey}" nomli mutaxassis topilmadi.`;
+
+  const anthropic = getClient();
+  const system = await buildDirectChatSystemPrompt(agent);
+
+  let finalText = "";
+  for (let i = 0; i < MAX_DIRECT_CHAT_ITERATIONS; i++) {
+    const response = await createMessageWithFallback(anthropic, {
+      model: MODEL,
+      max_tokens: 8192,
+      system,
+      messages,
+      tools: AI_DEPARTMENT_TOOLS,
+      thinking: { type: "adaptive" },
+      output_config: { effort: "medium" },
+    });
+
+    messages.push({ role: "assistant", content: response.content });
+
+    const toolUses = response.content.filter(
+      (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
+    );
+
+    finalText = response.content
+      .filter((block): block is Anthropic.TextBlock => block.type === "text")
+      .map((block) => block.text)
+      .join("\n");
+
+    if (response.stop_reason !== "tool_use" || toolUses.length === 0) break;
+
+    const toolResults = await Promise.all(
+      toolUses.map(async (toolUse) => {
+        const result = await executeAiDepartmentTool(toolUse, agentKey);
+        return {
+          type: "tool_result" as const,
+          tool_use_id: result.tool_use_id,
+          content: result.content,
+          is_error: result.is_error,
+        };
+      }),
+    );
+
+    messages.push({ role: "user", content: toolResults });
+  }
+
+  return finalText || "(javob bo'sh qaytdi)";
 }

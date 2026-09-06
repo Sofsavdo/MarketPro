@@ -607,10 +607,31 @@ export interface Database {
         },
         { name?: string; role_title?: string; system_prompt?: string }
       >;
+      ai_daily_plans: Table<
+        {
+          id: string;
+          plan_date: string;
+          focus: string | null;
+          tasks: unknown[];
+          reflection: string | null;
+          agent_key: string | null;
+          created_at: string;
+          updated_at: string;
+        },
+        {
+          plan_date: string;
+          focus?: string | null;
+          tasks?: unknown[];
+          reflection?: string | null;
+          agent_key?: string | null;
+        },
+        { focus?: string | null; tasks?: unknown[]; reflection?: string | null; agent_key?: string | null }
+      >;
       ai_conversations: Table<
         {
           id: string;
           title: string | null;
+          agent_key: string | null;
           messages: unknown[];
           live_specialist_runs: unknown[];
           processing: boolean;
@@ -619,11 +640,33 @@ export interface Database {
         },
         {
           title?: string | null;
+          agent_key?: string | null;
           messages?: unknown[];
           live_specialist_runs?: unknown[];
           processing?: boolean;
         },
-        { title?: string | null; messages?: unknown[]; live_specialist_runs?: unknown[]; processing?: boolean }
+        {
+          title?: string | null;
+          agent_key?: string | null;
+          messages?: unknown[];
+          live_specialist_runs?: unknown[];
+          processing?: boolean;
+        }
+      >;
+      ai_meetings: Table<
+        {
+          id: string;
+          week_start: string;
+          contributions: unknown[];
+          summary: string | null;
+          created_at: string;
+        },
+        {
+          week_start: string;
+          contributions?: unknown[];
+          summary?: string | null;
+        },
+        { contributions?: unknown[]; summary?: string | null }
       >;
       ai_reports: Table<
         {

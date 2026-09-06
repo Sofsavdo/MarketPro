@@ -1301,3 +1301,49 @@ alter policy "Users see their own progress" on public.user_progress
 -- NOTE — Supabase Auth "leaked password protection" (HaveIBeenPwned check)
 -- is off. That's an Auth setting, not schema — enable it from the Supabase
 -- dashboard (Authentication → Providers → Password), not from this file.
+
+-- ============================================================
+-- Discipline/accountability agent — one row per calendar day holding
+-- G'ayratjonning o'sha kunga rejalashtirgan vazifalari (tasks, each
+-- {text, done}) plus his own end-of-day reflection. The agent upserts on
+-- plan_date both when setting a fresh plan (morning) and when logging a
+-- check-in (evening) — same row, so "bugungi reja" and "bugungi hisobot"
+-- are always the same record instead of drifting apart.
+-- ============================================================
+create table if not exists public.ai_daily_plans (
+  id uuid primary key default gen_random_uuid(),
+  plan_date date not null unique,
+  focus text,
+  tasks jsonb not null default '[]'::jsonb,
+  reflection text,
+  agent_key text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.ai_daily_plans enable row level security;
+-- Admin-only, same "enabled, zero policies" pattern as every other
+-- ai_* table above — all access goes through createAdminClient().
+
+-- Direct 1:1 chat with a single specialist (not routed through the
+-- orchestrator's delegation) — null means the existing orchestrator chat,
+-- set means every turn in this conversation goes straight to that
+-- specialist's own continuous tool-use loop (see runDirectAgentChat).
+alter table public.ai_conversations
+  add column if not exists agent_key text references public.ai_agents(key) on delete set null;
+
+-- ============================================================
+-- Weekly agent "meeting" — a scheduled (pg_cron), not chat-triggered, run
+-- where every specialist contributes its own take (grounded in
+-- get_business_snapshot) and the orchestrator synthesizes one combined
+-- report. contributions holds each specialist's raw text for drill-down;
+-- summary is the orchestrator's synthesis (also mirrored into ai_reports
+-- via generate_report so it shows up in the existing reports view).
+-- ============================================================
+create table if not exists public.ai_meetings (
+  id uuid primary key default gen_random_uuid(),
+  week_start date not null unique,
+  contributions jsonb not null default '[]'::jsonb,
+  summary text,
+  created_at timestamptz not null default now()
+);
+alter table public.ai_meetings enable row level security;

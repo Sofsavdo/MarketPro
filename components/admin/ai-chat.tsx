@@ -9,13 +9,15 @@ import {
   sendChatMessage,
   type ChatMessage,
 } from "@/lib/ai-department/chat-actions";
-import { getAgentNameMap } from "@/lib/ai-department/data-actions";
+import { getAgentNameMap, listAgentsForAdmin } from "@/lib/ai-department/data-actions";
 
-type ConversationSummary = { id: string; title: string | null; updated_at: string };
+type ConversationSummary = { id: string; title: string | null; agent_key: string | null; updated_at: string };
+type AgentOption = { key: string; name: string; role_title: string };
 
 type DisplayMessage =
   | { kind: "user"; text: string }
   | { kind: "orchestrator"; text: string }
+  | { kind: "direct"; agentName: string; text: string }
   | { kind: "specialist"; agentName: string; text: string; actions: string[] }
   | { kind: "notice"; text: string };
 
@@ -26,6 +28,7 @@ function extractDisplayMessages(
   liveRuns: LiveRun[],
   processing: boolean,
   agentNames: Record<string, string>,
+  directAgentKey: string | null,
 ): DisplayMessage[] {
   const out: DisplayMessage[] = [];
   for (const message of raw) {
@@ -40,7 +43,13 @@ function extractDisplayMessages(
       // Reloaded history only has the orchestrator-level transcript — the
       // per-specialist breakdown is live-only (see `live_specialist_runs`),
       // so past turns show just the orchestrator's synthesis.
-      if (text) out.push({ kind: "orchestrator", text });
+      if (text) {
+        if (directAgentKey) {
+          out.push({ kind: "direct", agentName: agentNames[directAgentKey] ?? directAgentKey, text });
+        } else {
+          out.push({ kind: "orchestrator", text });
+        }
+      }
     }
   }
   // A non-empty live_specialist_runs means the current turn is either
@@ -105,11 +114,19 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [agentNames, setAgentNames] = useState<Record<string, string>>({});
+  const [agentOptions, setAgentOptions] = useState<AgentOption[]>([]);
+  const [showAgentPicker, setShowAgentPicker] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const activeConversation = conversations.find((c) => c.id === activeId);
+  const directAgentKey = activeConversation?.agent_key ?? null;
+
   useEffect(() => {
     getAgentNameMap().then(setAgentNames);
+    listAgentsForAdmin().then((rows) =>
+      setAgentOptions(rows.filter((r) => r.key !== "orchestrator").map((r) => ({ key: r.key, name: r.name, role_title: r.role_title }))),
+    );
   }, []);
 
   function stopPolling() {
@@ -119,12 +136,12 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
     }
   }
 
-  async function refreshConversation(id: string) {
+  async function refreshConversation(id: string, agentKey: string | null) {
     const conv = await getConversation(id);
     const raw = (conv?.messages as unknown as ChatMessage[]) ?? [];
     const liveRuns = (conv?.live_specialist_runs as unknown as LiveRun[]) ?? [];
     const stillProcessing = conv?.processing ?? false;
-    setMessages(extractDisplayMessages(raw, liveRuns, stillProcessing, agentNames));
+    setMessages(extractDisplayMessages(raw, liveRuns, stillProcessing, agentNames, agentKey));
     setProcessing(stillProcessing);
     if (!stillProcessing) stopPolling();
     return stillProcessing;
@@ -136,10 +153,10 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
   // that's what was causing "An unexpected response was received from the
   // server": the browser/proxy was giving up on the connection long before
   // the work finished, even though the server kept going.
-  function startPolling(id: string) {
+  function startPolling(id: string, agentKey: string | null) {
     stopPolling();
     pollRef.current = setInterval(() => {
-      refreshConversation(id);
+      refreshConversation(id, agentKey);
     }, 3000);
   }
 
@@ -152,9 +169,9 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
         const raw = (conv?.messages as unknown as ChatMessage[]) ?? [];
         const liveRuns = (conv?.live_specialist_runs as unknown as LiveRun[]) ?? [];
         const stillProcessing = conv?.processing ?? false;
-        setMessages(extractDisplayMessages(raw, liveRuns, stillProcessing, agentNames));
+        setMessages(extractDisplayMessages(raw, liveRuns, stillProcessing, agentNames, directAgentKey));
         setProcessing(stillProcessing);
-        if (stillProcessing) startPolling(activeId);
+        if (stillProcessing) startPolling(activeId, directAgentKey);
       })
       .finally(() => setLoadingHistory(false));
     return () => stopPolling();
@@ -165,10 +182,14 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  async function handleNewChat() {
+  async function handleNewChat(agentKey: string | null) {
     stopPolling();
-    const id = await createConversation();
-    setConversations((prev) => [{ id, title: null, updated_at: new Date().toISOString() }, ...prev]);
+    setShowAgentPicker(false);
+    const id = await createConversation(agentKey);
+    setConversations((prev) => [
+      { id, title: null, agent_key: agentKey, updated_at: new Date().toISOString() },
+      ...prev,
+    ]);
     setActiveId(id);
     setMessages([]);
     setProcessing(false);
@@ -182,19 +203,21 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
     setInput("");
     setMessages((prev) => [...prev, { kind: "user", text }]);
 
+    const agentKey = conversationId ? (conversations.find((c) => c.id === conversationId)?.agent_key ?? null) : null;
+
     startTransition(async () => {
       if (!conversationId) {
         conversationId = await createConversation();
         setActiveId(conversationId);
         setConversations((prev) => [
-          { id: conversationId!, title: null, updated_at: new Date().toISOString() },
+          { id: conversationId!, title: null, agent_key: null, updated_at: new Date().toISOString() },
           ...prev,
         ]);
       }
       try {
         await sendChatMessage(conversationId, text);
         setProcessing(true);
-        startPolling(conversationId);
+        startPolling(conversationId, agentKey);
       } catch (err) {
         setMessages((prev) => [
           ...prev,
@@ -207,9 +230,35 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[220px_1fr]">
       <div className="flex flex-col gap-2">
-        <Button size="sm" onClick={handleNewChat} className="w-full justify-start gap-2">
-          <Plus className="h-4 w-4" /> Yangi suhbat
-        </Button>
+        <div className="relative">
+          <Button
+            size="sm"
+            onClick={() => setShowAgentPicker((v) => !v)}
+            className="w-full justify-start gap-2"
+          >
+            <Plus className="h-4 w-4" /> Yangi suhbat
+          </Button>
+          {showAgentPicker && (
+            <div className="absolute z-10 mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 p-1 shadow-xl">
+              <button
+                onClick={() => handleNewChat(null)}
+                className="w-full rounded-md px-3 py-2 text-left text-sm text-slate-200 hover:bg-slate-800"
+              >
+                Bosh mutaxassis <span className="text-slate-500">(hammasiga taqsimlaydi)</span>
+              </button>
+              <div className="my-1 border-t border-slate-800" />
+              {agentOptions.map((a) => (
+                <button
+                  key={a.key}
+                  onClick={() => handleNewChat(a.key)}
+                  className="w-full rounded-md px-3 py-2 text-left text-sm text-slate-200 hover:bg-slate-800"
+                >
+                  {a.name} <span className="text-slate-500">— {a.role_title}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <div className="flex flex-col gap-1">
           {conversations.map((c) => (
             <button
@@ -219,7 +268,12 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
                 c.id === activeId ? "bg-amber-500/15 text-amber-400" : "text-slate-400 hover:bg-slate-800"
               }`}
             >
-              {c.title || "Yangi suhbat"}
+              <span className="block truncate">{c.title || "Yangi suhbat"}</span>
+              {c.agent_key && (
+                <span className="block truncate text-[11px] text-slate-500">
+                  {agentNames[c.agent_key] ?? c.agent_key}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -250,6 +304,16 @@ export function AiChat({ initialConversations }: { initialConversations: Convers
                 }
                 if (m.kind === "specialist") {
                   return <SpecialistBubble key={i} agentName={m.agentName} text={m.text} actions={m.actions} />;
+                }
+                if (m.kind === "direct") {
+                  return (
+                    <div key={i} className="max-w-[85%]">
+                      <p className="mb-1 text-[11px] font-medium text-amber-400">{m.agentName}</p>
+                      <div className="rounded-xl border border-slate-800 bg-slate-800/60 px-4 py-2.5 text-sm whitespace-pre-wrap break-words text-slate-100">
+                        {m.text}
+                      </div>
+                    </div>
+                  );
                 }
                 if (m.kind === "notice") {
                   return (

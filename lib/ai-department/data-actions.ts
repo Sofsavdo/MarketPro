@@ -72,6 +72,14 @@ export async function listReports() {
   return data ?? [];
 }
 
+/** Weekly agent "meetings" — see runWeeklyMeeting: each specialist's own contribution plus the orchestrator's synthesis. */
+export async function listMeetings() {
+  await requireAdmin();
+  const admin = await createAdminClient();
+  const { data } = await admin.from("ai_meetings").select("*").order("week_start", { ascending: false });
+  return data ?? [];
+}
+
 export async function listAgentsForAdmin() {
   await requireAdmin();
   const admin = await createAdminClient();

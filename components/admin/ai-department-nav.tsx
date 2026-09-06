@@ -12,6 +12,7 @@ import {
   ShieldQuestion,
   FileBarChart,
   UsersRound,
+  CalendarClock,
 } from "lucide-react";
 
 const TABS = [
@@ -21,6 +22,7 @@ const TABS = [
   { href: "/admin/ai-department/tasks", label: "Tasklar", icon: ListChecks },
   { href: "/admin/ai-department/objections", label: "E'tirozlar", icon: ShieldQuestion },
   { href: "/admin/ai-department/reports", label: "Hisobotlar", icon: FileBarChart },
+  { href: "/admin/ai-department/meetings", label: "Yig'ilishlar", icon: CalendarClock },
   { href: "/admin/ai-department/agents", label: "Mutaxassislar", icon: UsersRound },
   { href: "/admin/ai-department/brand", label: "Brend xotirasi", icon: BrainCircuit },
 ] as const;
