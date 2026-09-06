@@ -6,6 +6,7 @@ import {
   getAgent,
   getAgentRoster,
 } from "@/lib/ai-department/agents";
+import { createMessageWithFallback } from "@/lib/ai-department/gemini-fallback";
 
 const MODEL = "claude-opus-5";
 const MAX_ORCHESTRATOR_ITERATIONS = 4;
@@ -59,7 +60,7 @@ async function runSpecialistAgent(agentKey: string, taskInstruction: string): Pr
 
   let finalText = "";
   for (let i = 0; i < MAX_SPECIALIST_ITERATIONS; i++) {
-    const response = await anthropic.messages.create({
+    const response = await createMessageWithFallback(anthropic, {
       model: MODEL,
       max_tokens: 8192,
       system,
@@ -157,7 +158,7 @@ export async function runOrchestrator(
   let finalText = "";
 
   for (let i = 0; i < MAX_ORCHESTRATOR_ITERATIONS; i++) {
-    const response = await anthropic.messages.create({
+    const response = await createMessageWithFallback(anthropic, {
       model: MODEL,
       max_tokens: 8192,
       system,
