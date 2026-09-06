@@ -138,6 +138,44 @@ export const AI_DEPARTMENT_TOOLS: Anthropic.ToolUnion[] = [
     },
   },
   {
+    name: "save_daily_plan",
+    description:
+      "G'ayratjonning bitta kunlik rejasini (yoki kun oxiridagi hisobotini) saqlaydi/yangilaydi — plan_date bo'yicha upsert, shuning uchun ertalabki reja va kechqurungi check-in bir xil yozuvda birlashadi. Reja qo'yayotganda tasks'ni to'liq yubor (har biri {text, done: false}); check-in qilayotganda oldingi tasks'ni done holatini yangilab qayta yubor va reflection'ni to'ldir — mavjud maydonlarni bo'sh qoldirsang, ular o'chib ketadi, shuning uchun avval get_business_snapshot yoki suhbat tarixidan oldingi tasks ro'yxatini bilib ol.",
+    input_schema: {
+      type: "object",
+      properties: {
+        plan_date: { type: "string", description: "YYYY-MM-DD" },
+        focus: { type: "string", description: "Kunning bitta asosiy ustuvor yo'nalishi (bitta gap)" },
+        tasks: {
+          type: "array",
+          description: "To'liq vazifalar ro'yxati (mavjudlarini ham qayta yuborish kerak)",
+          items: {
+            type: "object",
+            properties: {
+              text: { type: "string" },
+              done: { type: "boolean" },
+            },
+            required: ["text", "done"],
+            additionalProperties: false,
+          },
+        },
+        reflection: { type: "string", description: "Kun oxiridagi o'z-o'zini hisobot/xulosa" },
+      },
+      required: ["plan_date"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "get_business_snapshot",
+    description:
+      "Haqiqiy biznes ma'lumotlarini (to'lovlar, ro'yxatga olishlar, muddatli to'lov so'rovlari, kutish ro'yxati, so'nggi 14 kunlik intizom tarixi) bazadan real vaqtda o'qiydi. Moliya va sotuv tahlili qilishdan OLDIN har doim shuni chaqir — taxmin qilma, haqiqiy raqamlarga tayan.",
+    input_schema: {
+      type: "object",
+      properties: {},
+      additionalProperties: false,
+    },
+  },
+  {
     name: "save_competitor_note",
     description:
       "Raqobatchi haqidagi tahlil/kuzatuvni saqlaydi. Agar raqobatchi hali mavjud bo'lmasa, avval uni yaratadi.",
@@ -274,6 +312,61 @@ export async function executeAiDepartmentTool(
           .single();
         if (error) throw error;
         return { tool_use_id: toolUse.id, content: `Task yaratildi. id=${data.id}` };
+      }
+
+      case "save_daily_plan": {
+        const payload: Record<string, unknown> = {
+          plan_date: input.plan_date as string,
+          agent_key: agentKey,
+        };
+        if (input.focus !== undefined) payload.focus = input.focus;
+        if (input.tasks !== undefined) payload.tasks = input.tasks;
+        if (input.reflection !== undefined) payload.reflection = input.reflection;
+
+        const { error } = await admin
+          .from("ai_daily_plans")
+          .upsert(payload as never, { onConflict: "plan_date" });
+        if (error) throw error;
+        return { tool_use_id: toolUse.id, content: "Kunlik reja saqlandi." };
+      }
+
+      case "get_business_snapshot": {
+        const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .slice(0, 10);
+
+        const [payments, enrollments, installmentLeads, waitlist, dailyPlans] = await Promise.all([
+          admin.from("payments").select("amount, status, course_id, created_at"),
+          admin.from("enrollments").select("id, course_id, tier, created_at"),
+          admin.from("installment_leads").select("status, monthly_amount, total_amount"),
+          admin.from("waitlist").select("id, course_id"),
+          admin
+            .from("ai_daily_plans")
+            .select("plan_date, focus, tasks, reflection")
+            .gte("plan_date", fourteenDaysAgo)
+            .order("plan_date", { ascending: false }),
+        ]);
+
+        const successfulPayments = (payments.data ?? []).filter((p) => p.status === "paid");
+        const totalRevenue = successfulPayments.reduce((sum, p) => sum + (p.amount ?? 0), 0);
+        const installmentByStatus: Record<string, number> = {};
+        for (const lead of installmentLeads.data ?? []) {
+          installmentByStatus[lead.status] = (installmentByStatus[lead.status] ?? 0) + 1;
+        }
+
+        const snapshot = {
+          total_revenue: totalRevenue,
+          successful_payments_count: successfulPayments.length,
+          payments_by_status: (payments.data ?? []).reduce<Record<string, number>>((acc, p) => {
+            acc[p.status] = (acc[p.status] ?? 0) + 1;
+            return acc;
+          }, {}),
+          enrollments_count: (enrollments.data ?? []).length,
+          installment_leads_by_status: installmentByStatus,
+          waitlist_count: (waitlist.data ?? []).length,
+          recent_daily_plans: dailyPlans.data ?? [],
+        };
+        return { tool_use_id: toolUse.id, content: JSON.stringify(snapshot) };
       }
 
       case "save_competitor_note": {

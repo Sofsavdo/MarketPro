@@ -607,6 +607,26 @@ export interface Database {
         },
         { name?: string; role_title?: string; system_prompt?: string }
       >;
+      ai_daily_plans: Table<
+        {
+          id: string;
+          plan_date: string;
+          focus: string | null;
+          tasks: unknown[];
+          reflection: string | null;
+          agent_key: string | null;
+          created_at: string;
+          updated_at: string;
+        },
+        {
+          plan_date: string;
+          focus?: string | null;
+          tasks?: unknown[];
+          reflection?: string | null;
+          agent_key?: string | null;
+        },
+        { focus?: string | null; tasks?: unknown[]; reflection?: string | null; agent_key?: string | null }
+      >;
       ai_conversations: Table<
         {
           id: string;

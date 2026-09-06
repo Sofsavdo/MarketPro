@@ -1301,3 +1301,25 @@ alter policy "Users see their own progress" on public.user_progress
 -- NOTE — Supabase Auth "leaked password protection" (HaveIBeenPwned check)
 -- is off. That's an Auth setting, not schema — enable it from the Supabase
 -- dashboard (Authentication → Providers → Password), not from this file.
+
+-- ============================================================
+-- Discipline/accountability agent — one row per calendar day holding
+-- G'ayratjonning o'sha kunga rejalashtirgan vazifalari (tasks, each
+-- {text, done}) plus his own end-of-day reflection. The agent upserts on
+-- plan_date both when setting a fresh plan (morning) and when logging a
+-- check-in (evening) — same row, so "bugungi reja" and "bugungi hisobot"
+-- are always the same record instead of drifting apart.
+-- ============================================================
+create table if not exists public.ai_daily_plans (
+  id uuid primary key default gen_random_uuid(),
+  plan_date date not null unique,
+  focus text,
+  tasks jsonb not null default '[]'::jsonb,
+  reflection text,
+  agent_key text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.ai_daily_plans enable row level security;
+-- Admin-only, same "enabled, zero policies" pattern as every other
+-- ai_* table above — all access goes through createAdminClient().
