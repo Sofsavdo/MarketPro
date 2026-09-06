@@ -371,11 +371,29 @@ export async function executeAiDepartmentTool(
 
       case "save_competitor_note": {
         const name = input.competitor_name as string;
-        let { data: competitor } = await admin
-          .from("ai_competitors")
-          .select("id")
-          .eq("name", name)
-          .maybeSingle();
+        // Agents kept typing slightly different variants of the same real
+        // competitor's name across separate research passes ("Qadam
+        // Education", "Qadam Education (@qadam_education)", "Qadam
+        // Education (@qadam_education / qadam.education)"...) — an exact
+        // match on `name` missed all of those and silently created a new
+        // duplicate competitor row each time. Normalizing away the
+        // parenthetical handle/URL and anything after a separator before
+        // comparing catches the real-world variants actually seen in
+        // production; buildBrandContext also now lists existing
+        // competitors so agents see the canonical name up front and don't
+        // invent a new variant in the first place.
+        const normalize = (s: string) =>
+          s
+            .replace(/\(.*?\)/g, "")
+            .split(/[/@—–-]/)[0]
+            .toLowerCase()
+            .replace(/\s+/g, " ")
+            .trim();
+        const normalizedInput = normalize(name);
+
+        const { data: allCompetitors } = await admin.from("ai_competitors").select("id, name");
+        let competitor: { id: string } | null =
+          (allCompetitors ?? []).find((c) => normalize(c.name) === normalizedInput) ?? null;
 
         if (!competitor) {
           const { data: created, error: createError } = await admin

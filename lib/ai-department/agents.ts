@@ -15,7 +15,8 @@ const GLOBAL_RULES = `=== ENG MUHIM QOIDALAR (barcha mutaxassislar uchun) ===
 9. Qisqa va aniq javob ber. Uzun matn emas, jadval/ro'yxat.
 10. Har bir natijani mos tool orqali bazaga SAQLA — faqat chatda aytib qo'ymay. Tool chaqirmasdan berilgan javob yo'qoladi va admin panelda ko'rinmaydi.
 11. BARCHA javoblar O'ZBEK TILIDA va O'ZBEKISTON KONTEKSTIDA (Uzum, Wildberries, Yandex, Telegram, Instagram, mahalla, nasiya).
-12. Daromad, to'lov, ro'yxatga olish, muddatli to'lov yoki kutish ro'yxati haqida gapirishdan OLDIN get_business_snapshot tool'ini chaqir — bu haqiqiy DB raqamlari, taxmin emas. Bu tool bermagan raqamni hech qachon o'zing to'qib gapirma.`;
+12. Daromad, to'lov, ro'yxatga olish, muddatli to'lov yoki kutish ro'yxati haqida gapirishdan OLDIN get_business_snapshot tool'ini chaqir — bu haqiqiy DB raqamlari, taxmin emas. Bu tool bermagan raqamni hech qachon o'zing to'qib gapirma.
+13. Raqobatchi yoki vazifa saqlashdan oldin yuqoridagi "MAVJUD RAQOBATCHILAR" va "OCHIQ VAZIFALAR" ro'yxatini albatta o'qi. Xuddi shu narsa (hatto boshqacharoq nom/so'z bilan yozilgan bo'lsa ham) allaqachon bo'lsa — qayta yaratma, kerak bo'lsa mavjudiga yangi izoh qo'sh yoki uni yangila. Bazada bir xil narsa ikki marta bo'lishi — chalkashlik va ishonchsizlik belgisi.`;
 
 /**
  * Shared factual context (brand memory, product/pricing facts, objection
@@ -25,14 +26,22 @@ const GLOBAL_RULES = `=== ENG MUHIM QOIDALAR (barcha mutaxassislar uchun) ===
  */
 export async function buildBrandContext(): Promise<string> {
   const admin = await createAdminClient();
-  const [{ data: memory }, { data: products }, { data: objections }] = await Promise.all([
-    admin.from("ai_brand_memory").select("*").eq("singleton", true).maybeSingle(),
-    admin.from("ai_products").select("*").order("status"),
-    admin
-      .from("ai_objections")
-      .select("objection_text, empathetic_response, clarification, value_explanation, suggested_offer")
-      .order("created_at"),
-  ]);
+  const [{ data: memory }, { data: products }, { data: objections }, { data: competitors }, { data: openTasks }] =
+    await Promise.all([
+      admin.from("ai_brand_memory").select("*").eq("singleton", true).maybeSingle(),
+      admin.from("ai_products").select("*").order("status"),
+      admin
+        .from("ai_objections")
+        .select("objection_text, empathetic_response, clarification, value_explanation, suggested_offer")
+        .order("created_at"),
+      admin.from("ai_competitors").select("name, category").order("name"),
+      admin
+        .from("ai_tasks")
+        .select("title, status")
+        .in("status", ["backlog", "planned", "in_progress"])
+        .order("created_at", { ascending: false })
+        .limit(40),
+    ]);
 
   const memoryJson = JSON.stringify(
     {
@@ -46,6 +55,8 @@ export async function buildBrandContext(): Promise<string> {
   );
   const productsJson = JSON.stringify(products ?? [], null, 2);
   const objectionsJson = JSON.stringify(objections ?? [], null, 2);
+  const competitorNames = (competitors ?? []).map((c) => `- ${c.name} (${c.category})`).join("\n") || "(hali yo'q)";
+  const openTaskTitles = (openTasks ?? []).map((t) => `- [${t.status}] ${t.title}`).join("\n") || "(hali yo'q)";
 
   return `=== BREND XOTIRASI (DB'dan, har doim eng yangi) ===
 ${memoryJson}
@@ -55,6 +66,12 @@ ${productsJson}
 
 === E'TIROZLAR KUTUBXONASI ===
 ${objectionsJson}
+
+=== MAVJUD RAQOBATCHILAR RO'YXATI (save_competitor_note'dan oldin BU YERNI tekshir — mavjud bo'lsa, ANIQ SHU NOMNI qayta ishlat, yangi variant nom o'ylab topma) ===
+${competitorNames}
+
+=== OCHIQ VAZIFALAR (create_task'dan oldin BU YERNI tekshir — shunga o'xshash mavzuda vazifa allaqachon bo'lsa, qayta yaratma) ===
+${openTaskTitles}
 
 ${GLOBAL_RULES}`;
 }
