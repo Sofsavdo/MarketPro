@@ -72,11 +72,22 @@ function toGeminiTools(tools: Anthropic.ToolUnion[]): GeminiTool[] {
   }
 
   const geminiTools: GeminiTool[] = [];
-  if (functionDeclarations.length > 0) geminiTools.push({ functionDeclarations });
-  // Gemini's built-in Google Search grounding tool is the closest match for
-  // Anthropic's hosted web_search — same "let the model look things up"
-  // intent, different vendor underneath.
-  if (hasWebSearch) geminiTools.push({ googleSearch: {} });
+  if (functionDeclarations.length > 0) {
+    geminiTools.push({ functionDeclarations });
+  } else if (hasWebSearch) {
+    // Gemini's built-in Google Search grounding tool is the closest match
+    // for Anthropic's hosted web_search — but the Gemini API rejects a
+    // request that combines a built-in tool with function declarations
+    // ("Built-in tools (google_search) and Function Calling cannot be
+    // combined in the same request"), and AI_DEPARTMENT_TOOLS always
+    // includes web_search alongside the persistence tools. Saving a
+    // specialist's work to the database matters far more than it being
+    // able to search the web, so function tools win whenever both are
+    // requested — googleSearch only applies on a call with no function
+    // tools at all (there currently isn't one, but this keeps the mapping
+    // correct if that changes).
+    geminiTools.push({ googleSearch: {} });
+  }
   return geminiTools;
 }
 

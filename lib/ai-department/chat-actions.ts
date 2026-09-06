@@ -148,6 +148,15 @@ async function runTurnInBackground(
       })
       .eq("id", conversationId);
   } catch (err) {
+    // runOrchestrator mutates `messages` as it goes — if it threw mid-loop
+    // (e.g. a specialist's own call failed after the orchestrator's
+    // delegation turn was already appended), the array can already end on
+    // an assistant message with unresolved tool_use blocks. Pushing a
+    // second assistant text turn straight after that is invalid (two
+    // assistant turns with no tool_result between them breaks every future
+    // request against this conversation, on either provider) — close out
+    // any dangling calls first, exactly as done for a fresh user turn.
+    repairDanglingToolUse(messages);
     messages.push({
       role: "assistant",
       content: [
