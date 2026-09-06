@@ -13,6 +13,7 @@ import {
   FileBarChart,
   UsersRound,
   CalendarClock,
+  Send,
 } from "lucide-react";
 
 const TABS = [
@@ -25,6 +26,7 @@ const TABS = [
   { href: "/admin/ai-department/meetings", label: "Yig'ilishlar", icon: CalendarClock },
   { href: "/admin/ai-department/agents", label: "Mutaxassislar", icon: UsersRound },
   { href: "/admin/ai-department/brand", label: "Brend xotirasi", icon: BrainCircuit },
+  { href: "/admin/ai-department/telegram", label: "Telegram", icon: Send },
 ] as const;
 
 export function AiDepartmentNav() {
