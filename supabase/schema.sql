@@ -1331,6 +1331,22 @@ alter table public.ai_daily_plans enable row level security;
 alter table public.ai_conversations
   add column if not exists agent_key text references public.ai_agents(key) on delete set null;
 
+-- Which chat_id is allowed to talk to the bot as G'ayratjon — claimed once
+-- via /start <TELEGRAM_SETUP_CODE> in the webhook handler. Single row in
+-- practice (single-founder tool); a new claim replaces the old one.
+create table if not exists public.ai_telegram_settings (
+  id uuid primary key default gen_random_uuid(),
+  chat_id bigint not null,
+  linked_at timestamptz not null default now()
+);
+alter table public.ai_telegram_settings enable row level security;
+
+-- Distinguishes the one shared Telegram conversation thread from web admin
+-- threads, so the webhook can find-or-create "the" Telegram conversation
+-- without colliding with conversations started in the web UI.
+alter table public.ai_conversations
+  add column if not exists channel text not null default 'web' check (channel in ('web', 'telegram'));
+
 -- ============================================================
 -- Weekly agent "meeting" — a scheduled (pg_cron), not chat-triggered, run
 -- where every specialist contributes its own take (grounded in

@@ -607,6 +607,11 @@ export interface Database {
         },
         { name?: string; role_title?: string; system_prompt?: string }
       >;
+      ai_telegram_settings: Table<
+        { id: string; chat_id: number; linked_at: string },
+        { chat_id: number },
+        Record<string, never>
+      >;
       ai_daily_plans: Table<
         {
           id: string;
@@ -632,6 +637,7 @@ export interface Database {
           id: string;
           title: string | null;
           agent_key: string | null;
+          channel: "web" | "telegram";
           messages: unknown[];
           live_specialist_runs: unknown[];
           processing: boolean;
@@ -641,6 +647,7 @@ export interface Database {
         {
           title?: string | null;
           agent_key?: string | null;
+          channel?: "web" | "telegram";
           messages?: unknown[];
           live_specialist_runs?: unknown[];
           processing?: boolean;
@@ -648,6 +655,7 @@ export interface Database {
         {
           title?: string | null;
           agent_key?: string | null;
+          channel?: "web" | "telegram";
           messages?: unknown[];
           live_specialist_runs?: unknown[];
           processing?: boolean;
