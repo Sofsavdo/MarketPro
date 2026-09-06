@@ -108,6 +108,28 @@ async function buildDisciplineContext(): Promise<string> {
 ${JSON.stringify(data ?? [], null, 2)}`;
 }
 
+/**
+ * System prompt for a direct, ongoing 1:1 chat with a single specialist —
+ * used by runDirectAgentChat, distinct from buildSpecialistSystemPrompt
+ * (which frames a one-off task handed down by the orchestrator). Here
+ * G'ayratjon is talking to the specialist himself across multiple turns,
+ * so the prompt says so instead of ending on a single "SENGA BERILGAN
+ * ANIQ VAZIFA" instruction.
+ */
+export async function buildDirectChatSystemPrompt(agent: AgentRow): Promise<string> {
+  const [brandContext, disciplineContext] = await Promise.all([
+    buildBrandContext(),
+    agent.key === "discipline_coach" ? buildDisciplineContext() : Promise.resolve(null),
+  ]);
+
+  return `${agent.system_prompt}
+
+${brandContext}
+${disciplineContext ? `\n${disciplineContext}\n` : ""}
+=== SUHBAT TURI ===
+Bu orchestrator orqali berilgan bir martalik topshiriq emas — G'ayratjonning O'ZI sen bilan to'g'ridan-to'g'ri, davomiy suhbatda gaplashyapti. Kerak bo'lsa aniqlashtiruvchi savol ber, oldingi xabarlarni eslab qol, va o'z sohangdan tashqari narsa so'ralsa buni ayt (masalan moliyaviy savolga "bu savol Finance Specialist'ga tegishli" deb aytish mumkin — lekin javobni butunlay rad etma, qo'lingdan kelganini qil).`;
+}
+
 export async function buildSpecialistSystemPrompt(agent: AgentRow, taskInstruction: string): Promise<string> {
   const [brandContext, disciplineContext] = await Promise.all([
     buildBrandContext(),

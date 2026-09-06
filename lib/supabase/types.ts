@@ -631,6 +631,7 @@ export interface Database {
         {
           id: string;
           title: string | null;
+          agent_key: string | null;
           messages: unknown[];
           live_specialist_runs: unknown[];
           processing: boolean;
@@ -639,11 +640,33 @@ export interface Database {
         },
         {
           title?: string | null;
+          agent_key?: string | null;
           messages?: unknown[];
           live_specialist_runs?: unknown[];
           processing?: boolean;
         },
-        { title?: string | null; messages?: unknown[]; live_specialist_runs?: unknown[]; processing?: boolean }
+        {
+          title?: string | null;
+          agent_key?: string | null;
+          messages?: unknown[];
+          live_specialist_runs?: unknown[];
+          processing?: boolean;
+        }
+      >;
+      ai_meetings: Table<
+        {
+          id: string;
+          week_start: string;
+          contributions: unknown[];
+          summary: string | null;
+          created_at: string;
+        },
+        {
+          week_start: string;
+          contributions?: unknown[];
+          summary?: string | null;
+        },
+        { contributions?: unknown[]; summary?: string | null }
       >;
       ai_reports: Table<
         {

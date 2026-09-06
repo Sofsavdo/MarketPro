@@ -4,7 +4,7 @@ import type Anthropic from "@anthropic-ai/sdk";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/lms/admin-actions";
 import { createAdminClient } from "@/lib/supabase/server";
-import { runOrchestrator, type SpecialistRun } from "@/lib/ai-department/orchestrator";
+import { runOrchestrator, runDirectAgentChat, type SpecialistRun } from "@/lib/ai-department/orchestrator";
 
 export type ChatMessage = { role: "user" | "assistant"; content: Anthropic.MessageParam["content"] };
 
@@ -36,12 +36,13 @@ function repairDanglingToolUse(messages: Anthropic.MessageParam[]): void {
   });
 }
 
-export async function createConversation(): Promise<string> {
+/** agentKey unset/null starts the usual orchestrator chat; set, it starts a direct 1:1 with that specialist. */
+export async function createConversation(agentKey?: string | null): Promise<string> {
   await requireAdmin();
   const admin = await createAdminClient();
   const { data, error } = await admin
     .from("ai_conversations")
-    .insert({ messages: [] })
+    .insert({ messages: [], agent_key: agentKey ?? null })
     .select("id")
     .single();
   if (error) throw error;
@@ -54,7 +55,7 @@ export async function listConversations() {
   const admin = await createAdminClient();
   const { data } = await admin
     .from("ai_conversations")
-    .select("id, title, updated_at")
+    .select("id, title, agent_key, updated_at")
     .order("updated_at", { ascending: false })
     .limit(30);
   return data ?? [];
@@ -108,7 +109,7 @@ export async function sendChatMessage(conversationId: string, userText: string):
   revalidatePath("/admin/ai-department");
 
   // Deliberately not awaited — see the doc comment above.
-  void runTurnInBackground(admin, conversationId, messages, title);
+  void runTurnInBackground(admin, conversationId, messages, title, conversation.agent_key);
 }
 
 async function runTurnInBackground(
@@ -116,27 +117,33 @@ async function runTurnInBackground(
   conversationId: string,
   messages: Anthropic.MessageParam[],
   title: string,
+  agentKey: string | null,
 ): Promise<void> {
   const liveRuns: SpecialistRun[] = [];
   try {
-    await runOrchestrator(messages, {
-      onDelegationStarted: async (msgs) => {
-        // Persist the delegation itself immediately — if everything after
-        // this crashes, the conversation still shows a (repairable) record
-        // that this turn was attempted, instead of vanishing entirely.
-        await admin
-          .from("ai_conversations")
-          .update({ messages: msgs as unknown as never, title, live_specialist_runs: [] as unknown as never })
-          .eq("id", conversationId);
-      },
-      onSpecialistDone: async (run) => {
-        liveRuns.push(run);
-        await admin
-          .from("ai_conversations")
-          .update({ live_specialist_runs: liveRuns as unknown as never })
-          .eq("id", conversationId);
-      },
-    });
+    if (agentKey) {
+      // Direct 1:1 chat — no delegation fan-out, so no live-run hooks needed.
+      await runDirectAgentChat(agentKey, messages);
+    } else {
+      await runOrchestrator(messages, {
+        onDelegationStarted: async (msgs) => {
+          // Persist the delegation itself immediately — if everything after
+          // this crashes, the conversation still shows a (repairable) record
+          // that this turn was attempted, instead of vanishing entirely.
+          await admin
+            .from("ai_conversations")
+            .update({ messages: msgs as unknown as never, title, live_specialist_runs: [] as unknown as never })
+            .eq("id", conversationId);
+        },
+        onSpecialistDone: async (run) => {
+          liveRuns.push(run);
+          await admin
+            .from("ai_conversations")
+            .update({ live_specialist_runs: liveRuns as unknown as never })
+            .eq("id", conversationId);
+        },
+      });
+    }
 
     await admin
       .from("ai_conversations")
