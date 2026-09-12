@@ -36,7 +36,11 @@ export const AI_DEPARTMENT_TOOLS: Anthropic.ToolUnion[] = [
         pillar: { type: "string", description: "Content pillar nomi" },
         format: { type: "string", description: "Masalan: Talking head, Case study, Carousel" },
         hook: { type: "string" },
-        body: { type: "string", description: "G'oyaning to'liq tavsifi/skript qoralamasi" },
+        body: {
+          type: "string",
+          description:
+            "Kontentda AYNAN nima aytilishi — haqiqiy javob/ro'yxat/dalil bilan. Mavzuni qaytarib tasvirlash YETARLI EMAS (masalan 'past talabli kategoriyalarni aniqlash bo'yicha tahlil' — bu javob emas, savol). Aynan qaysi, nega, qanday — kerak bo'lsa web_search bilan tekshirilgan haqiqiy ma'lumot bilan yoz, shunda ssenarist/copywriter qo'shimcha izlanishsiz to'g'ridan-to'g'ri ishlata oladi.",
+        },
         scheduled_for: { type: "string", description: "YYYY-MM-DD, ixtiyoriy" },
         score_value: { type: "integer", minimum: 1, maximum: 10 },
         score_hook: { type: "integer", minimum: 1, maximum: 10 },
