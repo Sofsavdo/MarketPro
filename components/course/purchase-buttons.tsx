@@ -43,6 +43,7 @@ export function PurchaseButtons({
   const [leadSubmitted, setLeadSubmitted] = useState(false);
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
+  const [payError, setPayError] = useState<string | null>(null);
 
   const price = prices[tier];
   const monthlyAmount = computeMonthlyInstallment(price);
@@ -92,6 +93,7 @@ export function PurchaseButtons({
     }
     if (!termsAccepted) return;
     setLoading(provider);
+    setPayError(null);
     try {
       const res = await fetch(`/api/payments/${provider}`, {
         method: "POST",
@@ -103,10 +105,14 @@ export function PurchaseButtons({
           termsAccepted: true,
         }),
       });
-      const data = await res.json();
-      if (data.checkoutUrl) {
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.checkoutUrl) {
         window.location.href = data.checkoutUrl;
+        return;
       }
+      setPayError(t("paymentError"));
+    } catch {
+      setPayError(t("paymentError"));
     } finally {
       setLoading(null);
     }
@@ -248,6 +254,7 @@ export function PurchaseButtons({
             Payme
           </span>
         </Button>
+        {payError && <p className="text-center text-sm text-red-400">{payError}</p>}
         <p className="text-center text-xs text-slate-500">{t("afterPaymentNote")}</p>
       </div>
 

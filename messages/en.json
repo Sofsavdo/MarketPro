@@ -212,6 +212,7 @@
     "requestInstallment": "Request installment plan",
     "installmentLeadSubmitted": "Request received! Our operator will contact you shortly.",
     "afterPaymentNote": "You'll get access to the course right after payment is confirmed.",
+    "paymentError": "Couldn't start the payment. Please try again in a moment, or contact our operator.",
     "guestNamePlaceholder": "Your name",
     "tierStart": "Start",
     "tierStandard": "Standard",
