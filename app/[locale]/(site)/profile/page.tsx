@@ -41,10 +41,6 @@ export default async function ProfilePage() {
               <Label htmlFor="phone">{t("phone")}</Label>
               <Input id="phone" value={profile?.phone ?? user.phone ?? ""} disabled />
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="address">{t("address")}</Label>
-              <Input id="address" name="address" defaultValue={profile?.address ?? ""} />
-            </div>
             <Button type="submit" className="mt-2">
               {t("save")}
             </Button>
