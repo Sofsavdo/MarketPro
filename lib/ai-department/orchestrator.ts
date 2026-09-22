@@ -16,7 +16,13 @@ const MAX_DIRECT_CHAT_ITERATIONS = 6;
 
 let client: Anthropic | null = null;
 function getClient() {
-  if (!client) client = new Anthropic();
+  if (!client) {
+    // This account's API key isn't scoped to a workspace on its own (an
+    // org-level key), so Anthropic requires the workspace to be named
+    // explicitly via this header on every request.
+    const workspaceId = process.env.ANTHROPIC_WORKSPACE_ID;
+    client = new Anthropic(workspaceId ? { defaultHeaders: { "anthropic-workspace-id": workspaceId } } : {});
+  }
   return client;
 }
 

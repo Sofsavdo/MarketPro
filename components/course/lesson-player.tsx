@@ -76,14 +76,23 @@ export function LessonPlayer({
   // (docs.bunny.net/stream/playback-api): it posts an unprompted "ready"
   // event, after which a listener must be registered for any other event —
   // "ended" here, to unlock lesson completion the same way onEnded used to.
+  //
+  // Two guards keep a stray or spoofed message from marking a lesson
+  // watched without the video actually playing: only messages from the
+  // Bunny iframe's own window are accepted, and "ended" is only honored
+  // once "timeupdate" has already fired at least once (i.e. playback
+  // genuinely progressed) — a plain "ended" with no prior progress is
+  // treated as a player glitch, not a completed watch.
   useEffect(() => {
     if (!videoEmbedUrl || videoError) return;
+    let hasProgressed = false;
 
     function post(message: Record<string, unknown>) {
       iframeRef.current?.contentWindow?.postMessage(JSON.stringify(message), "*");
     }
 
     function handleMessage(event: MessageEvent) {
+      if (event.source !== iframeRef.current?.contentWindow) return;
       if (typeof event.data !== "string") return;
       let data: { context?: string; event?: string } | null = null;
       try {
@@ -94,10 +103,13 @@ export function LessonPlayer({
       if (data?.context !== "player.js") return;
 
       if (data.event === "ready") {
+        post({ context: "player.js", version: "0.0.1", method: "addEventListener", value: "timeupdate", listener: "timeupdate" });
         post({ context: "player.js", version: "0.0.1", method: "addEventListener", value: "ended", listener: "ended" });
         post({ context: "player.js", version: "0.0.1", method: "addEventListener", value: "error", listener: "error" });
+      } else if (data.event === "timeupdate") {
+        hasProgressed = true;
       } else if (data.event === "ended") {
-        setVideoWatched(true);
+        if (hasProgressed) setVideoWatched(true);
       } else if (data.event === "error") {
         setVideoError(true);
       }
