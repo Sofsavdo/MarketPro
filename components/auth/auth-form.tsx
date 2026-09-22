@@ -47,18 +47,28 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         fetch("/api/auth/record-signup-ip", { method: "POST" }).catch(() => {});
         const ref = searchParams.get("ref");
         if (ref) await redeemReferral(ref);
-        router.refresh();
         router.push("/dashboard");
+        router.refresh();
       }
     } else {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({
         phone: normalizedPhone,
         password,
       });
       if (error) setError(error.message);
       else {
+        // Admins land in the panel they actually use — /dashboard is a
+        // student's course list, which for an admin account (no
+        // enrollments) renders as an empty "no courses yet" state that
+        // reads as "login didn't work" rather than "you're an admin, go
+        // to /admin".
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", signInData.user.id)
+          .maybeSingle();
+        router.push(profile?.role === "admin" ? "/admin" : "/dashboard");
         router.refresh();
-        router.push("/dashboard");
       }
     }
     setLoading(false);
