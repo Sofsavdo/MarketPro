@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { approveCourseReview, deleteCourseReview } from "@/lib/lms/admin-actions";
+import { ConfirmDeleteForm } from "@/components/admin/confirm-delete-form";
 
 function StarRow({ rating }: { rating: number }) {
   return (
@@ -72,11 +73,14 @@ export default async function AdminReviewsPage() {
                     Tasdiqlash
                   </Button>
                 </form>
-                <form action={deleteCourseReview.bind(null, r.id)}>
+                <ConfirmDeleteForm
+                  action={deleteCourseReview.bind(null, r.id)}
+                  message="Sharhni o'chirishni tasdiqlaysizmi?"
+                >
                   <Button type="submit" size="sm" variant="ghost" className="text-red-400">
                     O&apos;chirish
                   </Button>
-                </form>
+                </ConfirmDeleteForm>
               </div>
             </div>
           );
@@ -102,11 +106,14 @@ export default async function AdminReviewsPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <StarRow rating={r.rating} />
-                  <form action={deleteCourseReview.bind(null, r.id)}>
+                  <ConfirmDeleteForm
+                    action={deleteCourseReview.bind(null, r.id)}
+                    message="Sharhni o'chirishni tasdiqlaysizmi?"
+                  >
                     <button type="submit" className="text-xs text-red-400 hover:underline">
                       O&apos;chirish
                     </button>
-                  </form>
+                  </ConfirmDeleteForm>
                 </div>
               </div>
               {r.comment && <p className="mt-3 text-sm text-slate-400">{r.comment}</p>}

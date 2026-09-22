@@ -15,6 +15,7 @@ import {
 } from "@/lib/lms/admin-actions";
 import { VideoUploadField } from "@/components/admin/video-upload-field";
 import { DeleteVideoButton } from "@/components/admin/delete-video-button";
+import { ConfirmDeleteForm } from "@/components/admin/confirm-delete-form";
 import { getBunnyEmbedUrl } from "@/lib/video/bunny";
 
 const FILE_TYPE_LABELS: Record<string, string> = {
@@ -174,11 +175,14 @@ export default async function AdminLessonEditPage({
                 ({FILE_TYPE_LABELS[material.file_type] ?? material.file_type})
               </span>
             </a>
-            <form action={deleteLessonMaterial.bind(null, material.id, lessonId)}>
+            <ConfirmDeleteForm
+              action={deleteLessonMaterial.bind(null, material.id, lessonId)}
+              message="Materialni o'chirishni tasdiqlaysizmi?"
+            >
               <button type="submit" className="shrink-0 text-red-400 hover:underline">
                 O&apos;chirish
               </button>
-            </form>
+            </ConfirmDeleteForm>
           </div>
         ))}
       </div>
@@ -230,11 +234,14 @@ export default async function AdminLessonEditPage({
               <p className="text-white">
                 {qi + 1}. {q.question_uz}
               </p>
-              <form action={deleteQuizQuestion.bind(null, q.id, lessonId)}>
+              <ConfirmDeleteForm
+                action={deleteQuizQuestion.bind(null, q.id, lessonId)}
+                message="Test savolini o'chirishni tasdiqlaysizmi?"
+              >
                 <button type="submit" className="shrink-0 text-red-400 hover:underline">
                   O&apos;chirish
                 </button>
-              </form>
+              </ConfirmDeleteForm>
             </div>
             <ul className="mt-2 space-y-1 text-slate-400">
               {q.options_uz.map((option, oi) => (

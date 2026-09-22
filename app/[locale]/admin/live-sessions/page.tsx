@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createLiveSession, deleteLiveSession } from "@/lib/lms/admin-actions";
 import { ScrollFadeX } from "@/components/admin/scroll-fade-x";
+import { ConfirmDeleteForm } from "@/components/admin/confirm-delete-form";
 import { formatDateTime } from "@/lib/utils";
 
 export default async function AdminLiveSessionsPage() {
@@ -127,11 +128,14 @@ export default async function AdminLiveSessionsPage() {
                     <Link href={`/admin/live-sessions/${s.id}`} className="text-amber-400 hover:underline">
                       Savollar
                     </Link>
-                    <form action={deleteLiveSession.bind(null, s.id)}>
+                    <ConfirmDeleteForm
+                      action={deleteLiveSession.bind(null, s.id)}
+                      message="Jonli darsni o'chirishni tasdiqlaysizmi?"
+                    >
                       <button type="submit" className="text-red-400 hover:underline">
                         O&apos;chirish
                       </button>
-                    </form>
+                    </ConfirmDeleteForm>
                   </div>
                 </td>
               </tr>
