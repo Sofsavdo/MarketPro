@@ -18,6 +18,7 @@ export function SubscribeButtons({
   const [loading, setLoading] = useState<"click" | "payme" | null>(null);
   const [promoCode, setPromoCode] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [payError, setPayError] = useState(false);
 
   async function pay(provider: "click" | "payme") {
     if (!isLoggedIn) {
@@ -26,6 +27,7 @@ export function SubscribeButtons({
     }
     if (!termsAccepted) return;
     setLoading(provider);
+    setPayError(false);
     try {
       const res = await fetch(`/api/payments/${provider}`, {
         method: "POST",
@@ -36,8 +38,14 @@ export function SubscribeButtons({
           termsAccepted: true,
         }),
       });
-      const data = await res.json();
-      if (data.checkoutUrl) window.location.href = data.checkoutUrl;
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+      setPayError(true);
+    } catch {
+      setPayError(true);
     } finally {
       setLoading(null);
     }
@@ -92,6 +100,7 @@ export function SubscribeButtons({
           Payme
         </span>
       </Button>
+      {payError && <p className="text-center text-sm text-red-400">{t("paymentError")}</p>}
       <p className="text-center text-xs text-slate-500">{t("afterPaymentNote")}</p>
     </div>
   );
