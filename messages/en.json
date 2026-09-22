@@ -380,5 +380,11 @@
       "active": "Active",
       "used": "Used"
     }
+  },
+  "pwa": {
+    "title": "Install the app",
+    "desc": "Add Izdosh Academy to your home screen for faster access.",
+    "install": "Install",
+    "dismiss": "Later"
   }
 }

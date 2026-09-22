@@ -1,10 +1,18 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
+import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
 import "../globals.css";
+
+export const viewport: Viewport = {
+  themeColor: "#0a1628",
+  width: "device-width",
+  initialScale: 1,
+};
 
 // Brand book §7: Inter or Manrope for the primary typeface.
 const sans = Inter({ variable: "--font-geist-sans", subsets: ["latin", "cyrillic"] });
@@ -34,6 +42,12 @@ export async function generateMetadata({
     },
     openGraph: { title: t("fullName"), description, siteName: t("fullName"), locale, type: "website" },
     twitter: { card: "summary_large_image", title: t("fullName"), description },
+    manifest: "/manifest.webmanifest",
+    appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: t("name") },
+    icons: {
+      icon: [{ url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" }],
+      apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    },
   };
 }
 
@@ -76,7 +90,11 @@ export default async function LocaleLayout({
     <html lang={locale} className={`${sans.variable} ${mono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-slate-950">
         <OrganizationJsonLd locale={locale} />
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <ServiceWorkerRegister />
+        <NextIntlClientProvider>
+          {children}
+          <InstallPrompt />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

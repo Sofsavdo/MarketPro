@@ -240,7 +240,7 @@
     "lessonCompleted": "Dars yakunlandi",
     "nextLockedSequence": "Ochish uchun joriy darsni yakunlang",
     "nextLockedPurchase": "Davom etish uchun kursni sotib oling",
-  "actionError": "Xatolik yuz berdi, natija saqlanmadi. Qayta urinib ko'ring."
+    "actionError": "Xatolik yuz berdi, natija saqlanmadi. Qayta urinib ko'ring."
   },
   "dashboard": {
     "title": "Mening kurslarim",
@@ -380,5 +380,11 @@
       "active": "Faol",
       "used": "Ishlatilgan"
     }
+  },
+  "pwa": {
+    "title": "Ilovani o'rnating",
+    "desc": "Izdosh Academy'ni telefon ekraningizga qo'shing — tezroq ochiladi.",
+    "install": "O'rnatish",
+    "dismiss": "Keyinroq"
   }
 }
