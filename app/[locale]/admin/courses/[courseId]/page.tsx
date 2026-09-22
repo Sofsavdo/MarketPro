@@ -14,6 +14,7 @@ import {
   deleteLesson,
   moveLesson,
 } from "@/lib/lms/admin-actions";
+import { ConfirmDeleteForm } from "@/components/admin/confirm-delete-form";
 
 export default async function AdminCourseEditPage({
   params,
@@ -184,11 +185,14 @@ export default async function AdminCourseEditPage({
                       ↓
                     </button>
                   </form>
-                  <form action={deleteModuleWithId}>
+                  <ConfirmDeleteForm
+                    action={deleteModuleWithId}
+                    message="Modulni va undagi barcha darslarni butunlay o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi."
+                  >
                     <button type="submit" className="text-red-400 hover:underline">
                       Modulni o&apos;chirish
                     </button>
-                  </form>
+                  </ConfirmDeleteForm>
                 </div>
               </div>
 
@@ -224,11 +228,14 @@ export default async function AdminCourseEditPage({
                             ↓
                           </button>
                         </form>
-                        <form action={deleteLessonWithId}>
+                        <ConfirmDeleteForm
+                          action={deleteLessonWithId}
+                          message="Darsni butunlay o'chirishni tasdiqlaysizmi? Bu amalni qaytarib bo'lmaydi."
+                        >
                           <button type="submit" className="text-red-400 hover:underline">
                             O&apos;chirish
                           </button>
-                        </form>
+                        </ConfirmDeleteForm>
                       </div>
                     </div>
                   );
