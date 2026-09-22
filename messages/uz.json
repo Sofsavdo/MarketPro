@@ -240,7 +240,8 @@
     "lessonCompleted": "Dars yakunlandi",
     "nextLockedSequence": "Ochish uchun joriy darsni yakunlang",
     "nextLockedPurchase": "Davom etish uchun kursni sotib oling",
-    "actionError": "Xatolik yuz berdi, natija saqlanmadi. Qayta urinib ko'ring."
+    "actionError": "Xatolik yuz berdi, natija saqlanmadi. Qayta urinib ko'ring.",
+    "lessonNotReady": "Bu dars hali tayyor emas — administrator video yoki material qo'shguncha yakunlab bo'lmaydi."
   },
   "dashboard": {
     "title": "Mening kurslarim",
