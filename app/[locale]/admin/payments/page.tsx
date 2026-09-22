@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollFadeX } from "@/components/admin/scroll-fade-x";
 import { formatSom, formatDate } from "@/lib/utils";
 import { refundPayment } from "@/lib/lms/admin-actions";
+import { ConfirmDeleteForm } from "@/components/admin/confirm-delete-form";
 
 export default async function AdminPaymentsPage() {
   const supabase = await createAdminClient();
@@ -78,11 +79,14 @@ export default async function AdminPaymentsPage() {
                 </td>
                 <td className="py-3 pr-4">
                   {p.status === "paid" && (
-                    <form action={refundPayment.bind(null, p.id)}>
+                    <ConfirmDeleteForm
+                      action={refundPayment.bind(null, p.id)}
+                      message={`Bu amal ${formatSom(p.amount)} miqdoridagi to'lovni "qaytarilgan" deb belgilaydi va kursga kirishni bekor qiladi — lekin Click/Payme orqali haqiqiy pulni AVTOMATIK qaytarmaydi, buni alohida to'lov tizimi panelidan qilishingiz kerak bo'ladi. Davom etasizmi?`}
+                    >
                       <button type="submit" className="text-red-400 hover:underline">
                         Qaytarish
                       </button>
-                    </form>
+                    </ConfirmDeleteForm>
                   )}
                 </td>
               </tr>
