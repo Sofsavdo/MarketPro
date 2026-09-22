@@ -16,7 +16,7 @@ import {
 import { VideoUploadField } from "@/components/admin/video-upload-field";
 import { DeleteVideoButton } from "@/components/admin/delete-video-button";
 import { ConfirmDeleteForm } from "@/components/admin/confirm-delete-form";
-import { getBunnyEmbedUrl } from "@/lib/video/bunny";
+import { getBunnyEmbedUrlSafe } from "@/lib/video/bunny";
 
 const FILE_TYPE_LABELS: Record<string, string> = {
   pdf: "PDF",
@@ -90,14 +90,24 @@ export default async function AdminLessonEditPage({
       <div className="mt-4 max-w-md">
         {lesson.bunny_video_id ? (
           <div className="space-y-2">
-            <div className="aspect-video overflow-hidden rounded-lg border border-slate-800 bg-black">
-              <iframe
-                src={getBunnyEmbedUrl(lesson.bunny_video_id)}
-                className="h-full w-full"
-                allow="accelerometer;encrypted-media;picture-in-picture;"
-                allowFullScreen
-              />
-            </div>
+            {(() => {
+              const embedUrl = getBunnyEmbedUrlSafe(lesson.bunny_video_id);
+              return embedUrl ? (
+                <div className="aspect-video overflow-hidden rounded-lg border border-slate-800 bg-black">
+                  <iframe
+                    src={embedUrl}
+                    className="h-full w-full"
+                    allow="accelerometer;encrypted-media;picture-in-picture;"
+                    allowFullScreen
+                  />
+                </div>
+              ) : (
+                <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-400">
+                  Video biriktirilgan, lekin BUNNY_STREAM_* muhit o&apos;zgaruvchilari
+                  sozlanmagan — Railway&apos;ga qo&apos;shing.
+                </div>
+              );
+            })()}
             <DeleteVideoButton action={removeLessonVideo.bind(null, lessonId)} />
           </div>
         ) : (

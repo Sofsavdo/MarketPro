@@ -90,3 +90,16 @@ export function getBunnyEmbedUrl(videoId: string, ttlSeconds = 4 * 3600): string
   // starts includes both HLS startup latency *and* this initial fetch.
   return `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?token=${token}&expires=${expires}&autoplay=false&preload=true`;
 }
+
+/**
+ * Same as getBunnyEmbedUrl, but never throws — a missing BUNNY_STREAM_* env
+ * var would otherwise crash the whole lesson page for every visitor instead
+ * of just hiding the video. Callers show a fallback when this returns null.
+ */
+export function getBunnyEmbedUrlSafe(videoId: string, ttlSeconds?: number): string | null {
+  try {
+    return getBunnyEmbedUrl(videoId, ttlSeconds);
+  } catch {
+    return null;
+  }
+}
