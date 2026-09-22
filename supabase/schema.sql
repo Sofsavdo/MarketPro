@@ -1000,6 +1000,12 @@ where key = 'faq';
 alter table public.payments add column if not exists terms_accepted_at timestamptz;
 alter table public.installment_leads add column if not exists terms_accepted_at timestamptz;
 
+-- A short, sequential reference shown to the buyer (Click's checkout page,
+-- receipts) instead of the payment's full UUID — see buildClickCheckoutUrl
+-- and the Click webhook, which now look up/display order_number rather
+-- than the raw id.
+alter table public.payments add column if not exists order_number bigserial unique;
+
 -- Registration no longer asks for a postal address (nobody mails anything
 -- to a student) — replaced with the signup request's IP, recorded
 -- server-side (see app/api/auth/record-signup-ip/route.ts) in case of a

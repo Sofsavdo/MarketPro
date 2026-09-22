@@ -19,10 +19,12 @@ export async function POST(request: NextRequest) {
   }
 
   const admin = await createAdminClient();
+  // merchant_trans_id is the order_number we handed Click at checkout (see
+  // buildClickCheckoutUrl) — a short sequential reference, not payments.id.
   const { data: payment } = await admin
     .from("payments")
     .select("*")
-    .eq("id", body.merchant_trans_id)
+    .eq("order_number", Number(body.merchant_trans_id))
     .maybeSingle();
 
   if (!payment) {
