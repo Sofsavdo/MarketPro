@@ -212,6 +212,7 @@
     "requestInstallment": "Muddatli to'lovga yozilish",
     "installmentLeadSubmitted": "So'rovingiz qabul qilindi! Operatorimiz tez orada siz bilan bog'lanadi.",
     "afterPaymentNote": "To'lov tasdiqlangach, kursga darhol kirasiz.",
+    "paymentError": "To'lovni boshlab bo'lmadi. Birozdan so'ng qayta urinib ko'ring yoki operator bilan bog'laning.",
     "guestNamePlaceholder": "Ismingiz",
     "tierStart": "Start",
     "tierStandard": "Standart",
