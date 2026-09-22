@@ -176,7 +176,10 @@ function fromGeminiResponse(response: {
 
 async function callGemini(params: CreateMessageParams): Promise<ModelResponse> {
   const ai = getGenAI();
-  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  // gemini-2.5-flash was retired for new API keys (a fresh key now gets a
+  // 404 telling it to use gemini-3.6-flash instead) — see GEMINI_MODEL to
+  // override without a redeploy if Google retires this one too.
+  const model = process.env.GEMINI_MODEL || "gemini-3.6-flash";
   const tools = toGeminiTools(params.tools);
 
   const response = await ai.models.generateContent({
