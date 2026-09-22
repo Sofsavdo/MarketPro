@@ -3,7 +3,8 @@ import crypto from "crypto";
 const CLICK_BASE_URL = "https://my.click.uz/services/pay";
 
 export function buildClickCheckoutUrl(params: {
-  orderId: string;
+  /** payments.order_number — a short sequential reference, not the full payment UUID (see schema.sql). */
+  orderNumber: number;
   amount: number;
   returnUrl: string;
 }) {
@@ -14,7 +15,7 @@ export function buildClickCheckoutUrl(params: {
   url.searchParams.set("service_id", serviceId);
   url.searchParams.set("merchant_id", merchantId);
   url.searchParams.set("amount", params.amount.toString());
-  url.searchParams.set("transaction_param", params.orderId);
+  url.searchParams.set("transaction_param", String(params.orderNumber));
   url.searchParams.set("return_url", params.returnUrl);
   return url.toString();
 }

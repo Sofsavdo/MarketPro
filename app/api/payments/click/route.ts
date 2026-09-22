@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       referral_click_token: referralClickToken,
       terms_accepted_at: termsAccepted ? new Date().toISOString() : null,
     })
-    .select("id")
+    .select("order_number")
     .single();
 
   if (error || !payment) {
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
   }
 
   const checkoutUrl = buildClickCheckoutUrl({
-    orderId: payment.id,
+    orderNumber: payment.order_number,
     amount: resolved.amount,
     returnUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
   });

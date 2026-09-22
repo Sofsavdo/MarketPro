@@ -209,6 +209,8 @@ export interface Database {
           promo_code: string | null;
           referral_click_token: string | null;
           terms_accepted_at: string | null;
+          /** Short sequential reference shown to the buyer instead of `id` — see schema.sql. */
+          order_number: number;
           created_at: string;
         },
         {
@@ -225,6 +227,7 @@ export interface Database {
           promo_code?: string | null;
           referral_click_token?: string | null;
           terms_accepted_at?: string | null;
+          order_number?: number;
         }
       >;
       installment_plans: Table<
