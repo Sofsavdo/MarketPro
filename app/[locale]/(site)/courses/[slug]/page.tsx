@@ -206,14 +206,11 @@ export default async function CourseDetailPage({
         </div>
       )}
       <div className="animate-fade-up" style={{ animationDelay: course.cover_url ? "60ms" : "0ms" }}>
-        <Badge
-          variant={course.is_published ? "default" : "outline"}
-          className={course.is_published ? "" : "border-amber-300 bg-white text-amber-700"}
-        >
-          {course.is_published
-            ? t("home.coursesSection.badgePopular")
-            : t("home.coursesSection.badgeComingSoon")}
-        </Badge>
+        {!course.is_published && (
+          <Badge variant="outline" className="border-amber-300 bg-white text-amber-700">
+            {t("home.coursesSection.badgeComingSoon")}
+          </Badge>
+        )}
         <h1 className="mt-4 text-3xl font-bold text-slate-950 sm:text-4xl">
           {localizedField(course, "title", locale)}
         </h1>
