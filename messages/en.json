@@ -240,7 +240,8 @@
     "lessonCompleted": "Lesson completed",
     "nextLockedSequence": "Finish the current lesson to unlock it",
     "nextLockedPurchase": "Purchase the course to continue",
-    "actionError": "Something went wrong, your result wasn't saved. Please try again."
+    "actionError": "Something went wrong, your result wasn't saved. Please try again.",
+    "lessonNotReady": "This lesson isn't ready yet — it can't be finished until an admin adds a video or material."
   },
   "dashboard": {
     "title": "My courses",

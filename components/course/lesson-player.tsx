@@ -128,7 +128,13 @@ export function LessonPlayer({
 
   const hasQuiz = questions.length > 0;
   const quizComplete = answers && Object.keys(answers).length === questions.length;
-  const canComplete = videoWatched && (!hasQuiz || quizResult === "passed") && !alreadyCompleted;
+  // An admin hasn't put anything in this lesson yet (no video, no text, no
+  // materials) — nothing was actually taught, so it must not be
+  // completable just by clicking through; that would silently unlock the
+  // next lesson for a student who learned nothing here.
+  const lessonNotReady = !videoEmbedUrl && !content && materials.length === 0;
+  const canComplete =
+    videoWatched && (!hasQuiz || quizResult === "passed") && !alreadyCompleted && !lessonNotReady;
 
   async function submitQuiz() {
     setGrading(true);
@@ -302,6 +308,7 @@ export function LessonPlayer({
           <Button size="lg" disabled={!canComplete || submitting} onClick={completeLesson}>
             {submitting ? "..." : t("completeButton")}
           </Button>
+          {lessonNotReady && <p className="mt-2 text-sm text-amber-400">{t("lessonNotReady")}</p>}
           {actionError && <p className="mt-2 text-sm text-red-400">{t("actionError")}</p>}
         </div>
       ) : (
