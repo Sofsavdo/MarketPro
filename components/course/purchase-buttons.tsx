@@ -29,7 +29,7 @@ export function PurchaseButtons({
   const router = useRouter();
   const [tier, setTier] = useState<Tier>("standard");
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [loading, setLoading] = useState<"click" | "payme" | null>(null);
+  const [loading, setLoading] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [promoChecking, setPromoChecking] = useState(false);
   const [promoResult, setPromoResult] = useState<{
@@ -86,16 +86,16 @@ export function PurchaseButtons({
     }
   }
 
-  async function pay(provider: "click" | "payme") {
+  async function pay() {
     if (!isLoggedIn) {
       router.push("/login");
       return;
     }
     if (!termsAccepted) return;
-    setLoading(provider);
+    setLoading(true);
     setPayError(null);
     try {
-      const res = await fetch(`/api/payments/${provider}`, {
+      const res = await fetch("/api/payments/click", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -114,7 +114,7 @@ export function PurchaseButtons({
     } catch {
       setPayError(t("paymentError"));
     } finally {
-      setLoading(null);
+      setLoading(false);
     }
   }
 
@@ -235,23 +235,12 @@ export function PurchaseButtons({
       <div className="flex flex-col gap-2">
         <Button
           className="w-full justify-center gap-2"
-          disabled={loading !== null || !termsAccepted}
-          onClick={() => pay("click")}
+          disabled={loading || !termsAccepted}
+          onClick={pay}
         >
-          {loading === "click" ? "..." : t("buyNow")}
+          {loading ? "..." : t("buyNow")}
           <span className="rounded bg-[#0a5ca8] px-1.5 py-0.5 text-[11px] font-bold tracking-wide text-white">
             CLICK
-          </span>
-        </Button>
-        <Button
-          className="w-full justify-center gap-2"
-          variant="outline"
-          disabled={loading !== null || !termsAccepted}
-          onClick={() => pay("payme")}
-        >
-          {loading === "payme" ? "..." : t("buyNow")}
-          <span className="rounded bg-[#00bfa5] px-1.5 py-0.5 text-[11px] font-bold tracking-wide text-slate-950">
-            Payme
           </span>
         </Button>
         {payError && <p className="text-center text-sm text-red-400">{payError}</p>}
