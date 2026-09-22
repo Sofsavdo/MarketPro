@@ -239,7 +239,8 @@
     "videoError": "Videoni yuklab bo'lmadi. Internet aloqasini tekshiring yoki keyinroq qayta urinib ko'ring.",
     "lessonCompleted": "Dars yakunlandi",
     "nextLockedSequence": "Ochish uchun joriy darsni yakunlang",
-    "nextLockedPurchase": "Davom etish uchun kursni sotib oling"
+    "nextLockedPurchase": "Davom etish uchun kursni sotib oling",
+  "actionError": "Xatolik yuz berdi, natija saqlanmadi. Qayta urinib ko'ring."
   },
   "dashboard": {
     "title": "Mening kurslarim",

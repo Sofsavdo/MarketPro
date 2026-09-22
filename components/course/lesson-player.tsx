@@ -112,6 +112,7 @@ export function LessonPlayer({
   );
   const [grading, setGrading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [actionError, setActionError] = useState(false);
 
   const hasQuiz = questions.length > 0;
   const quizComplete = answers && Object.keys(answers).length === questions.length;
@@ -119,14 +120,21 @@ export function LessonPlayer({
 
   async function submitQuiz() {
     setGrading(true);
+    setActionError(false);
     try {
       const res = await fetch("/api/lessons/quiz/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lessonId, answers }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data) {
+        setActionError(true);
+        return;
+      }
       setQuizResult(data.passed ? "passed" : "failed");
+    } catch {
+      setActionError(true);
     } finally {
       setGrading(false);
     }
@@ -134,19 +142,26 @@ export function LessonPlayer({
 
   async function completeLesson() {
     setSubmitting(true);
+    setActionError(false);
     try {
       const res = await fetch("/api/lessons/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ courseId, lessonId }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data) {
+        setActionError(true);
+        return;
+      }
       router.refresh();
       if (data.nextLessonId) {
         router.push(`/courses/${courseSlug}/lessons/${data.nextLessonId}`);
       } else {
         router.push(`/courses/${courseSlug}`);
       }
+    } catch {
+      setActionError(true);
     } finally {
       setSubmitting(false);
     }
@@ -266,13 +281,17 @@ export function LessonPlayer({
               {quizResult === "passed" ? t("quizPassed") : t("quizFailed")}
             </p>
           )}
+          {actionError && <p className="mt-2 text-sm text-red-400">{t("actionError")}</p>}
         </div>
       )}
 
       {!alreadyCompleted ? (
-        <Button size="lg" disabled={!canComplete || submitting} onClick={completeLesson}>
-          {submitting ? "..." : t("completeButton")}
-        </Button>
+        <div>
+          <Button size="lg" disabled={!canComplete || submitting} onClick={completeLesson}>
+            {submitting ? "..." : t("completeButton")}
+          </Button>
+          {actionError && <p className="mt-2 text-sm text-red-400">{t("actionError")}</p>}
+        </div>
       ) : (
         <p className="flex items-center gap-2 text-emerald-400">
           <CheckCircle2 className="h-5 w-5" /> {t("lessonCompleted")}
