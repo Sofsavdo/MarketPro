@@ -239,7 +239,8 @@
     "videoError": "Could not load the video. Check your connection or try again later.",
     "lessonCompleted": "Lesson completed",
     "nextLockedSequence": "Finish the current lesson to unlock it",
-    "nextLockedPurchase": "Purchase the course to continue"
+    "nextLockedPurchase": "Purchase the course to continue",
+    "actionError": "Something went wrong, your result wasn't saved. Please try again."
   },
   "dashboard": {
     "title": "My courses",
