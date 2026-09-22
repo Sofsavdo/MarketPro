@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 
 export function PayInstallmentButton({ installmentPaymentId }: { installmentPaymentId: string }) {
   const t = useTranslations("course");
-  const [loading, setLoading] = useState<"click" | "payme" | null>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  async function pay(provider: "click" | "payme") {
-    setLoading(provider);
+  async function pay() {
+    setLoading(true);
     setError(false);
     try {
-      const res = await fetch(`/api/payments/${provider}`, {
+      const res = await fetch("/api/payments/click", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ installmentPaymentId }),
@@ -27,26 +27,15 @@ export function PayInstallmentButton({ installmentPaymentId }: { installmentPaym
     } catch {
       setError(true);
     } finally {
-      setLoading(null);
+      setLoading(false);
     }
   }
 
   return (
     <div>
-      <div className="flex gap-2">
-        <Button size="sm" disabled={loading !== null} onClick={() => pay("click")}>
-          {loading === "click" ? "..." : "Click"}
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="border-amber-300 bg-white text-slate-800 hover:bg-amber-50"
-          disabled={loading !== null}
-          onClick={() => pay("payme")}
-        >
-          {loading === "payme" ? "..." : "Payme"}
-        </Button>
-      </div>
+      <Button size="sm" disabled={loading} onClick={pay}>
+        {loading ? "..." : "Click"}
+      </Button>
       {error && <p className="mt-1.5 text-xs text-red-500">{t("paymentError")}</p>}
     </div>
   );
