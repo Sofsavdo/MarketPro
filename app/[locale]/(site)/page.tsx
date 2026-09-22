@@ -2,7 +2,6 @@ import { getTranslations, getLocale } from "next-intl/server";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   ShieldCheck,
   Sparkles,
@@ -214,7 +213,7 @@ export default async function HomePage() {
 
             {courses.length > 0 && (
               <CourseCarousel>
-                {courses.map((course, i) => (
+                {courses.map((course) => (
                   <Link
                     key={course.id}
                     href={`/courses/${course.slug}`}
@@ -234,15 +233,6 @@ export default async function HomePage() {
                           <ImageOff className="h-8 w-8 text-amber-300" />
                         </div>
                       )}
-                      <span className="absolute left-3 top-3">
-                        <Badge>
-                          {course.is_published
-                            ? i === 1
-                              ? t("home.coursesSection.badgePopular")
-                              : t("home.coursesSection.badgeNew")
-                            : t("home.coursesSection.badgeComingSoon")}
-                        </Badge>
-                      </span>
                     </div>
                     <div className="p-5">
                       <div className="flex items-center justify-between text-xs text-slate-500">
